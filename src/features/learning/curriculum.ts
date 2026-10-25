@@ -164,6 +164,7 @@ export const lessonPlacements: readonly LessonPlacement[] = [
   place("foundations-risk-reward", "1.1", 6, "required", ["foundations-why-invest"], ["simple-return", "compounding"]),
   place("foundations-portfolio", "1.1", 7, "required", ["foundations-stocks", "foundations-etfs-indexes", "foundations-bonds-cash"], ["portfolio-weights", "diversification"]),
   place("foundations-funds", "1.1", 8, "required", ["foundations-etfs-indexes"], ["fund-types", "fund-costs"]),
+  place("foundations-checkpoint", "1.1", 10, "required", ["foundations-funds", "foundations-bonds-cash", "foundations-markets", "foundations-risk-reward", "foundations-portfolio"], ["compounding", "inflation", "diversification", "position-value", "index-vs-fund", "bonds-and-cash", "bid-ask-spread", "portfolio-weights", "fund-costs"]),
 
   place("returns-what-is-a-return", "3.1", 1, "required", ["foundations-risk-reward"], ["simple-return"]),
   place("returns-simple-returns", "3.1", 2, "required", ["returns-what-is-a-return"], ["simple-return"]),
