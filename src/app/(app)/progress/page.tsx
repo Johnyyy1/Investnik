@@ -7,6 +7,7 @@ import { practiceCapitalLedger } from "@/features/rewards/practice-capital";
 import { loadPracticeCapitalLedger } from "@/features/rewards/repository";
 import { getCurrentUser } from "@/lib/session";
 import { loadSkillLevels } from "@/features/mastery/repository";
+import { loadMilestones } from "@/features/milestones/repository";
 
 export const metadata = { title: "Pokrok" };
 
@@ -17,13 +18,14 @@ export default function ProgressPage() {
 async function renderProgressPage() {
   const user = await getCurrentUser();
   // The unlock, the saved Lab facts and the capital receipts depend only on the user id, so they load alongside the learner reads.
-  const [summary, { unlock, portfolio }, capital, skillLevels] = await Promise.all([
+  const [summary, { unlock, portfolio }, capital, skillLevels, milestones] = await Promise.all([
     loadLearner(),
     user ? loadPortfolioCard(user.id) : { unlock: null, portfolio: null },
     user ? perfMeasure("rewards.loadLedger", "db", () => loadPracticeCapitalLedger(user.id)) : practiceCapitalLedger([]),
     user ? perfMeasure("mastery.loadSkillLevels", "db", () => loadSkillLevels(user.id)) : null,
+    perfMeasure("milestones.load", "db", () => loadMilestones(user?.id)),
   ]);
-  return <ProgressOverview summary={summary} unlock={unlock} portfolio={portfolio} capital={capital} skillLevels={skillLevels} />;
+  return <ProgressOverview summary={summary} unlock={unlock} portfolio={portfolio} capital={capital} skillLevels={skillLevels} milestones={milestones} />;
 }
 
 async function loadPortfolioCard(userId: string) {

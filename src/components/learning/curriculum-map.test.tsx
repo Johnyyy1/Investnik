@@ -5,10 +5,12 @@ import { availableLessons } from "@/features/learning/catalog";
 import { getLearnerSummary, type LearnerState } from "@/features/learning/learner-summary";
 import { curriculumMapModel } from "./curriculum-map-model";
 import { CurriculumMap } from "./curriculum-map";
+import { milestoneStates } from "@/features/milestones/domain";
 
 const date = new Date("2026-10-22T10:00:00Z");
 const done = (lessonId: string): LearnerState => ({ lessonId, status: "completed", lastPosition: 0, completedAt: date, updatedAt: date });
 const summary = (states: LearnerState[] = []) => ({ ...getLearnerSummary(states), states });
+const noEvidence = milestoneStates({ completions: [], attempts: [], submissions: [] });
 const moduleOf = (levels: ReturnType<typeof curriculumMapModel>, code: string) => levels.flatMap((level) => level.modules).find((module) => module.code === code)!;
 
 describe("Curriculum map presentation", () => {
@@ -30,7 +32,7 @@ describe("Curriculum map presentation", () => {
     const state: LearnerState = { ...done("returns-log-returns"), status: "in_progress", completedAt: null, lastPosition: 2 };
     const levels = curriculumMapModel(summary([state]));
     expect(levels.filter((level) => level.current).map((level) => level.id)).toEqual(["L6"]);
-    const html = renderToStaticMarkup(createElement(CurriculumMap, { levels }));
+    const html = renderToStaticMarkup(createElement(CurriculumMap, { levels, milestones: noEvidence }));
     expect(html.match(/open=""/g)).toHaveLength(1);
     expect(html.match(/aria-current="step"/g)).toHaveLength(1);
     expect(html).toMatch(/<details[^>]*open=""[^>]*data-level="L6"/);
@@ -57,10 +59,13 @@ describe("Curriculum map presentation", () => {
     expect(levels.filter((level) => level.current)).toEqual([]);
     expect(levels.find((level) => level.id === "L2")).toMatchObject({ total: 0, status: "planned", percentage: null });
     expect(levels.filter((level) => level.optional).map((level) => level.id)).toEqual(["L4", "L5", "L6", "V"]);
-    const html = renderToStaticMarkup(createElement(CurriculumMap, { levels }));
+    const html = renderToStaticMarkup(createElement(CurriculumMap, { levels, milestones: noEvidence }));
     expect(html).toContain("Prohloubení");
     expect(html).toContain("Milník C není podmínkou.");
-    expect(html.match(/Splnění milníku zatím nevyhodnocujeme/g)).toHaveLength(4);
+    // Capstones and L2 modules are not published yet, so no milestone can be achieved.
+    expect(html.match(/Zatím nejde splnit: část obsahu připravujeme\./g)).toHaveLength(4);
+    expect(html).not.toContain("Splněno 2");
+    expect(html).toContain("Závěrečný projekt A: plán, nákup a krizový nácvik: připravujeme");
     expect(html).toContain('role="meter"');
     expect(html).not.toContain('aria-valuemax="0"');
     expect(html).not.toContain("NaN");

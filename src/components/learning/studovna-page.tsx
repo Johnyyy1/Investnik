@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { CurriculumMap } from "./curriculum-map";
 import { curriculumMapModel } from "./curriculum-map-model";
+import type { MilestoneState } from "@/features/milestones/domain";
 import { GuideImage } from "@/components/guide-image";
 import { AppLink as Link } from "@/components/shell/app-link";
 import { ArrowRight, BookOpen, ChevronDown, Clock3 } from "lucide-react";
@@ -50,7 +51,7 @@ function PortfolioCard({ summary, portfolio }: { summary: LearnerSummary; portfo
   </PortfolioCardFrame>;
 }
 
-export function StudovnaPage({ summary, portfolio }: { summary: LearnerSummary; portfolio: Promise<PortfolioCardData> }) {
+export function StudovnaPage({ summary, portfolio, milestones }: { summary: LearnerSummary; portfolio: Promise<PortfolioCardData>; milestones: readonly MilestoneState[] }) {
   const firstName = summary.user?.name?.trim().split(/\s+/)[0] || "studente";
   const current = summary.state?.status === "in_progress";
   const complete = summary.allComplete;
@@ -78,7 +79,7 @@ export function StudovnaPage({ summary, portfolio }: { summary: LearnerSummary; 
         </section>
       </div>
       <div className={styles.columns}>
-        <section className={styles.curriculum} id="curriculum" aria-labelledby="curriculum-title"><div className={styles.curriculumHeading}><p className={styles.eyebrow}>Kurikulum</p><h2 id="curriculum-title">Všechny lekce jsou otevřené.</h2><p>Doporučujeme pořadí shora dolů, ale začít můžeš kdekoli.</p></div><CurriculumMap levels={curriculumMapModel(summary)} /></section>
+        <section className={styles.curriculum} id="curriculum" aria-labelledby="curriculum-title"><div className={styles.curriculumHeading}><p className={styles.eyebrow}>Kurikulum</p><h2 id="curriculum-title">Všechny lekce jsou otevřené.</h2><p>Doporučujeme pořadí shora dolů, ale začít můžeš kdekoli.</p></div><CurriculumMap levels={curriculumMapModel(summary)} milestones={milestones} timeZone={summary.gamification?.timeZone} /></section>
         <aside className={styles.side} aria-label="Lab a studijní pokrok"><Suspense fallback={<PortfolioCardSkeleton summary={summary} />}><LoadedPortfolioCard summary={summary} portfolio={portfolio} /></Suspense><Link href="/lab/backtesting" className={styles.backtesting}><Clock3 size={15} aria-hidden="true" />Otevřít Backtesting Lab<ArrowRight size={15} aria-hidden="true" /></Link><section className={styles.sideCard}><p className={styles.eyebrow}>Tvůj pokrok</p><div className={styles.progressValue}><strong>{summary.percentage} %</strong><span>{summary.completed.length} z {summary.lessons.length} lekcí<small>dokončeno</small></span></div><p className={styles.progressNote}>Učení není závod. K hotovým lekcím se můžeš vracet vlastním tempem.</p><Link href="/progress" className={styles.sideLink}>Zobrazit pokrok<ArrowRight size={16} aria-hidden="true" /></Link></section></aside>
       </div>
       <section className={styles.planContext} aria-label="Tvůj studijní plán"><p>{recommendationReason}</p>{recommendedLesson && <Link className={styles.recommendedLink} href={`/learn/${recommendedLesson.moduleSlug}/${recommendedLesson.slug}`}>Doporučená lekce: {recommendedLesson.title}<ArrowRight size={16} aria-hidden="true" /></Link>}<details><summary>Jak si rozvrhnout učení</summary><p>{contextLabels[summary.recommendation.exampleContext]}</p><p>{scaffoldLabels[summary.recommendation.scaffoldLevel]}</p>{summary.recommendation.splitLessonAcrossSessions && <p>Lekci si můžeš rozdělit do více sezení. Uložený postup tě dovede zpět.</p>}</details></section>
