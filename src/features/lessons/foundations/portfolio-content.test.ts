@@ -63,10 +63,44 @@ describe("Foundations learning experience integrity", () => {
   it("teaches the required portfolio math and concentration safeguards", () => {
     const lesson = foundationsContent.find((lesson) => lesson.id === "foundations-portfolio")!;
     expect(lesson.blocks.find((block) => block.id === "weight-formula")).toMatchObject({ type: "formula", latex: "w_i = \\frac{V_i}{V_p}" });
-    expect(lesson.blocks.find((block) => block.id === "weight-practice")).toMatchObject({ type: "numericQuestion", answer: 40 });
-    expect(lesson.blocks.find((block) => block.id === "contribution-practice")).toMatchObject({ type: "numericQuestion", answer: 2 });
     const copy = lesson.blocks.map((block) => JSON.stringify(block)).join(" ");
     expect(copy).toContain("stále záleží na vahách a společných rizicích");
     expect(copy).toContain("Hotovost a aktuální hodnota všech pozic");
+  });
+
+  it("recomputes every portfolio numeric answer from its authored inputs and guards continuation", () => {
+    const lesson = foundationsContent.find((lesson) => lesson.id === "foundations-portfolio")!;
+    const steps = getGuidedSteps(lesson);
+    const questions = lesson.blocks.filter((block) => block.type === "numericQuestion");
+    expect(questions.map(({ id }) => id)).toEqual(["weight-practice", "contribution-practice", "mastery-stock-weight"]);
+    for (const block of questions) {
+      const amounts = [...block.prompt.matchAll(/(\d[\d ]*) Kč/g)].map((match) => Number(match[1].replaceAll(" ", "")));
+      const percentages = [...block.prompt.matchAll(/(\d+) %/g)].map((match) => Number(match[1]));
+      const expected = block.id === "contribution-practice"
+        ? percentages[0] / 100 * percentages[1]
+        : amounts[1] / amounts[0] * 100;
+      expect(block.answer).toBe(expected);
+      expect(block.tolerance).toBeLessThan(0.01);
+      const position = steps.findIndex((step) => step.blocks.some(({ id }) => id === block.id));
+      expect(() => validateMove(lesson.id, position, position + 1, { answer: String(expected + 1) })).toThrow(/correctly/);
+      expect(() => validateMove(lesson.id, position, position + 1, { answer: String(expected) })).not.toThrow();
+    }
+  });
+
+  it("connects the whole-portfolio weights to allocation and a learner-chosen investment plan", () => {
+    const lesson = foundationsContent.find((lesson) => lesson.id === "foundations-portfolio")!;
+    expect(lesson).toMatchObject({ moduleSlug: "investing-foundations", slug: "your-first-portfolio" });
+    expect(getGuidedSteps(lesson)).toHaveLength(8);
+    expect(lesson.blocks.find((block) => block.id === "lab-bridge")).toMatchObject({
+      type: "labBridge",
+      content: expect.stringContaining("váhy pozic i hotovosti vůči celkové hodnotě portfolia"),
+    });
+    const bridge = lesson.blocks.find((block) => block.type === "labBridge")!;
+    expect(bridge.content).toContain("bez hotovosti");
+    expect(bridge.content).toContain("modul 3.4");
+    expect(bridge.content).toContain("investičního plánu (IPS, investment policy statement)");
+    expect(bridge.content).toContain("Rozdíl sám o sobě není pokyn k obchodu.");
+    expect(lesson.blocks.find((block) => block.id === "weight-example")).toMatchObject({ title: expect.stringMatching(/^Modelový příklad:/) });
+    expect(lesson.blocks.find((block) => block.id === "diversification")).toMatchObject({ description: expect.stringMatching(/^Simulace:/) });
   });
 });
