@@ -3,6 +3,7 @@ import { loadPortfolioLabUnlockStatus } from "@/features/progression/repository"
 import { loadPortfolioCardView, type PortfolioCardView } from "@/features/portfolio/service";
 import { perfMeasure, perfSegment } from "@/lib/perf";
 import { getCurrentUser } from "@/lib/session";
+import { loadMilestones } from "@/features/milestones/repository";
 import { StudovnaPage } from "@/components/learning/studovna-page";
 
 export const metadata = { title: "Učení" };
@@ -15,7 +16,8 @@ async function renderLearnPage() {
   // The card waits on quotes, so it streams in on its own instead of holding the lesson content.
   // Its own perf segment, because it can finish after the page segment has logged.
   const portfolio = user ? perfSegment("section:/learn portfolio", () => loadPortfolioCard(user.id)) : Promise.resolve(undefined);
-  return <StudovnaPage summary={await loadLearner()} portfolio={portfolio} />;
+  const [summary, milestones] = await Promise.all([loadLearner(), perfMeasure("milestones.load", "db", () => loadMilestones(user?.id))]);
+  return <StudovnaPage summary={summary} portfolio={portfolio} milestones={milestones} />;
 }
 
 async function loadPortfolioCard(userId: string): Promise<PortfolioCardView | null | undefined> {

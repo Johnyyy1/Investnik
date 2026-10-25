@@ -487,3 +487,24 @@ export const missionAttempt = pgTable("mission_attempt", {
   uniqueIndex("mission_attempt_request_idx").on(table.userId, table.missionId, table.requestId),
   index("mission_attempt_completion_idx").on(table.userId, table.missionId, table.completed),
 ]);
+
+/**
+ * Capstone submissions (#126). Append-only versions per learner and capstone; milestone state is derived from
+ * these rows, never stored. The server computes `auto_criteria` and `artifact_refs` and freezes them here, so a
+ * later Lab or IPS change cannot rewrite an earlier verdict.
+ */
+export const capstoneSubmission = pgTable("capstone_submission", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  capstoneId: text("capstone_id").notNull(),
+  version: integer("version").notNull(),
+  requestId: text("request_id").notNull(),
+  artifactRefs: jsonb("artifact_refs").notNull(),
+  autoCriteria: jsonb("auto_criteria").notNull(),
+  selfAssessment: jsonb("self_assessment").notNull(),
+  submittedAt: timestamp("submitted_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  uniqueIndex("capstone_submission_version_idx").on(table.userId, table.capstoneId, table.version),
+  uniqueIndex("capstone_submission_request_idx").on(table.userId, table.requestId),
+  check("capstone_submission_version_positive", sql`${table.version} > 0`),
+]);

@@ -97,6 +97,7 @@
     "test:training-persistence": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-training.mts",
     "test:training-browser": "node scripts/validate-training-browser.mjs",
     "test:mastery-persistence": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-mastery.mts",
+    "test:milestones-persistence": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-milestones.mts",
     "test:mastery-browser": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-mastery-browser.mts",
     "test:lesson-exercises-persistence": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-lesson-exercises.mts",
     "test:lesson-exercises-browser": "node scripts/validate-lesson-exercises-browser.mjs",

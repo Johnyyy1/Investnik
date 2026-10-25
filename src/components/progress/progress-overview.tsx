@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { Wordmark } from "@/components/brand/wordmark";
 import { skills as skillTitles } from "@/features/learning/curriculum";
 import { checkpointModules, masteryLabels, moduleSkills, type MasteryLevel } from "@/features/mastery/domain";
+import type { MilestoneState } from "@/features/milestones/domain";
 
 type Summary = ProgressSummary & {
   user?: { name?: string | null } | null;
@@ -138,7 +139,7 @@ function Milestone({ milestone, next }: { milestone: NonNullable<Model["mileston
   </section>;
 }
 
-export function ProgressOverview({ summary, unlock, portfolio, capital, skillLevels }: { summary: Summary; unlock: Unlock | null; portfolio: PortfolioLedgerSummary | null | undefined; capital: PracticeCapitalLedger; skillLevels?: Readonly<Record<string, MasteryLevel>> | null }) {
+export function ProgressOverview({ summary, unlock, portfolio, capital, skillLevels, milestones }: { summary: Summary; unlock: Unlock | null; portfolio: PortfolioLedgerSummary | null | undefined; capital: PracticeCapitalLedger; skillLevels?: Readonly<Record<string, MasteryLevel>> | null; milestones: readonly MilestoneState[] }) {
   const model = progressModel(summary);
   const { milestone, current } = model;
   const complete = summary.allComplete;
@@ -207,7 +208,7 @@ export function ProgressOverview({ summary, unlock, portfolio, capital, skillLev
       <div className={styles.lower}>
         <section className={styles.curriculum} aria-labelledby="curriculum-title">
           <div className={styles.curriculumHead}><h2 id="curriculum-title">Kurikulum podle úrovní</h2><Link className={styles.textLink} href="/learn#curriculum">Otevřít Učení<ArrowRight size={15} aria-hidden="true" /></Link></div>
-          <CurriculumMap levels={model.levels} />
+          <CurriculumMap levels={model.levels} milestones={milestones} timeZone={timeZone} />
           <ul className={styles.legend} aria-label="Stavy lekcí"><li data-status="done">hotovo</li><li data-status="active">rozpracováno</li><li data-status="todo">nezačato</li></ul>
         </section>
         <div className={styles.side}>

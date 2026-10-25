@@ -12,6 +12,7 @@ import ProgressError from "@/app/(app)/progress/error";
 import { AppRouteFallback as ProgressLoading } from "@/components/shell/app-route-fallback";
 import { firstSentence, progressModel } from "./progress-model";
 import { ProgressOverview } from "./progress-overview";
+import { milestoneStates } from "@/features/milestones/domain";
 
 const day = (date: number) => new Date(Date.UTC(2026, 8, date, 10));
 const done = (lessonId: string, completedAt = day(1)): LearnerState => ({ lessonId, status: "completed", lastPosition: 0, completedAt, updatedAt: completedAt });
@@ -26,7 +27,8 @@ function learner(states: LearnerState[] = []) {
 function render(states: LearnerState[] = [], options: { capital?: PracticeCapitalLedger; portfolio?: PortfolioLedgerSummary | null } = {}) {
   const summary = learner(states);
   const unlock = evaluateUnlock(PORTFOLIO_LAB_UNLOCK_ID, { totalXp: summary.completed.length * 60, completedLessonIds: new Set(summary.completed.map((lesson) => lesson.id)) });
-  return renderToStaticMarkup(createElement(ProgressOverview, { summary, unlock, portfolio: "portfolio" in options ? options.portfolio : null, capital: options.capital ?? practiceCapitalLedger([]) }));
+  return renderToStaticMarkup(createElement(ProgressOverview, { summary, unlock, portfolio: "portfolio" in options ? options.portfolio : null, capital: options.capital ?? practiceCapitalLedger([]),
+    milestones: milestoneStates({ completions: states.flatMap((state) => state.completedAt ? [{ lessonId: state.lessonId, completedAt: state.completedAt }] : []), attempts: [], submissions: [] }) }));
 }
 const receipt = (lessonId: string, amountMinor: bigint, date: number): PracticeCapitalReceipt => ({ kind: "lesson", lessonId, title: availableLessons.find((lesson) => lesson.id === lessonId)?.title ?? lessonId, amountMinor, receivedAt: day(date) });
 const grant = (amountMinor: bigint, date: number, reason = "learning_requirements"): PracticeCapitalReceipt => ({ kind: "unlock", unlockId: PORTFOLIO_LAB_UNLOCK_ID, reason, amountMinor, receivedAt: day(date) });
@@ -138,7 +140,8 @@ describe("Progress presentation model", () => {
     expect(html).toContain("Prozkoumat Lab");
     expect(html).toContain('href="/lab"');
     expect(html).toMatch(/1\s234,56\sKč/);
-    expect(html).toContain("Splnění milníku zatím nevyhodnocujeme.");
+    expect(html).toContain("Zatím nejde splnit: část obsahu připravujeme.");
+    expect(html).not.toContain("Splněno <time");
     expect(html).toContain("Kapitola Broker a investiční účet se připravuje.");
     expect(html).not.toContain("Následuje");
     expect(html).not.toContain('aria-current="step"');
