@@ -196,6 +196,28 @@ try {
           await largeText.evaluate((element) => element.parentNode?.removeChild(element));
           await page.setViewportSize({ width, height: 900 });
         }
+        if (block.type === "interactiveFigure" && block.figure === "spiva-chart") {
+          const chart = page.getByRole("region", { name: "Podíl aktivních fondů, které zaostaly za indexem", exact: true });
+          await chart.getByText(/Historická data · S&P Dow Jones Indices, SPIVA U\.S\. Year-End 2025 · stav k 31\. 12\. 2025/).waitFor();
+          const horizon = page.getByRole("button", { name: /^15 let/ });
+          await horizon.focus();
+          await horizon.press("Enter");
+          assert.equal(await horizon.getAttribute("aria-pressed"), "true");
+          assert.notEqual(await horizon.evaluate((element) => getComputedStyle(element).outlineStyle), "none", "horizon has visible keyboard focus");
+          await chart.getByText("V období 2011–2025 (15 let) mělo nižší výnos než S&P 500 90 % těchto fondů, zhruba 9 z 10.").waitFor();
+          await audit("SPIVA chart after selecting a horizon", width);
+          for (const size of [1440, 390, 320]) {
+            await page.setViewportSize({ width: size, height: 900 });
+            await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))); });
+            await page.screenshot({ path: `${screenshots}/spiva-chart-${size}.png` });
+          }
+          const largeText = await page.addStyleTag({ content: "html { font-size: 200% !important; }" });
+          assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, "SPIVA chart at 320px and 200% text");
+          await page.evaluate(() => window.scrollTo(0, 0));
+          await page.screenshot({ path: `${screenshots}/spiva-chart-320-200.png` });
+          await largeText.evaluate((element) => element.parentNode?.removeChild(element));
+          await page.setViewportSize({ width, height: 900 });
+        }
         if (block.type === "interactiveFigure" && block.figure === "goal-map") {
           await page.getByRole("checkbox", { name: "Zatím nemám konkrétní cíl", exact: true }).check();
           await page.getByRole("checkbox", { name: /Souhlasím s uložením/ }).check();
@@ -218,7 +240,7 @@ try {
     const progress: { status: string } | undefined = (await sql<{ status: string }[]>`select status from lesson_progress where user_id = ${userId} and lesson_id = ${lesson.id}`)[0];
     assert.equal(progress?.status, "completed", where);
     assert.equal((await sql<{ count: number }[]>`select count(*)::int as count from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`)[0].count, 1, `${where}: one receipt`);
-    if (lesson.id === "before-investing-debt" || lesson.id === "foundations-funds") {
+    if (["before-investing-debt", "foundations-funds", "foundations-active-vs-index"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }

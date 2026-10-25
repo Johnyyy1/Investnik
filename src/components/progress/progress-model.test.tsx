@@ -40,7 +40,7 @@ describe("Progress presentation model", () => {
     const html = render();
     expect(progressModel(learner()).knowledge).toEqual([]);
     expect(html).toContain("Tvoje police je zatím prázdná.");
-    expect(html).toContain('data-testid="available-progress">0 / 32<');
+    expect(html).toContain('data-testid="available-progress">0 / 33<');
     expect(html).toContain("0 XP");
     expect(html).toContain('href="/learn/investing-foundations/why-invest"');
     expect(html).toContain("Začít první lekci");
@@ -56,7 +56,7 @@ describe("Progress presentation model", () => {
     const html = render([started(foundations[0].id, 2)]);
     expect(html).toContain("První lekci máš rozdělanou.");
     expect(html).toContain("Pokračovat od kroku 3");
-    expect(html).toContain('data-testid="available-progress">0 / 32<');
+    expect(html).toContain('data-testid="available-progress">0 / 33<');
   });
 
   it("derives the shelf from completed published lessons and their authored step", () => {
@@ -73,13 +73,13 @@ describe("Progress presentation model", () => {
         expect(idea.title).not.toMatch(/^Shrnutí/);
       }
     }
-    expect(model.chapters[0].lessons.map((lesson) => lesson.status)).toEqual(["done", "done", "done", "todo", "active", "todo", "todo", "todo"]);
+    expect(model.chapters[0].lessons.map((lesson) => lesson.status)).toEqual(["done", "done", "done", "todo", "active", "todo", "todo", "todo", "todo"]);
     expect(model.chapters[0].status).toBe("started");
     expect(model.milestone).toBeUndefined();
     const html = render(states);
     expect(html).toContain("Co už umíš, Jana.");
     expect(html).toContain("Tři lekce hotové, jedna rozdělaná.");
-    expect(html).toContain('data-testid="available-progress">3 / 32<');
+    expect(html).toContain('data-testid="available-progress">3 / 33<');
     expect(html).toContain("180 XP");
     expect(html).toContain("ze 3 lekcí");
     expect(html).toContain("Pokračovat od kroku 3");
@@ -103,7 +103,7 @@ describe("Progress presentation model", () => {
     const model = progressModel(learner(states));
     expect(model.milestone?.chapter.slug).toBe("investing-foundations");
     expect(model.milestone?.nextChapter.slug).toBe("returns");
-    expect(model.milestone?.completedAt).toEqual(day(8));
+    expect(model.milestone?.completedAt).toEqual(day(9));
     const html = render(states, { portfolio: ledger });
     expect(html).toContain("Kapitola 01 hotová");
     expect(html).toContain("Základy investování máš za sebou.");
@@ -111,8 +111,8 @@ describe("Progress presentation model", () => {
     expect(html).toContain("jak poznat, jestli se investici daří?");
     expect(html).toContain('href="/learn/returns/what-is-a-return"');
     expect(html).toContain("Začít lekcí Co je výnos?");
-    expect(html).toContain('data-testid="available-progress">8 / 32<');
-    expect(html).toContain("480 XP");
+    expect(html).toContain('data-testid="available-progress">9 / 33<');
+    expect(html).toContain("540 XP");
     expect(html).not.toContain("ročním nákladům fondu");
     // Starting the next chapter ends the milestone.
     expect(progressModel(learner([...states, started(returns[0].id, 1)])).milestone).toBeUndefined();
@@ -173,7 +173,7 @@ describe("Progress presentation model", () => {
     const states = [...foundations.slice(0, 3).map((lesson) => done(lesson.id)), started("foundations-markets", 2)];
     const html = render(states);
     expect(html).toContain('aria-label="Souhrn pokroku"');
-    expect(html).toContain('data-testid="available-progress">3 / 32<');
+    expect(html).toContain('data-testid="available-progress">3 / 33<');
     const markets = foundations.find((lesson) => lesson.id === "foundations-markets")!;
     expect(html).toContain(`href="/learn/investing-foundations/${markets.slug}">${markets.title}`);
     expect(html).toMatch(/krok 3\u00a0z\u00a0\d+/);

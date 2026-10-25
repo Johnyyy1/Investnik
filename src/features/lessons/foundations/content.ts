@@ -113,7 +113,7 @@ const funds: AuthoredStep[] = [
       "Na burze za ask se obchoduje ETF. Podíl otevřeného podílového fondu kupuješ přes správce nebo distributora za NAV, obvykle stanovenou jednou denně."),
   ] },
   { title: "Aktivní a pasivní správa", blocks: [
-    concept("management", "Kdo rozhoduje, co fond koupí", "Aktivní správce vybírá investice a snaží se porazit trh nebo zvolený index. Pasivní fond index sleduje a snaží se co nejvěrněji kopírovat jeho výsledek. Aktivní správa bývá dražší, protože platíš analytiky a častější obchody. Není ale automaticky bezpečnější: aktivní akciový fond může klesnout stejně jako trh, nebo víc. Typ správy nezávisí na způsobu nákupu; existují indexové podílové fondy i aktivně řízená ETF. Zda se aktivní správa vyplatí, rozebere plánovaná lekce 1.1.9."),
+    concept("management", "Kdo rozhoduje, co fond koupí", "Aktivní správce vybírá investice a snaží se porazit trh nebo zvolený index. Pasivní fond index sleduje a snaží se co nejvěrněji kopírovat jeho výsledek. Aktivní správa bývá dražší, protože platíš analytiky a častější obchody. Není ale automaticky bezpečnější: aktivní akciový fond může klesnout stejně jako trh, nebo víc. Typ správy nezávisí na způsobu nákupu; existují indexové podílové fondy i aktivně řízená ETF. Zda se aktivní správa vyplatí, rozebere lekce 1.1.9."),
     question("passive", "Fond drží stejné firmy ve stejných vahách jako celosvětový akciový index a nesnaží se ho porazit. Jak je spravovaný?", ["Aktivně", "Pasivně", "Garantovaně"], 1,
       "Sledování indexu bez snahy ho porazit je pasivní správa. Nic negarantuje: když index klesne, klesne i fond.",
       "Aktivní správce by vybíral investice jinak než index, aby ho porazil. Tento fond index kopíruje, proto jde o pasivní správu. Výnos negarantuje žádná z nich."),
@@ -161,7 +161,61 @@ const funds: AuthoredStep[] = [
   ] },
 ];
 
-const flows = [whyInvest, stocks, etfs, bondsAndCash, markets, returnsAndCompounding, portfolio, funds];
+const activeVsIndex: AuthoredStep[] = [
+  { title: "Fond, který loni porazil trh", blocks: [
+    paragraph("winner", "Modelový příklad · Petrovi banka nabízí aktivně spravovaný akciový fond X. Loni vydělal o 5 procentních bodů víc než trh, se kterým se srovnává."),
+    question("opening", "Je jeden výborný rok sám o sobě dobrý důvod fond X koupit?", ["Ano, správce zjevně umí vybírat akcie", "Sám o sobě ne; jeden dobrý rok o příštích letech mnoho neříká", "Ne, aktivní fondy nikdy nevyhrávají"], 1,
+      "Jeden rok může vyjít díky dovednosti i díky náhodě a zvenku je těžké to rozlišit. V lekci uvidíš, jak to dopadá u tisíců fondů.",
+      "Aktivní fondy někdy vyhrají, takže „nikdy“ neplatí. Jeden výborný rok ale dovednost neprokazuje: mohla pomoct i náhoda. Jak to dopadá u tisíců fondů, uvidíš v lekci."),
+  ] },
+  { title: "Co měří SPIVA", blocks: [
+    concept("spiva", "Srovnání se svým indexem", "S&P Dow Jones Indices pravidelně zveřejňuje SPIVA (S&P Indices Versus Active). Porovnává aktivní fondy s indexem, který odpovídá tomu, do čeho fond investuje (benchmark). Počítá i fondy, které během období zanikly nebo se sloučily."),
+    question("spiva-reading", "Podle SPIVA zaostalo v roce 2025 za indexem S&P 500 {{spiva.2025}} aktivních akciových fondů velkých amerických firem. Co to znamená?", ["Ve sledovaném roce měla většina těchto fondů nižší výnos než index", "Index je bez rizika", "Zbylé fondy porazí index každý rok"], 0,
+      "Je to podíl fondů za jedno konkrétní období. Neříká, že index nemůže klesnout, ani že vítězové vyhrají znovu.",
+      "Údaj popisuje jen to, kolik fondů mělo ve sledovaném roce nižší výnos než index. O riziku indexu ani o budoucnosti zbylých fondů nic neříká."),
+  ] },
+  { title: "Jak to vypadá na delší době", blocks: [figure("chart", "spiva-chart", "Aktivní fondy proti indexu podle horizontu", "Vyber horizont a podívej se, jaký podíl fondů zaostal za indexem. Než klikneš na 15 let, odhadni, jestli bude podíl vyšší, nebo nižší než za 1 rok. Graf se nehodnotí.")] },
+  { title: "Proč to tak dopadá", blocks: [
+    concept("arithmetic", "Aritmetika aktivní správy", "Všichni investoři v nějakém trhu dohromady drží celý trh. Před náklady proto průměrná investovaná koruna vydělá přesně tolik co trh. Aktivní správa stojí víc než indexový fond, takže po nákladech musí být průměrná aktivní koruna pod trhem. Tento argument popsal ekonom William F. Sharpe."),
+    concept("competition", "Proti profesionálům", "Aby fond porazil trh, musí někdo jiný zaostat. Na druhé straně obchodů jsou většinou jiní profesionálové s analytiky a daty, ne nepozorní amatéři."),
+    concept("persistence", "Úspěch se špatně opakuje", "Fondy, které jedno období patří k nejlepším, v dalším období často mezi nejlepšími nezůstanou. S&P to sleduje ve zprávě Persistence Scorecard. Kdo vybírá podle loňského výsledku, často kupuje štěstí."),
+  ] },
+  { title: "Spočítej, co vezmou náklady", blocks: [{ id: "worked", type: "workedExample", title: "Modelový příklad · trh vydělá 8 %", introduction: "Zjednodušeně odečteme roční náklady od výnosu. Poplatky brokera a daně vynecháme.", steps: [
+    { label: "Trh za rok", value: "8 %" },
+    { label: "Průměrná aktivní koruna před náklady", value: "8 %, dohromady tvoří trh" },
+    { label: "Průměrná aktivní koruna po nákladech 1,5 %", value: "8 % − 1,5 % = 6,5 %" },
+    { label: "Indexový fond po nákladech 0,2 %", value: "8 % − 0,2 % = 7,8 %" },
+    { label: "Rozdíl", value: "7,8 % − 6,5 % = 1,3 p. b. ročně", emphasis: true },
+  ], conclusion: "Jednotlivý aktivní fond může vyhrát. Průměr aktivních investorů ale po nákladech zaostane o rozdíl v nákladech, a to každý rok znovu." }] },
+  { title: "Teď ty", blocks: [numeric("arithmetic-practice", "Modelový příklad: trh vydělá 7 % a průměrný aktivní fond má náklady 1,6 % ročně. Jaký je průměrný výnos aktivních investorů po nákladech?", 5.4, "%",
+    "7 % − 1,6 % = 5,4 %. Před náklady je průměr aktivních investorů roven trhu, po nákladech je pod ním.",
+    "Před náklady tvoří aktivní investoři dohromady trh, takže začni u 7 % a odečti roční náklady 1,6 %.")] },
+  { title: "Loňský vítěz", blocks: [question("persistence-practice", "Fond byl loni mezi nejlepší čtvrtinou fondů své kategorie. Co je rozumné čekat?", ["Že tam zůstane, protože má šikovného správce", "Že v nejlepší čtvrtině nemusí zůstat; minulý výnos sám o sobě nestačí", "Že letos určitě skončí mezi nejhoršími"], 1,
+    "Data o persistenci ukazují, že se pořadí fondů často mění. Minulý výnos je slabé vodítko, náklady znáš jistě.",
+    "Nejde předpovědět ani setrvání nahoře, ani pád dolů. Pořadí fondů se v čase často mění, proto minulý výnos sám o sobě nestačí.")] },
+  { title: "Co to znamená pro tebe", blocks: [
+    concept("core", "Jádro a satelit", "Rozumné výchozí jádro portfolia je levný, široce diverzifikovaný indexový fond. Kdo chce vybírat fondy nebo akcie, může to dělat v menší „satelitní“ části a informovaně. Je to výchozí volba, ne jediná správná."),
+    concept("misconceptions", "Na co si dát pozor", "Údaj SPIVA neříká, že index vyhraje vždy; jde o podíl fondů v daném období. Výběr loňských vítězů nefunguje spolehlivě. A indexový fond není bez rizika: když trh padá, padá s ním."),
+  ] },
+  mastery("Ověření znalostí · aritmetika", question("mastery-arithmetic", "Proč průměrný aktivní investor po nákladech zaostává za indexem?", ["Před náklady tvoří aktivní investoři dohromady trh, takže po odečtení vyšších nákladů jsou v průměru pod ním", "Protože aktivní správci rozumějí trhu méně než index", "Protože index nemůže klesnout"], 0,
+    "Před náklady je průměr roven trhu, po nákladech je pod ním. Neplatí to pro každý fond, ale pro průměr ano.",
+    "Nejde o chytrost ani o to, že by index nemohl klesnout. Před náklady je průměr aktivních investorů roven trhu, a vyšší náklady ho stáhnou pod něj.")),
+  mastery("Ověření znalostí · riziko indexu", question("mastery-index-risk", "Co platí pro levný indexový fond na celosvětové akcie?", ["Nemůže klesnout, protože kopíruje index", "Klesne, když klesne trh; výhodou jsou nízké náklady a široká diverzifikace", "Vždy porazí všechny aktivní fondy"], 1,
+    "Indexový fond nese tržní riziko. Jeho výhoda je v nízkých nákladech a diverzifikaci, ne v ochraně před poklesem.",
+    "Indexový fond kopíruje trh i v poklesu a některé aktivní fondy ho v daném období porazí. Jeho výhodou jsou nízké náklady a široká diverzifikace.")),
+  { title: "Vysvětli to vlastními slovy", blocks: [{ id: "reflection", type: "writtenReflection", prompt: "Proč je minulý úspěch fondu slabým vodítkem pro výběr? Vysvětli to ve 2–4 větách a dodej, co u fondu zkontroluješ místo loňského výnosu.", rubric: [
+    { id: "luck", text: "Vysvětlím, že jeden dobrý rok může být štěstí a pořadí fondů se často mění." },
+    { id: "average", text: "Zmíním, že průměr aktivních investorů po nákladech zaostává za trhem." },
+    { id: "check", text: "Uvedu konkrétní kontrolu: náklady, diverzifikaci a srovnání s vhodným indexem za delší dobu." },
+  ], sampleAnswer: "Jeden výborný rok může být náhoda a vítězové jednoho období v dalším často nezůstanou nahoře. Průměrný aktivní investor navíc po nákladech zaostává za trhem, protože před náklady trh tvoří. Místo loňského výnosu zkontroluji náklady, diverzifikaci a výsledek proti vhodnému indexu za delší dobu." }] },
+  { title: "Měř strategii proti benchmarku", blocks: [
+    bridge("Backtesting Lab porovná tvou strategii s jednoduchou strategií koupit a držet benchmark. Když strategie zaostává po nákladech, máš stejnou otázku jako u aktivního fondu: stojí výsledek za vyšší náklady a práci?"),
+    summary("SPIVA porovnává aktivní fondy s jejich indexem. V roce 2025 jich za S&P 500 zaostala většina a na delších horizontech bývá podíl ještě vyšší, ale není to zákon. Důvodem jsou náklady, konkurence profesionálů a to, že se úspěch špatně opakuje. Levný, široce diverzifikovaný indexový fond je rozumné výchozí jádro portfolia, ne jistota: s trhem padá i on."),
+    paragraph("sources", "Zdroje k dalšímu čtení · S&P Dow Jones Indices, SPIVA U.S. Year-End 2025: https://www.spglobal.com/spdji/en/spiva/article/spiva-us-year-end-2025/ · S&P Dow Jones Indices, SPIVA Europe: https://www.spglobal.com/spdji/en/research-insights/spiva/ · S&P Dow Jones Indices, U.S. Persistence Scorecard Year-End 2025: https://www.spglobal.com/spdji/en/spiva/article/us-persistence-scorecard/ · William F. Sharpe, The Arithmetic of Active Management (1991): https://web.stanford.edu/~wfsharpe/art/active/active.htm · Vzdělávací obsah, ne investiční doporučení."),
+  ] },
+];
+
+const flows = [whyInvest, stocks, etfs, bondsAndCash, markets, returnsAndCompounding, portfolio, funds, activeVsIndex];
 export const foundationsContent: AuthoredLesson[] = flows.map((steps, index) => {
   const definition = foundationsLessons[index];
   return { id: definition.id, moduleSlug: "investing-foundations", slug: definition.slug, title: definition.title, eyebrow: "Základy investování", position: index + 1, estimatedMinutes: definition.estimatedMinutes, sections: steps.map((step, position) => ({ id: String(position), label: step.title })), blocks: steps.flatMap((step) => step.blocks) };

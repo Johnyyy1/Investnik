@@ -2,7 +2,8 @@
  * Owner is the curriculum maintainer role, responsible for model tests, labels and dated fact review.
  * Provider-backed figures label the selected snapshot at runtime, including sample/unavailable states.
  */
-type FigureDefinition = { owner: "curriculum"; data: "model" | "provider" | "learner"; model: string };
+/** `research` is a versioned static file of published study results; the figure labels its source and date itself. */
+type FigureDefinition = { owner: "curriculum"; data: "model" | "provider" | "learner" | "research"; model: string };
 export const lessonFigureCatalog = {
   "financial-checkup-result": { owner: "curriculum", data: "learner", model: "src/features/lessons/before-investing/checkup-model.ts" },
   "financial-checkup": { owner: "curriculum", data: "learner", model: "src/features/lessons/before-investing/checkup-model.ts" },
@@ -11,6 +12,7 @@ export const lessonFigureCatalog = {
   "emergency-fund-calculator": { owner: "curriculum", data: "model", model: "src/features/lessons/before-investing/emergency-fund-model.ts" },
   "debt-vs-invest-calculator": { owner: "curriculum", data: "model", model: "src/features/lessons/before-investing/debt-model.ts" },
   "fund-cost-comparison": { owner: "curriculum", data: "model", model: "src/features/lessons/foundations/fund-cost-model.ts" },
+  "spiva-chart": { owner: "curriculum", data: "research", model: "src/features/lessons/foundations/spiva-data.ts" },
   "budget-builder": { owner: "curriculum", data: "model", model: "src/features/lessons/before-investing/model.ts" },
   "return-calculator": { owner: "curriculum", data: "model", model: "src/features/finance/returns.ts" },
   "price-series-explorer": { owner: "curriculum", data: "model", model: "src/features/finance/returns.ts" },
