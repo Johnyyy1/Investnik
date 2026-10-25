@@ -107,6 +107,7 @@ export const skills = {
   "bonds-and-cash": "Dluhopisy a hotovost",
   "fund-types": "Podílové fondy, ETF a styl správy",
   "fund-costs": "Náklady fondu a jejich dopad",
+  "active-vs-passive": "Aktivní správa proti indexu",
   "bid-ask-spread": "Kotace, bid, ask a spread",
   "simple-return": "Jednoduchý výnos",
   compounding: "Složené zhodnocení",
@@ -164,6 +165,7 @@ export const lessonPlacements: readonly LessonPlacement[] = [
   place("foundations-risk-reward", "1.1", 6, "required", ["foundations-why-invest"], ["simple-return", "compounding"]),
   place("foundations-portfolio", "1.1", 7, "required", ["foundations-stocks", "foundations-etfs-indexes", "foundations-bonds-cash"], ["portfolio-weights", "diversification"]),
   place("foundations-funds", "1.1", 8, "required", ["foundations-etfs-indexes"], ["fund-types", "fund-costs"]),
+  place("foundations-active-vs-index", "1.1", 9, "required", ["foundations-funds"], ["active-vs-passive", "fund-costs"]),
 
   place("returns-what-is-a-return", "3.1", 1, "required", ["foundations-risk-reward"], ["simple-return"]),
   place("returns-simple-returns", "3.1", 2, "required", ["returns-what-is-a-return"], ["simple-return"]),
@@ -222,6 +224,8 @@ export const skillItems: readonly SkillItem[] = [
   item("foundations-portfolio", "mastery-diversification", "diversification"),
   item("foundations-funds", "mastery-certain", "fund-costs"),
   item("foundations-funds", "mastery-regular-fee", "fund-costs"),
+  item("foundations-active-vs-index", "mastery-arithmetic", "active-vs-passive"),
+  item("foundations-active-vs-index", "mastery-index-risk", "active-vs-passive"),
 ];
 
 export function getLessonPlacement(lessonId: string) {

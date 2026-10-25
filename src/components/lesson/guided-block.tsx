@@ -27,7 +27,7 @@ export function GuidedBlock({ block, history, riskHistory, lessonId, guest, onOu
     case "checklist":
     case "rubricSelfAssessment": return lessonId ? <LessonOutput block={block} lessonId={lessonId} guest={guest} onReady={onOutputReady} /> : null;
     case "heading": return <div className="flex flex-col gap-2"><h3 className="text-[21px]/[26px] font-semibold tracking-[-0.5px] md:text-2xl/[30px]">{block.title}</h3>{block.body ? <p className="text-base/[25px] text-secondary">{block.body}</p> : null}</div>;
-    case "paragraph": return <p className="text-base/[25px] text-secondary">{block.content}</p>;
+    case "paragraph": return <p className="break-words text-base/[25px] text-secondary">{block.content}</p>;
     case "formula": return <LessonFormula latex={block.latex ?? block.expression} variables={block.variables} />;
     case "workedExample": return <section aria-labelledby={`${block.id}-title`} className="flex flex-col gap-3.5 rounded-surface border border-border-card bg-surface p-[18px] md:gap-[18px] md:px-7 md:py-6">
       <div className="flex flex-col gap-1.5">

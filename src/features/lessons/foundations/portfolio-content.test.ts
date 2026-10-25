@@ -16,6 +16,7 @@ describe("Foundations learning experience integrity", () => {
       "Výnos a složené zhodnocení",
       "Portfolio, váhy a diverzifikace",
       "Podílové fondy, ETF a jejich náklady",
+      "Kdo vyhrává: aktivní správa vs. index",
     ]);
   });
 
