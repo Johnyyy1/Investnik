@@ -1,0 +1,71 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Foundations checkpoint 1.1.10 (#164) > locks the Big Three prompts, options, IDs, order and answer keys for measurement 1`] = `
+[
+  {
+    "correctOptionId": "more",
+    "id": "big-three-compounding",
+    "options": [
+      {
+        "id": "more",
+        "label": "více než 10 200 Kč",
+      },
+      {
+        "id": "exactly",
+        "label": "přesně 10 200 Kč",
+      },
+      {
+        "id": "less",
+        "label": "méně než 10 200 Kč",
+      },
+      {
+        "id": "unknown",
+        "label": "nevím",
+      },
+    ],
+    "prompt": "Na spořicím účtu máš 10 000 Kč s úrokem 2 % ročně. Kolik tam budeš mít po 5 letech, když nic nevybereš?",
+  },
+  {
+    "correctOptionId": "less",
+    "id": "big-three-inflation",
+    "options": [
+      {
+        "id": "more",
+        "label": "víc než dnes",
+      },
+      {
+        "id": "same",
+        "label": "stejně",
+      },
+      {
+        "id": "less",
+        "label": "méně",
+      },
+      {
+        "id": "unknown",
+        "label": "nevím",
+      },
+    ],
+    "prompt": "Úrok na účtu je 1 % ročně a inflace 2 % ročně. Kolik si za peníze z účtu koupíš za rok?",
+  },
+  {
+    "correctOptionId": "false",
+    "id": "big-three-diversification",
+    "options": [
+      {
+        "id": "true",
+        "label": "pravda",
+      },
+      {
+        "id": "false",
+        "label": "nepravda",
+      },
+      {
+        "id": "unknown",
+        "label": "nevím",
+      },
+    ],
+    "prompt": "Je pravda, že nákup akcie jedné firmy je obvykle bezpečnější než nákup podílu ve fondu s mnoha akciemi?",
+  },
+]
+`;
