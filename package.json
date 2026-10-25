@@ -69,6 +69,7 @@
     "test:financial-checkup-persistence": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-financial-checkup-persistence.mts",
     "test:financial-checkup-browser": "node scripts/validate-financial-checkup.mjs",
     "test:budget-browser": "node scripts/validate-budget.mjs",
+    "test:foundations-checkpoint-browser": "node scripts/validate-foundations-checkpoint.mjs",
     "test:foundations-browser": "node scripts/validate-foundations.mjs",
     "smoke:fmp": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/smoke-fmp-market-data.mts",
     "smoke:fmp-fundamentals": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/smoke-equity-fundamentals.mts",

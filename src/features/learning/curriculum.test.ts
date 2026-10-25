@@ -73,7 +73,7 @@ describe("curriculum registry", () => {
     expect(getLessonPlacement("correlation-not-causation")?.displayCode).toBe("B.1.8");
     expect(getLessonPlacement("correlation-real-data")).toMatchObject({ displayCode: "6.2.5", required: "optional-track" });
     expect(getLessonPlacement("diversification-scenario")?.displayCode).toBe("3.3.7");
-    expect(getLessonPlacement("foundations-checkpoint")).toBeUndefined();
+    expect(getLessonPlacement("foundations-checkpoint")?.displayCode).toBe("1.1.10");
   });
 
   it("lets one display module combine lessons from two storage modules", () => {

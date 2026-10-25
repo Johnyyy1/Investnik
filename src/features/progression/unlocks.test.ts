@@ -5,6 +5,13 @@ const required = progressionUnlocks.PORTFOLIO_LAB.prerequisiteLessonIds;
 const status = (xp: number, lessons: string[], persisted = false) => evaluateUnlock(PORTFOLIO_LAB_UNLOCK_ID, { totalXp: xp, completedLessonIds: new Set(lessons) }, persisted);
 
 describe("Portfolio Lab unlock", () => {
+  it("keeps Checkpoint 1 outside the unlock prerequisites (#164)", () => {
+    expect(required).not.toContain("foundations-checkpoint");
+    expect(status(420, [...required])).toMatchObject({ unlocked: true });
+    expect(status(480, [...required.slice(0, 6), "foundations-checkpoint"]).unlocked).toBe(false);
+    expect(status(0, ["foundations-checkpoint"], true).unlocked).toBe(true);
+  });
+
   it("requires XP and the original seven Foundations lessons", () => {
     expect(status(0, []).unlocked).toBe(false);
     expect(status(420, required.slice(0, -1)).unlocked).toBe(false);

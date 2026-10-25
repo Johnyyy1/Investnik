@@ -17,10 +17,10 @@ const autoCriteria = {
 const submission = (submittedAt: Date, level = 3) => ({ capstoneId: capstoneA.id, autoCriteria, submittedAt,
   selfAssessment: { ratings: capstoneA.criteria.map((criterion) => ({ criterionId: criterion.id, level })), reflection: "Držel/a jsem se plánu." } });
 
-// A reachable A: level 1 only, with the reserved capstone lesson treated as published.
+// A reachable A: level 1 only, with every L1 draft and the reserved capstone treated as published.
 const rules: MilestoneRule[] = [{ id: "A", requires: [], levels: ["L1"], capstoneId: capstoneA.id }, { id: "B", requires: ["A"], levels: ["L3"], capstoneId: "capstone-b-v1" }];
-const published = new Set([...availableLessons.map((lesson) => lesson.id), capstoneA.lessonId]);
 const foundations = getDisplayModulePlacements("1.1").map((placement) => placement.lessonId);
+const published = new Set([...availableLessons.map((lesson) => lesson.id), ...foundations, capstoneA.lessonId]);
 const evidence = (overrides: Partial<MilestoneEvidence> = {}): MilestoneEvidence => ({
   completions: foundations.map((lessonId, index) => ({ lessonId, completedAt: day(1 + index % 3) })),
   attempts: moduleSkills("1.1").map((skillId) => ({ skillId, context: "checkpoint" as const, correct: true, attemptedAt: day(5) })),

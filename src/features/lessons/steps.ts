@@ -1,3 +1,4 @@
+import { foundationsCheckpointSteps } from "./foundations/checkpoint";
 import { brokerAndAccountSteps } from "./broker-and-account/flow";
 import { czechTaxesSteps } from "./czech-taxes/flow";
 import { isQuestion } from "./question-evaluation";
@@ -12,7 +13,7 @@ import { diversificationSteps } from "./diversification/flow";
 import { beforeInvestingSteps } from "./before-investing/flow";
 
 /** Every module exports its own steps by lesson ID. A new module only adds its map here. */
-export const moduleSteps: readonly Readonly<Record<string, readonly StepDefinition[]>>[] = [brokerAndAccountSteps, czechTaxesSteps, beforeInvestingSteps, foundationsSteps, returnsSteps, volatilitySteps, correlationSteps, diversificationSteps];
+export const moduleSteps: readonly Readonly<Record<string, readonly StepDefinition[]>>[] = [{ "foundations-checkpoint": foundationsCheckpointSteps }, brokerAndAccountSteps, czechTaxesSteps, beforeInvestingSteps, foundationsSteps, returnsSteps, volatilitySteps, correlationSteps, diversificationSteps];
 const stepDefinitions: Readonly<Record<string, readonly StepDefinition[]>> = Object.assign({}, ...moduleSteps);
 
 export function getStepDefinitions(lessonId: string): readonly StepDefinition[] {
