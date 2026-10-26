@@ -24,6 +24,9 @@ describe("typed artifact payloads", () => {
     for (const orderFeeMinor of [0.1, 0.25, 1.3333, "0.1", "01", "-1", "1e2", "1000000000000000"]) expect(artifactPayloadSchemas.fee_profile.safeParse({ ...artifactExamples.fee_profile, orderFeeMinor }).success).toBe(false);
     for (const orderFeeMinor of ["0", "1", "25", "13333", "999999999999999"]) expect(artifactPayloadSchemas.fee_profile.safeParse({ ...artifactExamples.fee_profile, orderFeeMinor }).success).toBe(true);
     for (const fxSpreadBasisPoints of [0.25, -1, 10001, NaN, Infinity]) expect(artifactPayloadSchemas.fee_profile.safeParse({ ...artifactExamples.fee_profile, fxSpreadBasisPoints }).success).toBe(false);
+    // Maximum and custody tier are additive: profiles saved before 2.1.6 stay valid without them.
+    expect(artifactPayloadSchemas.fee_profile.safeParse({ ...artifactExamples.fee_profile, maximumOrderFeeMinor: "60000", custodyBasisPoints: 10, custodyFreeUpToMinor: "50000000" }).success).toBe(true);
+    for (const patch of [{ maximumOrderFeeMinor: "60.5" }, { custodyBasisPoints: 10001 }, { custodyFreeUpToMinor: -1 }]) expect(artifactPayloadSchemas.fee_profile.safeParse({ ...artifactExamples.fee_profile, ...patch }).success).toBe(false);
   });
   it("checks meaningful allocation totals and calendar dates", () => {
     const plan = artifactExamples.investment_plan;

@@ -64,6 +64,7 @@ const FundCostComparison = lazyComponent(() => import("./fund-cost-comparison"),
 const SpivaChart = lazyComponent(() => import("./spiva-chart"), (module) => module.SpivaChart);
 const BudgetBuilder = lazyComponent(() => import("./budget-builder"), (module) => module.BudgetBuilder);
 const FinancialCheckup = lazyComponent(() => import("./financial-checkup"), (module) => module.FinancialCheckup);
+const FeeProfileForm = lazyComponent(() => import("./fee-profile-form"), (module) => module.FeeProfileForm);
 const GoalMap = lazyComponent(() => import("./goal-map"), (module) => module.GoalMap);
 const ReturnCalculator = lazyComponent(() => import("./return-calculator"), (module) => module.ReturnCalculator);
 const PriceSeriesExplorer = lazyComponent(() => import("./price-series-explorer"), (module) => module.PriceSeriesExplorer);
@@ -90,6 +91,7 @@ export const LessonFormula = lazyComponent(() => import("./lesson-formula"), (mo
 const figures: Record<FigureKind, { preload: () => Promise<unknown>; render: (data: FigureData) => ReactNode }> = {
   "financial-checkup-result": { preload: FinancialCheckup.preload, render: ({ guest }) => <FinancialCheckup guest={guest} summary /> },
   "financial-checkup": { preload: FinancialCheckup.preload, render: ({ guest, onOutputReady }) => <FinancialCheckup guest={guest} onReady={onOutputReady} /> },
+  "fee-profile": { preload: FeeProfileForm.preload, render: ({ guest }) => <FeeProfileForm guest={guest} /> },
   "goal-map": { preload: GoalMap.preload, render: ({ guest, onOutputReady }) => <GoalMap guest={guest} onReady={onOutputReady} /> },
   "growth-comparison": { preload: GrowthComparison.preload, render: () => <GrowthComparison /> },
   "ownership-explorer": { preload: ShareExplorer.preload, render: () => <ShareExplorer kind="ownership" /> },

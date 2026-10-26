@@ -7,8 +7,8 @@ const published = new Set(authoredLessons.map((lesson) => lesson.id));
 const placed = (prefix: string) => lessonPlacements.filter((placement) => placement.displayModule.startsWith(prefix)).map((placement) => placement.lessonId);
 
 describe("landing page inventory", () => {
-  it("publishes only the TER lesson in level 2", () => {
-    expect(placed("2.").filter((id) => published.has(id))).toEqual(["costs-ter-tracking-difference"]);
+  it("publishes only the fee-schedule and TER lessons in level 2", () => {
+    expect(placed("2.").filter((id) => published.has(id))).toEqual(["broker-fee-schedule", "costs-ter-tracking-difference"]);
   });
 
   it("still lists the reserve, pension, scams and foundations checkpoint lessons as drafts", () => {

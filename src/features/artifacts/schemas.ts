@@ -51,6 +51,10 @@ export const artifactPayloadSchemas = {
     orderFeeBasisPoints: basisPoints,
     fxSpreadBasisPoints: basisPoints,
     monthlyFeeMinor: minorUnits,
+    // Additive (2.1.6): older profiles have no maximum or custody tier.
+    maximumOrderFeeMinor: minorUnits.optional(),
+    custodyBasisPoints: basisPoints.optional(),
+    custodyFreeUpToMinor: minorUnits.optional(),
   }),
   etf_checklist: z.strictObject({
     instrument: shortText,

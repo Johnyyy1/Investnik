@@ -25,6 +25,14 @@ export function brokerFeeProfile(id: string | null | undefined): BrokerFeeProfil
   return found;
 }
 
+/** Percentage commission clamped to the tariff's minimum and maximum, for an exact amount of
+ * `amountNumerator / amountDenominator` minor units, rounded once half away from zero.
+ * One rule for Lab execution, the fee-schedule lesson (2.1.6) and broker comparisons. */
+export function tradeFeeMinor(fee: { readonly rateBps: number; readonly minMinor: bigint; readonly maxMinor: bigint }, amountNumerator: bigint, amountDenominator = 1n) {
+  const percentage = roundDivide(amountNumerator * BigInt(fee.rateBps), amountDenominator * 10_000n);
+  return percentage < fee.minMinor ? fee.minMinor : percentage > fee.maxMinor ? fee.maxMinor : percentage;
+}
+
 /** Shared boundary for lesson exercises and authoritative Lab review/execution. No rounded unit
  * price or JS floating point enters accounting. Each money product rounds once at
  * the minor-unit boundary, half away from zero. Commission uses reference notional.
@@ -43,8 +51,7 @@ export function computeTradeCost(input: {
   const fxRateUnits = roundDivide(fxUnits * (10_000n + (side === "BUY" ? 1n : -1n) * BigInt(fxMarkupBps)), 10_000n);
   const referenceGrossAmountBaseMinor = grossBaseMinor(quantityUnits, priceUnits, fxUnits);
   const grossAmountBaseMinor = grossBaseMinor(quantityUnits, priceUnits, fxRateUnits);
-  const percentageFee = roundDivide(quantityUnits * priceUnits * fxUnits * 100n * BigInt(rateBps), QUANTITY_SCALE * PRICE_SCALE * FX_SCALE * 10_000n);
-  const feeBaseMinor = percentageFee < minMinor ? minMinor : percentageFee > maxMinor ? maxMinor : percentageFee;
+  const feeBaseMinor = tradeFeeMinor(profile.tradeFee, quantityUnits * priceUnits * fxUnits * 100n, QUANTITY_SCALE * PRICE_SCALE * FX_SCALE);
   const fxMarkupBaseMinor = side === "BUY" ? grossAmountBaseMinor - referenceGrossAmountBaseMinor : referenceGrossAmountBaseMinor - grossAmountBaseMinor;
   return {
     referenceFxRateUnits: fxUnits, priceUnits,

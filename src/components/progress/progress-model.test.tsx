@@ -40,7 +40,7 @@ describe("Progress presentation model", () => {
     const html = render();
     expect(progressModel(learner()).knowledge).toEqual([]);
     expect(html).toContain("Tvoje police je zatím prázdná.");
-    expect(html).toContain('data-testid="available-progress">0 / 34<');
+    expect(html).toContain('data-testid="available-progress">0 / 35<');
     expect(html).toContain("0 XP");
     expect(html).toContain('href="/learn/investing-foundations/why-invest"');
     expect(html).toContain("Začít první lekci");
@@ -56,7 +56,7 @@ describe("Progress presentation model", () => {
     const html = render([started(foundations[0].id, 2)]);
     expect(html).toContain("První lekci máš rozdělanou.");
     expect(html).toContain("Pokračovat od kroku 3");
-    expect(html).toContain('data-testid="available-progress">0 / 34<');
+    expect(html).toContain('data-testid="available-progress">0 / 35<');
   });
 
   it("derives the shelf from completed published lessons and their authored step", () => {
@@ -79,7 +79,7 @@ describe("Progress presentation model", () => {
     const html = render(states);
     expect(html).toContain("Co už umíš, Jana.");
     expect(html).toContain("Tři lekce hotové, jedna rozdělaná.");
-    expect(html).toContain('data-testid="available-progress">3 / 34<');
+    expect(html).toContain('data-testid="available-progress">3 / 35<');
     expect(html).toContain("180 XP");
     expect(html).toContain("ze 3 lekcí");
     expect(html).toContain("Pokračovat od kroku 3");
@@ -111,7 +111,7 @@ describe("Progress presentation model", () => {
     expect(html).toContain("jak poznat, jestli se investici daří?");
     expect(html).toContain('href="/learn/returns/what-is-a-return"');
     expect(html).toContain("Začít lekcí Co je výnos?");
-    expect(html).toContain('data-testid="available-progress">9 / 34<');
+    expect(html).toContain('data-testid="available-progress">9 / 35<');
     expect(html).toContain("540 XP");
     expect(html).not.toContain("ročním nákladům fondu");
     // Starting the next chapter ends the milestone.
@@ -134,7 +134,7 @@ describe("Progress presentation model", () => {
     expect(model.milestone).toBeUndefined();
     expect(model.continueHref).toBe("/lab");
     expect(model.knowledge).toHaveLength(availableLessons.length);
-    expect(model.planned).toMatchObject({ title: "Broker a investiční účet", topics: ["Broker a investiční účet", "Daně investora v České republice"] });
+    expect(model.planned).toMatchObject({ title: "Daně investora v České republice", topics: ["Daně investora v České republice"] });
     const html = render(states, { capital: practiceCapitalLedger([grant(100_000n, 1), receipt(returns[0].id, 23_456n, 2)]), portfolio: ledger });
     expect(html).toContain("Všechno, co zatím je, máš za sebou.");
     expect(html).toContain("Prozkoumat Lab");
@@ -142,7 +142,7 @@ describe("Progress presentation model", () => {
     expect(html).toMatch(/1\s234,56\sKč/);
     expect(html).toContain("Zatím nejde splnit: část obsahu připravujeme.");
     expect(html).not.toContain("Splněno <time");
-    expect(html).toContain("Kapitola Broker a investiční účet se připravuje.");
+    expect(html).toContain("Kapitola Daně investora v České republice se připravuje.");
     expect(html).not.toContain("Následuje");
     expect(html).not.toContain('aria-current="step"');
   });
@@ -173,7 +173,7 @@ describe("Progress presentation model", () => {
     const states = [...foundations.slice(0, 3).map((lesson) => done(lesson.id)), started("foundations-markets", 2)];
     const html = render(states);
     expect(html).toContain('aria-label="Souhrn pokroku"');
-    expect(html).toContain('data-testid="available-progress">3 / 34<');
+    expect(html).toContain('data-testid="available-progress">3 / 35<');
     const markets = foundations.find((lesson) => lesson.id === "foundations-markets")!;
     expect(html).toContain(`href="/learn/investing-foundations/${markets.slug}">${markets.title}`);
     expect(html).toMatch(/krok 3\u00a0z\u00a0\d+/);
