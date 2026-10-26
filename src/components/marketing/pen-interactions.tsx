@@ -70,7 +70,7 @@ export function LessonPreview({ compact = false, hero = false }: { compact?: boo
           {(["A", "B"] as const).map(key => <li key={key}
             className={`${styles.answer} ${answer === key ? styles.answerSelected : ""} ${answer === key && revealed && key !== "B" ? styles.answerWrong : ""}`}
             data-answer={key} data-selected={answer === key ? "" : undefined}>
-            <span>{key}</span><span>{key === "A" ? "Celých 30 000 Kč do ETF." : "25 000 Kč na kartu a 5 000 Kč do rezervy."}</span>
+            <span>{key}</span><span>{key === "A" ? "Všechno do ETF." : "Splatit kartu, zbytek do rezervy."}</span>
             {answer === key && <span className={styles.visuallyHidden}>{revealed ? (key === "B" ? " · vybráno, správně" : " · vybráno, chybně") : " · vybráno"}</span>}
             {answer === key && revealed && (key === "B"
               ? <CircleCheck size={18} aria-hidden="true"/>
