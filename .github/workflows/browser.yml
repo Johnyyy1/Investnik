@@ -296,6 +296,7 @@ jobs:
           DATABASE_URL=$AUTH_DATABASE_URL BETTER_AUTH_URL=$AUTH_DISABLED_URL .github/scripts/start-server.sh 3121
       - name: Sign-in and sign-up
         if: ${{ !cancelled() }}
+        timeout-minutes: 5
         run: .github/scripts/clear-rate-limits.sh && npm run test:auth-browser
         env:
           DATABASE_URL: ${{ env.AUTH_DATABASE_URL }}

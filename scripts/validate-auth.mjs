@@ -23,7 +23,10 @@ const errors = [], ids = [], publicBodies = [];
 page.on("pageerror", (error) => errors.push(error.message));
 page.on("response", (response) => {
   if (response.url().startsWith(baseURL) && /text\/html|javascript/.test(response.headers()["content-type"] ?? "")) {
-    publicBodies.push(response.text().catch(() => ""));
+    // response.text() can hang forever after the page navigates away mid-load; refetch the URL instead of stalling CI.
+    const stalled = new Promise((resolve) => setTimeout(resolve, 10_000, null));
+    publicBodies.push(Promise.race([response.text(), stalled]).catch(() => "")
+      .then((body) => body ?? context.request.get(response.url()).then((r) => r.text())));
   }
 });
 async function reflow() {

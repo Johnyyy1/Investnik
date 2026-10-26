@@ -110,6 +110,7 @@ export const skills = {
   "bonds-and-cash": "Dluhopisy a hotovost",
   "fund-types": "Podílové fondy, ETF a styl správy",
   "fund-costs": "Náklady fondu a jejich dopad",
+  "trade-costs": "Spread, minimální poplatek a frekvence nákupů",
   "tracking-difference": "TER, rozdíl a kolísání rozdílu vůči indexu",
   "fee-schedule": "Ceník brokera: poplatek s minimem a maximem a skryté náklady",
   "active-vs-passive": "Aktivní správa proti indexu",
@@ -154,6 +155,7 @@ const place = (lessonId: string, displayModule: DisplayModuleCode, order: number
 export const lessonPlacements: readonly LessonPlacement[] = [
   place("broker-platform-types", "2.1", 1, "required", ["foundations-funds"], ["platform-types"]),
   place("broker-fee-schedule", "2.1", 6, "required", ["foundations-markets"], ["fee-schedule"]),
+  place("costs-spread-and-fees", "2.2", 2, "required", ["foundations-markets"], ["bid-ask-spread", "trade-costs"]),
   place("costs-ter-tracking-difference", "2.2", 1, "required", ["foundations-funds"], ["tracking-difference", "fund-costs"]),
   place("taxes-filing-obligation", "2.4", 1, "required", ["foundations-stocks"], ["tax-filing"]),
   // Reserve/pension remain unpublished; recommendation prerequisites include only available lessons.
@@ -234,6 +236,7 @@ export const skillItems: readonly SkillItem[] = [
   item("foundations-funds", "mastery-regular-fee", "fund-costs"),
   item("foundations-active-vs-index", "mastery-arithmetic", "active-vs-passive"),
   item("foundations-active-vs-index", "mastery-index-risk", "active-vs-passive"),
+  item("costs-spread-and-fees", "recall", "trade-costs"),
   item("costs-ter-tracking-difference", "mastery-td", "tracking-difference"),
   item("costs-ter-tracking-difference", "mastery-ter", "tracking-difference"),
   item("broker-fee-schedule", "mastery-minimum", "fee-schedule"),

@@ -59,6 +59,7 @@ const RiskCapacityScenario = lazyComponent(foundations, (module) => module.RiskC
 const PortfolioBuilder = lazyComponent(() => import("./portfolio-builder"), (module) => module.PortfolioBuilder);
 const EmergencyFundCalculator = lazyComponent(() => import("./emergency-fund-calculator"), (module) => module.EmergencyFundCalculator);
 const StateSupportCalculator = lazyComponent(() => import("./state-support-calculator"), (module) => module.StateSupportCalculator);
+const TradeCostBreakdown = lazyComponent(() => import("./trade-cost-breakdown"), (module) => module.TradeCostBreakdown);
 const DebtVsInvestCalculator = lazyComponent(() => import("./debt-vs-invest-calculator"), (module) => module.DebtVsInvestCalculator);
 const FundCostComparison = lazyComponent(() => import("./fund-cost-comparison"), (module) => module.FundCostComparison);
 const SpivaChart = lazyComponent(() => import("./spiva-chart"), (module) => module.SpivaChart);
@@ -113,6 +114,7 @@ const figures: Record<FigureKind, { preload: () => Promise<unknown>; render: (da
   "portfolio-builder": { preload: PortfolioBuilder.preload, render: () => <PortfolioBuilder /> },
   "emergency-fund-calculator": { preload: EmergencyFundCalculator.preload, render: ({ emergencyFundFacts }) => <EmergencyFundCalculator facts={emergencyFundFacts} /> },
   "state-support-calculator": { preload: StateSupportCalculator.preload, render: () => <StateSupportCalculator /> },
+  "trade-cost-breakdown": { preload: TradeCostBreakdown.preload, render: () => <TradeCostBreakdown /> },
   "debt-vs-invest-calculator": { preload: DebtVsInvestCalculator.preload, render: () => <DebtVsInvestCalculator /> },
   "fund-cost-comparison": { preload: FundCostComparison.preload, render: () => <FundCostComparison /> },
   "spiva-chart": { preload: SpivaChart.preload, render: () => <SpivaChart /> },

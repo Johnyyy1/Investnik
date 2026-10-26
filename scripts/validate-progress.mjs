@@ -18,7 +18,7 @@ await mkdir(output, { recursive: true });
 const userIds = [];
 const errors = [];
 const lessons = await sql`select l.id,l.title,l.slug,m.slug as module_slug from lesson l join learning_module m on m.id=l.module_id where l.is_published=true order by m.position,l.position`;
-assert.equal(lessons.length, 35);
+assert.equal(lessons.length, 36);
 const foundation = lessons.filter((lesson) => lesson.module_slug === "investing-foundations");
 const returns = lessons.filter((lesson) => lesson.module_slug === "returns");
 const href = (lesson) => `/learn/${lesson.module_slug}/${lesson.slug}`;
@@ -178,12 +178,12 @@ try {
   assert.equal(await root().locator('[aria-current="step"]').getAttribute("href"), href(returns[0]));
 
   await complete(id, lessons);
-  root = await render(page, "complete", { state: "complete", xp: 2100, capital: 4900000, count: 35, action: "Prozkoumat Lab", actionHref: "/lab", lab: unlocked });
+  root = await render(page, "complete", { state: "complete", xp: 2160, capital: 5100000, count: 36, action: "Prozkoumat Lab", actionHref: "/lab", lab: unlocked });
   assert.equal(await root().locator('[aria-current="step"]').count(), 0);
   assert.equal(await root().getByRole("list", { name: "Za co je cvičný kapitál" }).getByRole("listitem").count(), 5, "newest five receipts");
-  assert.equal(await root().getByText("Starší odměny (18)", { exact: true }).count(), 1, "older receipts wait behind a disclosure");
+  assert.equal(await root().getByText("Starší odměny (19)", { exact: true }).count(), 1, "older receipts wait behind a disclosure");
   const entitlement = await sql`select (select coalesce(sum(practice_capital_minor),0) from lesson_award where user_id=${id}) + (select coalesce(sum(practice_capital_minor),0) from progression_unlock where user_id=${id}) as total`;
-  assert.equal(Number(entitlement[0].total), 4900000, "breakdown total equals the stored entitlement");
+  assert.equal(Number(entitlement[0].total), 5100000, "breakdown total equals the stored entitlement");
   assert.equal((await sql`select * from progression_unlock where user_id=${id}`).length, 1, "no duplicate unlock");
   await root().getByRole("link", { name: "Otevřít Portfolio Lab", exact: true }).click(); await page.waitForURL("**/lab/portfolio"); await page.getByTestId("portfolio-cash").waitFor();
 
