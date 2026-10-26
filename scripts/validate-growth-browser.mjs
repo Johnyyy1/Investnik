@@ -3,7 +3,7 @@ import { chromium } from "playwright";
 import { readFile, mkdir } from "node:fs/promises";
 const base = process.env.GROWTH_TEST_URL ?? "http://localhost:3148";
 assert.equal(new URL(base).hostname, "localhost");
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({ headless: true, ...(process.env.BROWSER_CHANNEL ? { channel: process.env.BROWSER_CHANNEL } : {}) });
 const context = await browser.newContext({ reducedMotion: "reduce" });
 const page = await context.newPage();
 const errors = [];
