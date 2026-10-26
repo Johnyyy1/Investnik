@@ -21,6 +21,7 @@ export const questionTitles = ["Co se chceš naučit?", "Co tě zajímá nejvíc
 export const reasonLabels: Record<ReasonCode, string> = {
   CHECKUP_READINESS: "Podle uloženého check-upu se vyplatí vrátit k finančnímu základu. Jde o doporučení, žádný obsah se nezamyká.",
   BUDGET_READINESS: "Rozpočet ti pomůže ověřit, kolik můžeš pravidelně odkládat.",
+  COSTS_AFTER_FUNDS: "Fondy už znáš. Teď zjistíš, kolik tě skutečně stojí a jak věrně sledují index.",
   FOUNDATIONS_START: "Začínáš od základů, proto doporučujeme první lekci.",
   FOUNDATIONS_CONTINUE: "Pokračujeme v Základech tam, kde to máš rozdělané.",
   DIAGNOSTIC_REMEDIATION: "Diagnostika ukázala několik základů, které se vyplatí procvičit.",
