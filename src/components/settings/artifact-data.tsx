@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ShareHistory } from "@/components/sharing/share-history";
+import { ShareControl } from "@/components/sharing/share-control";
 import { Button } from "@/components/ui/button";
 import { deleteArtifact, listArtifacts } from "@/features/artifacts/actions";
 import type { LearnerArtifact } from "@/features/artifacts/schemas";
@@ -8,7 +10,8 @@ import { artifactLabels } from "@/features/artifacts/presentation";
 import { formatDate } from "@/lib/formatters";
 import styles from "./settings.module.css";
 
-export function ArtifactData() {
+export function ArtifactData({ canShare }: { canShare: boolean }) {
+  const [sharingRevision, setSharingRevision] = useState(0);
   const [artifacts, setArtifacts] = useState<LearnerArtifact[]>();
   const [error, setError] = useState<string>();
   const [message, setMessage] = useState<string>();
@@ -41,7 +44,7 @@ export function ArtifactData() {
     try {
       const result = await deleteArtifact({ id: artifact.id });
       if (result.ok) {
-        setConfirming(undefined);
+        setConfirming(undefined); setSharingRevision((value) => value + 1);
         setArtifacts((current) => current?.filter((item) => item.id !== artifact.id));
         setMessage(`${(artifact.title ?? artifactLabels[artifact.kind])}: všechny verze jsou smazané.`);
         heading.current?.focus();
@@ -58,12 +61,14 @@ export function ArtifactData() {
       {artifacts.map((artifact) => <li key={artifact.id} className="py-4">
         <div className={styles.contentRow}><div className="min-w-0"><h3>{(artifact.title ?? artifactLabels[artifact.kind])}</h3><p className={styles.hint}>Verze {artifact.version} · {formatDate(new Date(artifact.createdAt))}</p></div>
           <Button variant="dangerQuiet" size="compact" disabled={Boolean(pending)} onClick={(event) => { deleteTrigger.current = event.currentTarget; setConfirming(artifact.id); setError(undefined); setMessage(undefined); }} aria-label={`Smazat: ${(artifact.title ?? artifactLabels[artifact.kind])}`}>Smazat…</Button></div>
+        {canShare && artifact.kind === "investment_plan" && <ShareControl key={artifact.id} artifactId={artifact.id} onCreated={() => setSharingRevision((value) => value + 1)} />}
         {confirming === artifact.id && <div className="mt-3 space-y-3">
           <p>Trvale smazat výstup „{(artifact.title ?? artifactLabels[artifact.kind])}“ a všechny předchozí verze? Výstup bude potřeba pro navazující cvičení vytvořit znovu.</p>
           <div className={styles.actions}><Button variant="secondary" size="compact" disabled={Boolean(pending)} onClick={() => { setConfirming(undefined); deleteTrigger.current?.focus(); }}>Ponechat výstup</Button><Button variant="danger" size="compact" loading={pending === artifact.id} onClick={() => void remove(artifact)}>Smazat všechny verze</Button></div>
         </div>}
       </li>)}
     </ul>}
+    {canShare && <ShareHistory key={sharingRevision} />}
     {error && <div><p className={styles.error} role="alert">{error}</p>{artifacts === undefined && <Button variant="secondary" size="compact" onClick={() => void load()}>Načíst znovu</Button>}</div>}
     {message && <p className={styles.status} role="status">{message}</p>}
   </div>;

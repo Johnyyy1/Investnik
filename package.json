@@ -109,7 +109,9 @@
     "test:missions-persistence": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-missions.mts",
     "test:missions-browser": "node scripts/validate-missions-browser.mjs",
     "test:growth-acquisition": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-growth-acquisition.mts",
-    "test:guides-browser": "node scripts/validate-growth-browser.mjs"
+    "test:guides-browser": "node scripts/validate-growth-browser.mjs",
+    "test:sharing-persistence": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-sharing.mts",
+    "test:sharing-browser": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-sharing-browser.mts"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.12",

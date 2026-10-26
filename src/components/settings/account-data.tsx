@@ -24,7 +24,7 @@ type Props = {
 export function AccountData(props: Props) {
   return <section className={styles.section} aria-labelledby="data-export-title">
     <DataExport />
-    {props.active && !props.guest && <ArtifactData />}
+    {props.active && !props.guest && <ArtifactData canShare={props.saved} />}
     {props.saved ? props.hasPassword === null ? <DeletionUnavailable /> : <AccountDeletion {...props} hasPassword={props.hasPassword} /> : <>
       <div className={styles.sectionHead}><h2>Smazání profilu</h2><p>{props.guest ? "Profil hosta nemá uložený účet." : "Demo je samostatný dočasný profil."}</p></div>
       <div className={styles.card}><div className={styles.contentRow}><div><h3>Tento profil se smaže sám</h3><p>{props.guest ? "Pokrok hosta smažeme automaticky den poté, co vyprší jeho poslední relace. Když si vytvoříš účet, pokrok se do něj přesune." : "Demo profil i jeho cvičná data smažeme automaticky den poté, co demo skončí."}</p></div></div></div>

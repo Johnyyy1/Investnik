@@ -143,6 +143,10 @@ jobs:
           DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/investi_growth_qa npm run test:growth-acquisition
         env:
           GROWTH_QA_DISPOSABLE: "1"
+      - name: Public IPS snapshots, privacy, ownership and revocation
+        run: DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/investi_growth_qa npm run test:sharing-persistence
+        env:
+          GROWTH_QA_DISPOSABLE: "1"
       # Deletes every session in the database that expired more than 30 days ago.
       - name: npm run test:account-deletion
         run: npm run test:account-deletion

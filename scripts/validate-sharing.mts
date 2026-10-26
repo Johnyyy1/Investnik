@@ -1,0 +1,70 @@
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { db as appDb } from "../src/db";
+import { saveLearnerArtifact, deleteLearnerArtifact } from "../src/features/artifacts/repository";
+import { artifactExamples } from "../src/features/artifacts/test-fixtures";
+import { exampleIps } from "../src/features/ips/test-fixtures";
+import { createOwnedShare, listOwnedShares, previewOwnedShare, readPublicShare, revokeOwnedShare } from "../src/features/sharing/repository";
+import { readAccountExportRows, buildAccountExport } from "../src/features/account/export";
+
+const url = new URL(process.env.DATABASE_URL!);
+assert.equal(url.hostname, "127.0.0.1"); assert.equal(url.pathname, "/investi_growth_qa"); assert.equal(process.env.GROWTH_QA_DISPOSABLE, "1");
+const client = postgres(url.toString(), { prepare: false, onnotice: () => {} });
+const database = drizzle(client);
+const owner = randomUUID(); const stranger = randomUUID(); const demo = randomUUID();
+const secret = "PRIVATE-SHARING-TEST-NEVER-PUBLISH";
+const payload = { ...exampleIps, platform: secret, instruments: [secret], changeReason: secret, drawdownRule: { action: "keep_plan" as const, text: secret }, contribution: { amountMinor: "123456789", dayOfMonth: 12 } };
+const savePlan = (plan = payload) => saveLearnerArtifact(owner, { content: { kind: "investment_plan", payload: plan }, sourceLessonId: null, consent: true, requestId: randomUUID() });
+try {
+  for (const id of [owner, stranger, demo]) await client`insert into "user" (id, name, email, is_anonymous, created_at, updated_at) values (${id}, ${secret}, ${`${id}@example.com`}, ${id === demo}, now(), now())`;
+  const original = await savePlan();
+  const before = await client`select * from learner_artifact where id = ${original.id}`;
+  await migrate(database, { migrationsFolder: "drizzle" }); await migrate(database, { migrationsFolder: "drizzle" });
+  assert.deepEqual(await client`select * from learner_artifact where id = ${original.id}`, before, "additive migration and rerun preserve stored output");
+  const preview = await previewOwnedShare(owner, { artifactId: original.id });
+  const input = { artifactId: original.id, consent: true, requestId: randomUUID() };
+  const retries = await Promise.all(Array.from({ length: 10 }, () => createOwnedShare(owner, input)));
+  assert.equal(new Set(retries.map((share) => share.token)).size, 1);
+  const first = retries[0];
+  const publicBefore = await readPublicShare(first.token);
+  assert.deepEqual(publicBefore, preview);
+  for (const forbidden of [secret, owner, original.id, "123456789", "amountMinor", "income", "expenses", "reserve", "goals", "allocation", "platform", "instrument", "payload", "foundation"]) assert.ok(!JSON.stringify(publicBefore).includes(forbidden), forbidden);
+  await assert.rejects(previewOwnedShare(stranger, { artifactId: original.id }));
+  await assert.rejects(createOwnedShare(stranger, input));
+  await assert.rejects(createOwnedShare(demo, input));
+  await assert.rejects(createOwnedShare(owner, { ...input, userId: stranger }));
+  assert.deepEqual(await listOwnedShares(stranger), []);
+  await revokeOwnedShare(stranger, { token: first.token });
+  assert.deepEqual(await readPublicShare(first.token), publicBefore, "foreign revocation cannot affect owner's link");
+  const updated = await savePlan({ ...payload, checkFrequency: "monthly" });
+  assert.deepEqual(await readPublicShare(first.token), publicBefore, "new revisions never change a shared snapshot");
+  await assert.rejects(createOwnedShare(owner, { ...input, artifactId: updated.id }), "request cannot be reused for another revision");
+  for (const [kind, content] of Object.entries(artifactExamples)) if (kind !== "investment_plan" && kind !== "lesson_output") {
+    const row = await saveLearnerArtifact(owner, { content: { kind, payload: content }, sourceLessonId: null, consent: true, requestId: randomUUID() } as Parameters<typeof saveLearnerArtifact>[1]);
+    await assert.rejects(createOwnedShare(owner, { artifactId: row.id, requestId: randomUUID(), consent: true }), kind);
+  }
+  await revokeOwnedShare(owner, { token: first.token });
+  const revoked = (await listOwnedShares(owner))[0].revokedAt;
+  await revokeOwnedShare(owner, { token: first.token });
+  assert.equal((await listOwnedShares(owner))[0].revokedAt, revoked);
+  assert.equal(await readPublicShare(first.token), null);
+  assert.equal((await createOwnedShare(owner, input)).revoked, true, "retry never revives a revoked link");
+  const second = await createOwnedShare(owner, { artifactId: updated.id, requestId: randomUUID(), consent: true });
+  const exported = buildAccountExport((await readAccountExportRows(database, owner))!);
+  assert.equal(exported.sharedOutputs.length, 2);
+  assert.ok(!JSON.stringify(exported.sharedOutputs).includes(first.token), "export contains grant metadata, no capability tokens");
+  await deleteLearnerArtifact(owner, original.id);
+  assert.equal(await readPublicShare(second.token), null, "artifact deletion cascades all versions' shares");
+  const another = await savePlan();
+  const third = await createOwnedShare(owner, { artifactId: another.id, requestId: randomUUID(), consent: true });
+  await client`delete from "user" where id = ${owner}`;
+  assert.equal(await readPublicShare(third.token), null, "account deletion cascades shares");
+  assert.equal((await client`select count(*)::int as n from artifact_share where user_id = ${owner}`)[0].n, 0);
+  console.log("PASS: migration/rerun, sensitive projection, snapshot versions, concurrent retries, session-independent ownership checks, opt-in, denied kinds/demo, revoke/retry, export, artifact/account cascade.");
+} finally {
+  await client`delete from "user" where id in (${owner}, ${stranger}, ${demo})`;
+  await client.end(); await appDb.$client.end();
+}
