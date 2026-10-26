@@ -8,6 +8,7 @@ export const lessonFigureCatalog = {
   "trade-cost-breakdown": { owner: "curriculum", data: "model", model: "src/features/finance/trade-cost-breakdown.ts" },
   "financial-checkup-result": { owner: "curriculum", data: "learner", model: "src/features/lessons/before-investing/checkup-model.ts" },
   "financial-checkup": { owner: "curriculum", data: "learner", model: "src/features/lessons/before-investing/checkup-model.ts" },
+  "fee-profile": { owner: "curriculum", data: "learner", model: "src/features/lessons/broker-and-account/fee-schedule-model.ts" },
   "goal-map": { owner: "curriculum", data: "learner", model: "src/features/lessons/before-investing/goals-model.ts" },
   "state-support-calculator": { owner: "curriculum", data: "model", model: "src/features/lessons/before-investing/pension-model.ts" },
   "emergency-fund-calculator": { owner: "curriculum", data: "model", model: "src/features/lessons/before-investing/emergency-fund-model.ts" },

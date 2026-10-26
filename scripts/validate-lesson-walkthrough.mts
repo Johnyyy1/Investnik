@@ -20,6 +20,7 @@ import { correctAnswers, wrongAnswers } from "../src/features/lessons/answer-key
 import { isQuestion, parseSelection, type QuestionBlock } from "../src/features/lessons/question-evaluation";
 import { getAuthoredLesson } from "../src/features/lessons/registry";
 import { getGuidedSteps } from "../src/features/lessons/steps";
+import { defaultFeeProfileDraft, feeProfileFromDraft } from "../src/features/lessons/broker-and-account/fee-schedule-model";
 
 const baseURL = process.env.WALKTHROUGH_TEST_URL ?? "http://localhost:3187";
 const screenshots = process.env.WALKTHROUGH_SCREENSHOT_DIR ?? "test-results/lesson-walkthrough";
@@ -232,6 +233,28 @@ try {
           assert.equal(await button("Pokračovat").isEnabled(), true, "saved check-up enables continuation");
           await audit(`${where} after saving`, width);
         }
+        if (block.type === "interactiveFigure" && block.figure === "fee-profile") {
+          const form = page.getByRole("region", { name: "Profil poplatků", exact: true });
+          await form.getByText(/Nákup za 2\s000\sKč: 60\sKč \(3 % z nákupu\)/).waitFor();
+          assert.equal(await button("Pokračovat").isEnabled(), true, "the fee profile is optional");
+          const maximum = form.getByLabel("Maximální poplatek", { exact: true });
+          await maximum.fill("50");
+          await form.getByRole("status").filter({ hasText: "nesmí být nižší než minimální" }).waitFor();
+          assert.equal(await form.getByRole("button", { name: "Uložit výstup" }).count(), 0, "an invalid profile cannot be saved");
+          await maximum.fill("600");
+          await form.getByRole("checkbox", { name: /Souhlasím s uložením/ }).check();
+          await button("Uložit výstup").click();
+          await form.getByText(/^Výstup je uložený\. Verze \d+\.$/).waitFor();
+          const savedRows: { payload: unknown; source_lesson_id: string }[] = await sql`select payload, source_lesson_id from learner_artifact where user_id = ${userId!} and kind = 'fee_profile' order by version desc limit 1`;
+          assert.deepEqual({ ...savedRows[0] }, { payload: feeProfileFromDraft(defaultFeeProfileDraft()), source_lesson_id: lesson.id }, "the saved profile is the lesson tariff in exact units");
+          await audit(`${where} after saving`, width);
+          await page.setViewportSize({ width: 320, height: 900 });
+          const largeText = await page.addStyleTag({ content: "html { font-size: 200% !important; }" });
+          assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, "fee profile at 320px and 200% text");
+          await page.screenshot({ path: `${screenshots}/fee-profile-320-200.png` });
+          await largeText.evaluate((element) => element.parentNode?.removeChild(element));
+          await page.setViewportSize({ width, height: 900 });
+        }
         if (block.type === "interactiveFigure" && block.figure === "fund-cost-comparison") {
           const result = page.getByRole("region", { name: "Výsledek porovnání nákladů fondu", exact: true });
           const entry = page.getByLabel("Vstupní poplatek", { exact: true });
@@ -312,7 +335,7 @@ try {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }
-    if (["costs-ter-tracking-difference", "costs-spread-and-fees"].includes(lesson.id)) {
+    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "200000" }, `${lesson.id} earns the L2 Practice Capital once`);
     }

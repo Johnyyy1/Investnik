@@ -19,7 +19,8 @@ const steps = getGuidedSteps(lesson);
 describe("platform types 2.1.1", () => {
   it("reserves stable identity and L2 placement while keeping the regulatory draft unpublished", () => {
     expect(curriculumLessons.find((entry) => entry.id === lesson.id)).toMatchObject({ id: "broker-platform-types", moduleId: "module-broker-and-account", moduleSlug: "broker-and-account", slug: "platform-types", status: "planned" });
-    expect(moduleCatalog.find((entry) => entry.slug === lesson.moduleSlug)?.status).toBe("planned");
+    // The module opened with 2.1.6 (#170); this lesson stays a draft inside it.
+    expect(moduleCatalog.find((entry) => entry.slug === lesson.moduleSlug)?.status).toBe("available");
     expect(draftLessons).toContain(lesson);
     expect(authoredLessons).not.toContain(lesson);
     expect(availableLessons.some((entry) => entry.id === lesson.id)).toBe(false);

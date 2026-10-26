@@ -16,4 +16,17 @@ export const brokerAndAccountSteps: Readonly<Record<string, readonly StepDefinit
     { title: "Vysvětli vlastními slovy", blocks: ["reflection"] },
     { title: "Co si odneseš", blocks: ["sources", "summary"] },
   ],
+  "broker-fee-schedule": [
+    { title: "Kolik stojí 0,15 %?", blocks: ["opening", "prediction"] },
+    { title: "Šest položek ceníku", blocks: ["tariff-intro", "tariff"] },
+    { title: "Procento, minimum, maximum", blocks: ["fee-rule", "fee-formula", "worked"] },
+    { title: "Malý nákup", blocks: ["small-purchase"] },
+    { title: "Velký nákup", blocks: ["large-purchase"] },
+    { title: "Kde se skrývá náklad u „0 Kč“", blocks: ["hidden", "plan-worked", "free-check"] },
+    { title: "Ceník se mění", blocks: ["version", "misconceptions"] },
+    { title: "Tvůj profil poplatků", blocks: ["profile"] },
+    { title: "Ověření znalostí · minimální poplatek", kind: "mastery", blocks: ["mastery-minimum"] },
+    { title: "Vysvětli to vlastními slovy", blocks: ["reflection"] },
+    { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
+  ],
 };

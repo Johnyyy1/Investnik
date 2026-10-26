@@ -27,9 +27,10 @@ export const storageModules = [
   { id: CORRELATION_MODULE_ID, slug: "correlation", title: "Korelace", description: "Jak se aktiva pohybují společně — a kdy ne.", status: "available", lessons: correlationLessons },
   { id: DIVERSIFICATION_MODULE_ID, slug: "diversification", title: "Diverzifikace", description: "Sestavování portfolií, která promyšleně rozkládají riziko.", status: "available", lessons: diversificationLessons },
   { id: BEFORE_INVESTING_MODULE_ID, slug: "before-investing", title: "Než začneš investovat", description: "Prověř rozpočet a rozděl cíle podle termínu a pevnosti.", status: "available", lessons: beforeInvestingLessons },
-  { id: BROKER_AND_ACCOUNT_MODULE_ID, slug: "broker-and-account", title: "Broker a investiční účet", description: "Rozliš typy platforem a prověř, komu svěřuješ své peníze.", status: "planned", lessons: brokerAndAccountLessons },
   { id: CZECH_TAXES_MODULE_ID, slug: "czech-taxes", title: "Daně investora v České republice", description: "Rozliš příjmy, osvobození a povinnosti českého investora.", status: "planned", lessons: czechTaxesLessons },
   { id: COSTS_MODULE_ID, slug: "costs", title: "Poplatky a celkové náklady", description: "Zjisti, kolik tě investování skutečně stojí uvnitř fondu i mimo něj.", status: "available", lessons: costsLessons },
+  // Last in storage order so publishing 2.1.6 does not pull ahead of an existing learner's next step.
+  { id: BROKER_AND_ACCOUNT_MODULE_ID, slug: "broker-and-account", title: "Broker a investiční účet", description: "Rozliš typy platforem, prověř, komu svěřuješ své peníze, a přečti ceník.", status: "available", lessons: brokerAndAccountLessons },
 ] as const;
 
 export type MilestoneId = "A" | "B" | "C" | "D";
@@ -111,6 +112,7 @@ export const skills = {
   "fund-costs": "Náklady fondu a jejich dopad",
   "trade-costs": "Spread, minimální poplatek a frekvence nákupů",
   "tracking-difference": "TER, rozdíl a kolísání rozdílu vůči indexu",
+  "fee-schedule": "Ceník brokera: poplatek s minimem a maximem a skryté náklady",
   "active-vs-passive": "Aktivní správa proti indexu",
   "bid-ask-spread": "Kotace, bid, ask a spread",
   "simple-return": "Jednoduchý výnos",
@@ -152,6 +154,7 @@ const place = (lessonId: string, displayModule: DisplayModuleCode, order: number
 /** Where each authored lesson, including editorial drafts, sits in Curriculum 2.0. New lessons are added here and in their storage manifest. */
 export const lessonPlacements: readonly LessonPlacement[] = [
   place("broker-platform-types", "2.1", 1, "required", ["foundations-funds"], ["platform-types"]),
+  place("broker-fee-schedule", "2.1", 6, "required", ["foundations-markets"], ["fee-schedule"]),
   place("costs-spread-and-fees", "2.2", 2, "required", ["foundations-markets"], ["bid-ask-spread", "trade-costs"]),
   place("costs-ter-tracking-difference", "2.2", 1, "required", ["foundations-funds"], ["tracking-difference", "fund-costs"]),
   place("taxes-filing-obligation", "2.4", 1, "required", ["foundations-stocks"], ["tax-filing"]),
@@ -236,6 +239,7 @@ export const skillItems: readonly SkillItem[] = [
   item("costs-spread-and-fees", "recall", "trade-costs"),
   item("costs-ter-tracking-difference", "mastery-td", "tracking-difference"),
   item("costs-ter-tracking-difference", "mastery-ter", "tracking-difference"),
+  item("broker-fee-schedule", "mastery-minimum", "fee-schedule"),
 ];
 
 export function getLessonPlacement(lessonId: string) {

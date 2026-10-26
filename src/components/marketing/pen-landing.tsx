@@ -16,7 +16,7 @@ import { Wordmark } from "@/components/brand/wordmark";
 const path: readonly { title: string; detail: string; status: string; state: "next" | "open" | "planned" }[] = [
   { title: "0 · Než začneš investovat", detail: "Rozpočet, drahý dluh, cíle a horizont, finanční check-up. Rezervu, penzijko s DIP a podvody připravujeme.", status: "Doporučený začátek", state: "next" },
   { title: "1 · Jak investice fungují", detail: "Akcie, dluhopisy, ETF a indexy, fondy a jejich náklady, aktivní a indexové investování. Závěrečnou kontrolu připravujeme.", status: "Dostupné", state: "open" },
-  { title: "2 · Investování v Česku v praxi", detail: "Náklady fondu i obchodu: TER, rozdíl vůči indexu, spread a minimální poplatek. Brokera a účet, další náklady, výběr ETF, české daně, první plán a nákup nanečisto připravujeme.", status: "První lekce dostupné", state: "open" },
+  { title: "2 · Investování v Česku v praxi", detail: "Náklady fondu i obchodu: TER, rozdíl vůči indexu, spread, minimální poplatek a čtení ceníku brokera. Brokera a účet, další náklady, výběr ETF, české daně, první plán a nákup nanečisto připravujeme.", status: "Tři lekce dostupné", state: "open" },
   { title: "Vlastní investiční plán (IPS)", detail: "Cíle, rozložení, pravidelné vklady a pravidlo pro propad zapíšeš v Labu.", status: "Dostupné v Labu", state: "open" },
   { title: "Krizový nácvik", detail: "Modelovou krizí projdeš měsíc po měsíci bez skutečných peněz a ověříš, jestli se držíš svého plánu.", status: "Dostupné v Labu", state: "open" },
 ];
@@ -63,7 +63,7 @@ export function PenLanding() {
               <Link className={`${styles.primaryButton} ${styles.shimmerHost}`} href="/onboarding" prefetch={false} data-lift data-press {...magneticProps}>Začít vstupním testem <ArrowRight aria-hidden="true" size={19}/><span className={styles.shimmer} data-shimmer aria-hidden="true"/></Link>
               <a className={styles.textAction} href="#jak-to-funguje">Jak to funguje</a>
             </div>
-            <p className={styles.heroNote}>Pár otázek o tvých cílech a znalostech doporučí, kde začít. Lekce o rezervě, brokerech a daních připravujeme.</p>
+            <p className={styles.heroNote}>Pár otázek o tvých cílech a znalostech doporučí, kde začít. Lekce o rezervě, výběru brokera a daních připravujeme.</p>
           </div>
           <div className={styles.heroLessonWrap} data-hero-card role="group" aria-label="Ukázka lekce; nezapisuje pokrok ani neuděluje XP">
             <Image className={styles.heroArt} data-hero-art src="/marketing/v14-curiosity-cropped.webp" alt="" aria-hidden="true" width={512} height={519} sizes="(max-width: 500px) 98px, (max-width: 1100px) 194px, 256px" preload />
