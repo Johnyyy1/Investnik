@@ -32,6 +32,39 @@ Nová verze faktu (například lednová sazba s `validFrom` k 1. 1.) tedy publik
 2. Do [reviews.md](reviews.md#evidence-odborných-revizí-lekcí) přidej řádek začínající `lessonId · datum` se shrnutím připomínek a odkazem na PR. Test kontroluje, že každý záznam v kódu má řádek v dokumentu.
 3. Záznamy se nepřepisují ani nemažou; nová revize je nový záznam.
 
+### Od odpovědi poradce k záznamu
+
+Podklady pro poradce vytvoří `npm run export:review-packet` (složka `review-packet/`, mimo Git) a dotazník [review-batch-1.md](review-batch-1.md). Datum exportu a verze faktů z jeho tabulky „Použité fakty“ jsou to, co poradce posuzoval; ulož si je k odeslané verzi.
+
+Každý záznam vzniká ze skutečné písemné odpovědi a jen pro lekci, ke které poradce dal celkové stanovisko:
+
+| Údaj | Odkud |
+| --- | --- |
+| `lessonId` | Hlavička exportu („Stabilní ID“) |
+| `role` | Odbornost bez jména, např. „Externí daňový poradce“; smlouva a kontakt zůstávají mimo repozitář |
+| `reviewedAt` | Datum písemného stanoviska, ne datum commitu; nikdy budoucí ani odhadnuté |
+| `decision` | `approved` jen při stanovisku „bez výhrad“ a odpovědích „ano“ u všech tvrzení lekce; jinak `changes-requested` |
+| `facts` | `klíč@verze` z tabulky exportu, který poradce dostal |
+
+Řádek v [reviews.md](reviews.md#evidence-odborných-revizí-lekcí): `lessonId · datum · role · rozhodnutí · verze faktů · PR`, za ním ID tvrzení s odpovědí jiné než „ano“ a jejich stručné shrnutí (například „183-07 upravit: …“).
+
+**Odpověď „ne“ nebo „upravit“:**
+
+1. Zapiš záznam `changes-requested` s verzemi faktů, které poradce viděl, a řádek v reviews.md s ID připomínek.
+2. V samostatném PR uprav lekci, případně fakty. Nové hodnoty faktu jsou vždy nová verze se zdrojem, nikdy přepis staré.
+3. Znovu spusť export a pošli poradci změněné kroky spolu s připomínkami, na které reagují.
+4. Nové stanovisko je nový záznam. Starý záznam `changes-requested` zůstává beze změny.
+
+**„Mimo mou odbornost“:** tvrzení zůstává otevřené, záznam `approved` pro lekci nevzniká, dokud se k němu nevyjádří jiný odborník. Jeho stanovisko je samostatný záznam s vlastní rolí.
+
+**Posudek na blokovaný bod** (dotazník, část „Posudky na blokované body“):
+
+1. Přidej novou verzi faktu: hodnota podle posudku, zdroj s účinným zněním, které poradce uvedl, `verificationStatus: "primary"`, `verifiedAt` = datum posudku a v `notes` odkaz na řádek v reviews.md. `publicationBlockedBy` odeber jen tehdy, když posudek pokrývá celý popsaný rozsah.
+2. V [matici rešerše](reviews.md#úplná-matice-položek-issue) doplň k bodu výsledek posudku s datem a rolí. Uprav [research-134.test.ts](../../src/features/facts/research-134.test.ts), který odmítnutí publikace blokovaného klíče hlídá.
+3. Lekce, která fakt používá, potřebuje schválení s novou verzí faktu. Pokud se změnil jen stav nebo verze faktu a ne text, ověř to na rozdílu dvou exportů a v záznamu to uveď. Jinak lekci pošli k nové revizi.
+
+Zápis schválení lekci nepublikuje. Publikace (manifest `available`, přesun z `draftLessons`, kontrakt a gates) je samostatný krok popsaný v dokumentu lekce.
+
 ## Vlastníci
 
 Vlastník je role. Dokud není role přidělena konkrétnímu člověku, odpovídá za ni správce repozitáře. Přidělení se zapisuje sem.

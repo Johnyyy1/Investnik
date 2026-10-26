@@ -85,7 +85,7 @@ Všechny níže uvedené kontroly proběhly **22. 10. 2026**. Datum vydání zdr
 
 ## Co musí dodat další odborná revize
 
-Požadavek pro daňového poradce: odpovědět na body 01, 03–07, zahraniční část 08–09, 12–14, daňové/pojistné podrobnosti 19–22 a českou transpozici v bodě 23. Ke každé odpovědi dodat přesný účinný text, období, výjimky a minimálně jeden hraniční příklad. Pro párování a datumy potřebuje #137 i specifikaci použitelné evidence. Pro bod 18 dodat čitelné aktuální primární texty; pro 25 současné normy obou rámců. Není autorizováno odeslání dotazu poradci ani vytvoření automatických upozornění.
+Požadavek pro daňového poradce: odpovědět na body 01, 03–07, zahraniční část 08–09, 12–14, daňové/pojistné podrobnosti 19–22 a českou transpozici v bodě 23. Ke každé odpovědi dodat přesný účinný text, období, výjimky a minimálně jeden hraniční příklad. Pro párování a datumy potřebuje #137 i specifikaci použitelné evidence. Pro bod 18 dodat čitelné aktuální primární texty; pro 25 současné normy obou rámců. Není autorizováno odeslání dotazu poradci ani vytvoření automatických upozornění. Uzavřené otázky k bodům 03, 04, 05, 07, 19 a 21 a k pěti konceptům lekcí jsou připravené v [dotazníku várky 1](review-batch-1.md) (#435); odeslání zůstává rozhodnutím správce.
 
 Neověřené nové klíče mají další kontrolu **22. 11. 2026**; ověřené daňové hodnoty **15. 1. 2027**. Výjimkou je změna penzijních pravidel s časově citlivými žádostmi: **1. 12. 2026**. Rezerva se reviduje **22. 4. 2027**. Dřívější ověřené agregáty mohou mít starší datum ověření, dokud se jejich celý rozsah nezreviduje. Kromě těchto termínů platí lednová, přiznávací, měsíční makro, pololetní produktová a ad hoc legislativní kontrola dle [údržby faktů](facts.md).
 
