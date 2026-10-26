@@ -5,7 +5,7 @@
 export const BRAND_NAME = "Investník";
 export const SITE_URL = "https://investnik.cz";
 export const SITE_HOST = new URL(SITE_URL).host;
-export const SITE_DESCRIPTION = "Bezplatná výuka investování v češtině: krátké lekce, praktická cvičení a portfolio nanečisto bez skutečných peněz. Vzdělávání, ne investiční doporučení.";
+export const SITE_DESCRIPTION = "Bezplatná příprava na první investici v češtině: rozpočet, dluhy, cíle, jak investice fungují a vlastní investiční plán, který si vyzkoušíš v modelové krizi. Vzdělávání, ne investiční doporučení.";
 
 /**
  * www.investnik.cz permanently redirects to the apex with its path and query (Next.js passes the query

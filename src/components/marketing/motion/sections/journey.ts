@@ -3,7 +3,7 @@ import { $, $$ } from "../utils";
 import type { SectionInit } from "../types";
 
 /**
- * "Jak to funguje": the course card cascades in (rows, progress, tick draws, pulsing "Pokračovat"), then the
+ * "Jak to funguje": the path card cascades in (rows, statuses, pulsing "Doporučený začátek"), then the
  * three steps are scrubbed 01 → 02 → 03 while a line draws between them. On tall desktop viewports the block is
  * pinned for the scrub; on shorter desktops the same scrub runs unpinned; on mobile there is no pin or scrub,
  * only short staggered reveals.

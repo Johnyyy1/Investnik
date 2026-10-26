@@ -77,19 +77,6 @@ export function useSplitHeadings(root: HTMLElement, { mobile }: { mobile: boolea
   });
 }
 
-/** Counts an element's text from `from` to `to`; `format` controls the text (default: cs-CZ number). */
-export function countUp(el: HTMLElement, to: number, opts: { from?: number; duration?: number; ease?: string; format?: (n: number) => string; delay?: number; paused?: boolean } = {}) {
-  const format = opts.format ?? ((n: number) => n.toLocaleString("cs-CZ"));
-  const state = { value: opts.from ?? 0 };
-  el.textContent = format(state.value);
-  return gsap.to(state, {
-    value: to, delay: opts.delay, paused: opts.paused,
-    duration: opts.duration ?? 1.4, ease: opts.ease ?? EASE.enter,
-    onUpdate: () => { el.textContent = format(Math.round(state.value)); },
-    onComplete: () => { el.textContent = format(to); },
-  });
-}
-
 /** Magnetic hover (fine pointers only). The element is pulled toward the cursor with quickTo. */
 export function magnetic(el: HTMLElement, { strength = 0.3, lift = 2 }: { strength?: number; lift?: number } = {}) {
   const xTo = gsap.quickTo(el, "x", { duration: 0.5, ease: "power3.out" });

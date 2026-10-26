@@ -49,7 +49,7 @@ const press = (tl: gsap.core.Timeline, cursor: HTMLElement, at: string | number)
   tl.to(cursor, { scale: 0.82, duration: 0.1, ease: "power2.out" }, at).to(cursor, { scale: 1, duration: 0.25, ease: EASE.enter });
 
 /**
- * Hero lesson card: a ghost cursor picks answer B, checks it, the feedback panel expands, "+20 XP" pops
+ * Hero lesson card: a ghost cursor picks answer B, checks it, the feedback panel expands, the "Správně" badge pops
  * with a small burst and the lesson progress fills. It ends on the same state the page server-renders.
  * Resets the preview to "unanswered" first (the card is still hidden by the hero intro at that point).
  */

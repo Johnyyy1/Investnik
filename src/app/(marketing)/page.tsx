@@ -3,7 +3,7 @@ import { LandingViewBeacon } from "@/components/marketing/landing-view-beacon";
 import { PenLanding } from "@/components/marketing/pen-landing";
 import { BRAND_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 
-const title = `${BRAND_NAME} – nauč se investovat od základů po vlastní plán`;
+const title = `${BRAND_NAME} – připrav se na první investici a vydrž u svého plánu`;
 
 export const metadata: Metadata = {
   title: { absolute: title },

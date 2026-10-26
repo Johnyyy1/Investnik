@@ -9,7 +9,7 @@ The product is **Investník**, a free Czech investing-education platform at **ht
 - `src/lib/site.ts` holds `BRAND_NAME`, `SITE_URL`, `SITE_HOST` and the default description. Metadata, structured data, the manifest and e-mails read them there.
 - `src/lib/terminology.test.ts` fails on the former name in copy and on „Investnik“ outside identifiers.
 
-The positioning line is „Nauč se investovat. Od základů po vlastní plán.“ It names the first milestone, a learner's own investment plan, and promises no returns. The landing hero („Peníze jsou vážné. Učení nemusí být.“) is unchanged.
+The positioning line is „Nauč se investovat. Od základů po vlastní plán.“ It names the first milestone, a learner's own investment plan, and promises no returns. The landing page follows the 2026–27 strategy: its hero („Nejdřív plán. Pak investice.“) promises preparation for a first investment and sticking to one's own plan, see [marketing.md](marketing.md).
 
 ## Wordmark and symbol
 
@@ -38,7 +38,7 @@ The SVG text is outlined (Manrope and Inter glyph paths), so the files render wi
 - `www.investnik.cz` answers with a 308 to the same path and query on the apex (`canonicalHostRedirects` in `src/lib/site.ts`, applied by `next.config.ts`). The rule matches that host only. Localhost, `tryinvesti.vercel.app` and preview URLs are not redirected by code.
 - `robots.txt` allows indexing on production and on deployments outside Vercel, and disallows everything when `VERCEL_ENV` is `preview` or `development`. `/api/` and `/dev/` are always disallowed.
 - Signed-in routes (`(app)` layout), onboarding and one-off auth steps (forgot/reset password, e-mail verification) carry `noindex, nofollow`.
-- Those noindex routes stay out of `robots.txt` on purpose. A crawler only sees `noindex` on a page it may fetch, and a blocked URL can still be indexed without content from links such as the landing page's „Začít se učit“ → `/onboarding`. `src/lib/site.test.ts` keeps them crawlable (#49).
+- Those noindex routes stay out of `robots.txt` on purpose. A crawler only sees `noindex` on a page it may fetch, and a blocked URL can still be indexed without content from links such as the landing page's „Začít vstupním testem“ → `/onboarding`. `src/lib/site.test.ts` keeps them crawlable (#49).
 - `sitemap.xml` lists the landing page and the two legal pages.
 - The landing page emits JSON-LD for `Organization` and `WebSite`. It describes the product only: the operator's legal identity is still a placeholder in `src/components/legal/legal-page.tsx`.
 - `manifest.webmanifest` installs the app as „Investník“ with start URL `/learn`. There is no service worker, so no cached assets need invalidating.
