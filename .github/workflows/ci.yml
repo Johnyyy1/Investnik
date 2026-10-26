@@ -137,6 +137,12 @@ jobs:
           DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/investi_funnel_qa npm run test:product-analytics
         env:
           FUNNEL_QA_DISPOSABLE: "1"
+      - name: Public acquisition migration and concurrent source counts
+        run: |
+          node --input-type=module -e 'import postgres from "postgres"; const sql = postgres(process.env.DATABASE_URL); await sql`CREATE DATABASE investi_growth_qa`; await sql.end();'
+          DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/investi_growth_qa npm run test:growth-acquisition
+        env:
+          GROWTH_QA_DISPOSABLE: "1"
       # Deletes every session in the database that expired more than 30 days ago.
       - name: npm run test:account-deletion
         run: npm run test:account-deletion

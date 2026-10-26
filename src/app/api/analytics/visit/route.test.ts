@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ consume: vi.fn(), record: vi.fn() }));
+const mocks = vi.hoisted(() => ({ consume: vi.fn(), record: vi.fn(), acquisition: vi.fn() }));
 vi.mock("@/db", () => ({ db: { marker: "db" } }));
 vi.mock("@/lib/auth", () => ({ auth: { options: { advanced: { ipAddress: { ipAddressHeaders: ["x-forwarded-for"] } } } } }));
 vi.mock("@/features/rate-limit", () => ({ rateLimiter: { consume: mocks.consume } }));
-vi.mock("@/features/analytics/repository", () => ({ recordLandingView: mocks.record }));
+vi.mock("@/features/analytics/repository", () => ({ recordLandingView: mocks.record, recordAcquisitionView: mocks.acquisition }));
 
 import { POST } from "./route";
 
@@ -48,4 +48,15 @@ describe("POST /api/analytics/visit", () => {
     expect(response.status).toBe(204);
     expect(console.error).toHaveBeenCalledWith("[analytics] landing view failed", expect.anything());
   });
+});
+
+it("counts only allowlisted sources and respects privacy request headers", async () => {
+  mocks.consume.mockResolvedValue({ allowed: true });
+  await POST(new Request("http://localhost/api/analytics/visit?source=seo:co-je-etf", { method: "POST", headers: { "sec-fetch-site": "same-origin" } }));
+  expect(mocks.acquisition).toHaveBeenCalledWith({ marker: "db" }, "seo:co-je-etf");
+  mocks.acquisition.mockClear();
+  for (const [source, headers] of [["unknown", {}], ["seo:co-je-etf", { "sec-gpc": "1" }], ["seo:co-je-etf", { dnt: "1" }]] as const) {
+    await POST(new Request(`http://localhost/api/analytics/visit?source=${source}`, { method: "POST", headers }));
+  }
+  expect(mocks.acquisition).not.toHaveBeenCalled();
 });

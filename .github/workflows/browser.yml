@@ -9,6 +9,9 @@ on:
   pull_request:
     paths:
       - .github/workflows/browser.yml
+      - src/features/guides/**
+      - src/app/pruvodce/**
+      - src/components/marketing/guide-page.tsx
       - src/components/auth/**
       - src/features/email/**
       - src/lib/auth*.ts
@@ -193,6 +196,11 @@ jobs:
         env:
           MARKETING_TEST_URL: ${{ env.APP_URL }}
           MARKETING_SCREENSHOT_DIR: ${{ env.SCREENSHOTS }}/marketing
+      - name: Public investing guides
+        if: ${{ !cancelled() }}
+        run: npm run test:guides-browser
+        env:
+          GROWTH_TEST_URL: ${{ env.APP_URL }}
       - name: Legal pages
         if: ${{ !cancelled() }}
         run: .github/scripts/clear-rate-limits.sh && npm run test:legal-browser

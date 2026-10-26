@@ -1,8 +1,9 @@
 import "server-only";
+import { acquisitionSource } from "./acquisition";
 import { sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
-  analyticsEarlyReturn, analyticsLandingViewDay, learnerArtifact, learningProfile, lessonAward, lessonProgress, portfolio, portfolioTrade, user,
+  analyticsAcquisitionDay, analyticsEarlyReturn, analyticsLandingViewDay, learnerArtifact, learningProfile, lessonAward, lessonProgress, portfolio, portfolioTrade, user,
 } from "@/db/schema";
 import { analyticsDate, isEarlyReturnDay, type LearnerFacts, type LessonProgressFact } from "./funnel";
 
@@ -13,6 +14,16 @@ export async function recordLandingView(database: Database, now = new Date()) {
   await database.execute(sql`
     insert into ${analyticsLandingViewDay} (day, views) values (${analyticsDate(now)}, 1)
     on conflict (day) do update set views = ${analyticsLandingViewDay.views} + 1`);
+}
+
+/** Each channel view is included in the existing public-entry denominator in the same transaction. */
+export async function recordAcquisitionView(database: Pick<PostgresJsDatabase<Record<string, unknown>>, "transaction">, source: string, now = new Date()) {
+  if (!acquisitionSource(source)) throw new Error("Unknown acquisition source");
+  await database.transaction(async (tx) => {
+    await recordLandingView(tx, now);
+    await tx.execute(sql`insert into ${analyticsAcquisitionDay} (day, source, views) values (${analyticsDate(now)}, ${source}, 1)
+      on conflict (day, source) do update set views = ${analyticsAcquisitionDay.views} + 1`);
+  });
 }
 
 /**
@@ -36,7 +47,7 @@ const toDate = (value: Date | string | null) => value === null ? null : new Date
  * group rows per learner; no name, e-mail or answer content is selected.
  */
 export async function loadFunnelFacts(database: Database) {
-  const [learners, progress, visits] = await Promise.all([
+  const [learners, progress, visits, acquisition] = await Promise.all([
     database.execute<{ key: string; guest: boolean; started_at: string; diagnostic_at: string | null; first_lesson_at: string | null; first_artifact_at: string | null; first_lab_trade_at: string | null; returned_at: string | null }>(sql`
       select ${user.id} as key, ${user.isAnonymous} as guest, ${user.createdAt} as started_at,
         case when ${learningProfile.diagnosticResult} is not null then ${learningProfile.personalizedOnboardingCompletedAt} end as diagnostic_at,
@@ -54,6 +65,7 @@ export async function loadFunnelFacts(database: Database) {
       from ${lessonProgress} join ${user} on ${user.id} = ${lessonProgress.userId}
       where ${isLearner}`),
     database.execute<{ day: string; views: number }>(sql`select ${analyticsLandingViewDay.day}::text as day, ${analyticsLandingViewDay.views} as views from ${analyticsLandingViewDay}`),
+    database.execute<{ day: string; source: string; views: number }>(sql`select day::text, source, views from ${analyticsAcquisitionDay}`),
   ]);
   return {
     learners: [...learners].map((row): LearnerFacts => ({
@@ -67,6 +79,7 @@ export async function loadFunnelFacts(database: Database) {
       returnedAt: toDate(row.returned_at),
     })),
     progress: [...progress].map((row): LessonProgressFact => ({ key: row.key, lessonId: row.lesson_id, completedAt: toDate(row.completed_at), updatedAt: new Date(row.updated_at) })),
+    acquisition: [...acquisition].map((row) => ({ day: row.day, source: row.source, views: Number(row.views) })),
     visits: [...visits].map((row) => ({ day: row.day, views: Number(row.views) })),
   };
 }

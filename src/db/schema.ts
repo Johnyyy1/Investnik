@@ -508,3 +508,10 @@ export const capstoneSubmission = pgTable("capstone_submission", {
   uniqueIndex("capstone_submission_request_idx").on(table.userId, table.requestId),
   check("capstone_submission_version_positive", sql`${table.version} > 0`),
 ]);
+
+/** Anonymous daily channel counts; no visitor or shared-output identifiers. */
+export const analyticsAcquisitionDay = pgTable("analytics_acquisition_day", {
+  day: date("day").notNull(),
+  source: text("source").notNull(),
+  views: integer("views").notNull(),
+}, (table) => [primaryKey({ columns: [table.day, table.source] }), check("analytics_acquisition_views_positive", sql`${table.views} > 0`)]);

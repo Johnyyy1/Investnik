@@ -22,7 +22,7 @@
 .section ul { padding-left: 1.25rem; list-style: disc; }
 .section li + li { margin-top: 8px; }
 .section strong { color: var(--color-foreground); font-weight: 600; }
-.section a { color: var(--color-foreground); font-weight: 600; text-decoration: underline; text-underline-offset: .2em; }
+.section a:not([data-slot="button"]) { color: var(--color-foreground); font-weight: 600; text-decoration: underline; text-underline-offset: .2em; }
 .section dl > div { padding-block: 12px; border-top: 1px solid var(--color-divider); }
 .section dt { color: var(--color-foreground); font-weight: 600; }
 .section dd { margin-top: 4px; }
