@@ -57,7 +57,9 @@ describe("Curriculum map presentation", () => {
   it("labels planned content honestly and never awards milestone completion for current lessons", () => {
     const levels = curriculumMapModel(summary(availableLessons.map((lesson) => done(lesson.id))));
     expect(levels.filter((level) => level.current)).toEqual([]);
-    expect(levels.find((level) => level.id === "L2")).toMatchObject({ total: 0, status: "planned", percentage: null });
+    expect(levels.find((level) => level.id === "L4")).toMatchObject({ total: 0, status: "planned", percentage: null });
+    // Counts describe published lessons: 2.2.1 is the only published L2 lesson, the other L2 modules stay planned.
+    expect(levels.find((level) => level.id === "L2")!.modules.map((module) => [module.code, module.status])).toEqual([["2.1", "planned"], ["2.2", "done"], ["2.3", "planned"], ["2.4", "planned"], ["2.5", "planned"]]);
     expect(levels.filter((level) => level.optional).map((level) => level.id)).toEqual(["L4", "L5", "L6", "V"]);
     const html = renderToStaticMarkup(createElement(CurriculumMap, { levels, milestones: noEvidence }));
     expect(html).toContain("Prohloubení");

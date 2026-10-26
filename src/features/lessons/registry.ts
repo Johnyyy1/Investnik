@@ -34,12 +34,13 @@ import { goalsAndHorizonLesson } from "./before-investing/goals-and-horizon";
 import { emergencyFundLesson } from "./before-investing/emergency-fund";
 import { scamsAndFinfluencersLesson } from "./before-investing/scams-and-finfluencers";
 import { pensionAndDipLesson } from "./before-investing/pension-and-dip";
+import { terAndTrackingDifferenceLesson } from "./costs/ter-and-tracking-difference";
 
 export { emergencyFundLesson, pensionAndDipLesson };
 /** Placed, unpublished lessons awaiting expert review; never served at their public URL. */
 export const draftLessons = [foundationsCheckpointLesson, platformTypesLesson, whenToFileLesson, emergencyFundLesson, pensionAndDipLesson, scamsAndFinfluencersLesson] as const;
 
-export const authoredLessons = [financialCheckupLesson, budgetLesson, debtOrInvestLesson, goalsAndHorizonLesson, ...foundationsContent, whatIsAReturnLesson, simpleReturnsLesson, compoundingAndCumulativeReturnsLesson, comparingInvestmentsLesson, logReturnsLesson, returnsCheckpointLesson, whatIsVolatilityLesson, standardDeviationLesson, annualisingVolatilityLesson, maxDrawdownLesson, volatilityCheckpointLesson, whatIsCorrelationLesson, notCausationLesson, correlationInCrisesLesson, correlationRealDataLesson, concentrationLesson, sectorsAndCountriesLesson, etfLookThroughLesson, correlationAndRiskLesson, diversificationScenarioLesson] as const;
+export const authoredLessons = [financialCheckupLesson, budgetLesson, debtOrInvestLesson, goalsAndHorizonLesson, ...foundationsContent, whatIsAReturnLesson, simpleReturnsLesson, compoundingAndCumulativeReturnsLesson, comparingInvestmentsLesson, logReturnsLesson, returnsCheckpointLesson, whatIsVolatilityLesson, standardDeviationLesson, annualisingVolatilityLesson, maxDrawdownLesson, volatilityCheckpointLesson, whatIsCorrelationLesson, notCausationLesson, correlationInCrisesLesson, correlationRealDataLesson, concentrationLesson, sectorsAndCountriesLesson, etfLookThroughLesson, correlationAndRiskLesson, diversificationScenarioLesson, terAndTrackingDifferenceLesson] as const;
 
 export function getAuthoredLesson(moduleSlug: string, lessonSlug: string) {
   return authoredLessons.find((lesson) => lesson.moduleSlug === moduleSlug && lesson.slug === lessonSlug);

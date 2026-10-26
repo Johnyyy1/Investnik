@@ -291,6 +291,7 @@ try {
   await page.getByRole("heading", { name: "Přehled fondu" }).waitFor();
   assert.match(await page.locator('[data-testid="etf-analytics"]').innerText(), /Nákladovost[\s\S]*0,22\s*%[\s\S]*AUM[\s\S]*14,8B EUR[\s\S]*NAV[\s\S]*123,68 EUR/);
   assert.match(await page.locator('[data-testid="etf-analytics"]').innerText(), /Největší pozice[\s\S]*Podíl 10 největších pozic[\s\S]*23,1\s*%[\s\S]*Sample Atlas Devices/);
+  assert.equal(await page.locator('[data-testid="etf-analytics"]').getByRole("link", { name: "Lekce: TER a rozdíl ve výkonnosti vůči indexu", exact: true }).getAttribute("href"), "/learn/costs/ter-and-tracking-difference");
   assert.equal(await page.getByRole("heading", { name: "Sektorové zastoupení" }).count(), 1);
   assert.equal(await page.getByRole("heading", { name: "Geografické zastoupení" }).count(), 1);
   assert.equal(await page.getByText("P/E TTM", { exact: true }).count(), 0, "ETF does not show company ratios");
