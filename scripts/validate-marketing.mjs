@@ -141,12 +141,12 @@ async function snapshot(owner) {
 }
 try {
   await page.goto(baseURL);
-  assert.equal(await page.title(), "Investník – nauč se investovat od základů po vlastní plán");
+  assert.equal(await page.title(), "Investník – připrav se na první investici a vydrž u svého plánu");
   assert.equal(await page.locator("h1").count(), 1);
   assert.equal(await page.locator("main > section").count(), 6);
   assert.deepEqual(await page.locator("main > section").evaluateAll(sections => sections.map(section => section.querySelector("h1,h2").textContent)), [
-    "Peníze jsou vážné.Učení nemusí být.", "Malé kroky.Velké souvislosti.", "Jedna otázka.O jedno aha víc.",
-    "Vlastní nápady.Cvičný kapitál.", "Rostou znalosti. Ne tlak.", "Zvědavost stačí.Začni první lekcí.",
+    "Nejdřív plán.Pak investice.", "Od rozpočtuk vlastnímu plánu.", "Každý modul končívýstupem.",
+    "Proces,ne výnos.", "Fakta se zdrojem. Žádné tipy.", "Začni tam,kde právě jsi.",
   ]);
   const expectedAssets = ["v14-curiosity-cropped.webp", "v14-discovery-edge.webp", "v14-discovery-top-grip.webp", "v14-discovery-side-grip.webp", "v14-steady-understanding.webp", "generated-19.webp"];
   await settle();
@@ -208,7 +208,7 @@ try {
   assert.equal((await (await context.request.get(`${baseURL}/api/auth/get-session`)).json()), null, "Previews never create an anonymous identity");
   checks.push("Both lesson previews are read-only (no controls) and show the answered state. Three keyboard/pointer allocation controls keep 100%; save/reset remains local; no mutation request or session creation.");
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  for (const [label, path, heading] of [["Začít se učit", "/onboarding", "Co se chceš naučit?"], ["Přihlásit se", "/sign-in", "Vítej zpět"]]) {
+  for (const [label, path, heading] of [["Začít vstupním testem", "/onboarding", "Co se chceš naučit?"], ["Přihlásit se", "/sign-in", "Vítej zpět"]]) {
     await page.goto(baseURL);
     await page.getByRole("link", { name: label, exact: true }).first().click();
     await page.waitForURL(`**${path}`);

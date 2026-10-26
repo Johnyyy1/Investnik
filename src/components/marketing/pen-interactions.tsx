@@ -24,13 +24,13 @@ export function MobileNavigation() {
         <a href="#jak-to-funguje">Jak to funguje</a>
         <a href="#portfolio-lab">Portfolio Lab</a>
         <Link href="/sign-in" prefetch={false}>Přihlásit se</Link>
-        <Link href="/onboarding" prefetch={false}>Začít se učit</Link>
+        <Link href="/onboarding" prefetch={false}>Začít vstupním testem</Link>
       </nav>
     </details>
   </div>;
 }
 
-const reasoning = "Když jedna investice klesne, nemusí stejně reagovat všechny ostatní. Diverzifikace ale není záruka proti ztrátě.";
+const reasoning = "Karta je v příkladu nejdražší dluh. Jejím splacením Jana omezí jisté budoucí náklady a nechá si malý polštář. Zaručený výnos, který by RPSN 24 % překonal, investice nemá.";
 
 /**
  * Read-only illustration of a lesson step: no lesson engine, auth, storage, or mutations, and nothing to click.
@@ -56,21 +56,21 @@ export function LessonPreview({ compact = false, hero = false }: { compact?: boo
   }, []);
   const correct = answer === "B";
   const feedbackTitle = correct
-    ? "Přesně. Rozkládáš závislost, ne rušíš riziko."
-    : "Ještě ne. Diverzifikace riziko neruší.";
+    ? "Přesně. Dluh stojí jistě, výnos jistý není."
+    : "Ještě ne. ETF výnos nezaručuje.";
   const feedback = <><h3 className={correct ? undefined : styles.feedbackWrong}>{feedbackTitle}</h3><p>{reasoning}</p></>;
   return <div ref={rootRef} data-lesson-demo={hero ? "hero" : compact ? "compact" : "base"} className={hero ? styles.heroLessonContent : styles.lessonPreview} role="group" aria-label="Ukázka lekce; nezapisuje pokrok ani neuděluje XP">
     <div className={`${styles.lessonCard} ${compact ? styles.lessonCompact : styles.heroLessonMain}`}>
-      <p className={styles.lessonDisclosure}>Ukázka lekce · ilustrační odpověď</p>
-      <div className={styles.lessonMeta}><span>Portfolio, váhy a diverzifikace</span><span>≈ 10 min</span></div>
-      <p className={styles.lessonTrack}>ZÁKLADY INVESTOVÁNÍ · Lekce 7 ze 7</p>
+      <p className={styles.lessonDisclosure}>Ukázka lekce · modelový příklad</p>
+      <div className={styles.lessonMeta}><span>Dluh, nebo investice?</span><span>≈ 12 min</span></div>
+      <p className={styles.lessonTrack}>NEŽ ZAČNEŠ INVESTOVAT · Lekce 0.1.2</p>
       {(!compact || !revealed || hold) && <>
-        <h3 className={styles.lessonQuestion}>Proč rozdělit peníze mezi více investic?</h3>
+        <h3 className={styles.lessonQuestion}>Jana má 30 000 Kč navíc, žádnou rezervu a kartu s RPSN 24 %. Co dřív?</h3>
         <ul className={styles.answers} aria-label="Ukázkové odpovědi">
           {(["A", "B"] as const).map(key => <li key={key}
             className={`${styles.answer} ${answer === key ? styles.answerSelected : ""} ${answer === key && revealed && key !== "B" ? styles.answerWrong : ""}`}
             data-answer={key} data-selected={answer === key ? "" : undefined}>
-            <span>{key}</span><span>{key === "A" ? "Aby jejich hodnota nemohla klesnout." : "Aby výsledek nezávisel na jedné investici."}</span>
+            <span>{key}</span><span>{key === "A" ? "Celých 30 000 Kč do ETF." : "25 000 Kč na kartu a 5 000 Kč do rezervy."}</span>
             {answer === key && <span className={styles.visuallyHidden}>{revealed ? (key === "B" ? " · vybráno, správně" : " · vybráno, chybně") : " · vybráno"}</span>}
             {answer === key && revealed && (key === "B"
               ? <CircleCheck size={18} aria-hidden="true"/>
@@ -81,7 +81,7 @@ export function LessonPreview({ compact = false, hero = false }: { compact?: boo
       </>}
       {revealed && <div className={`${styles.feedback} ${hero ? styles.heroInlineFeedback : ""}`} role="status" data-feedback>{feedback}</div>}
       <div className={styles.lessonBottom}>
-        <span className={styles.sampleReward} data-xp>{revealed && correct ? "+20 XP" : "Ukázka bez zápisu"}<span className={styles.visuallyHidden}> · pouze ilustrační, neuděluje skutečné XP</span></span>
+        <span className={styles.sampleReward} data-xp>{revealed && correct ? "Správně" : "Ukázka bez zápisu"}<span className={styles.visuallyHidden}> · pouze ilustrační, nezapisuje pokrok ani XP</span></span>
         {/* Looks like the lesson's submit button so the scripted cursor has a target; it is not a control. */}
         <span className={styles.lessonSubmit} data-submit data-disabled={answer ? undefined : ""} aria-hidden="true">
           {revealed ? "Pokračovat" : answer ? "Zkontrolovat odpověď" : "Vyber odpověď"}<ArrowRight size={18} aria-hidden="true"/>
@@ -89,10 +89,10 @@ export function LessonPreview({ compact = false, hero = false }: { compact?: boo
       </div>
     </div>
     {hero && <aside className={styles.heroLessonAside}>
-      <p className={styles.demoEyebrow}>O JEDNO AHA VÍC</p>
-      <div className={styles.asideFeedback} role="status" data-aside-feedback>{revealed ? feedback : <><h3>Zkus rozhodnutí.</h3><p>Vyber odpověď a zjisti, proč diverzifikace rozkládá závislost, ale neodstraňuje riziko.</p></>}</div>
+      <p className={styles.demoEyebrow}>NEJDŘÍV ROZHODNUTÍ</p>
+      <div className={styles.asideFeedback} role="status" data-aside-feedback>{revealed ? feedback : <><h3>Zkus rozhodnutí.</h3><p>Vyber odpověď a zjisti, proč se drahý dluh vyplatí řešit dřív než investice.</p></>}</div>
       <div className={styles.lessonProgress}><span data-lesson-progress/></div>
-      <p className={styles.asideContext}>Pozice v kurzu · lekce 4 z 6<br/>Ukázkový průchod kurzem.</p>
+      <p className={styles.asideContext}>Úroveň 0 · Než začneš investovat<br/>Ukázka z publikované lekce.</p>
     </aside>}
     {compact && <p className={styles.microDisclaimer}>Ukázka lekce · odpověď a vysvětlení</p>}
     <span className={styles.demoCursor} data-demo-cursor aria-hidden="true"><svg width="22" height="22" viewBox="0 0 22 22"><path d="M3 2l15 7.5-6.2 1.9L9 18.5z" fill="#171717" stroke="#fffcf7" strokeWidth="1.5" strokeLinejoin="round"/></svg></span>
