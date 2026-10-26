@@ -515,3 +515,16 @@ export const analyticsAcquisitionDay = pgTable("analytics_acquisition_day", {
   source: text("source").notNull(),
   views: integer("views").notNull(),
 }, (table) => [primaryKey({ columns: [table.day, table.source] }), check("analytics_acquisition_views_positive", sql`${table.views} > 0`)]);
+
+/** Access grants for immutable artifact revisions; no duplicated payload or mutable current-version link. */
+export const artifactShare = pgTable("artifact_share", {
+  token: text("token").primaryKey(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  artifactId: text("artifact_id").notNull().references(() => learnerArtifact.id, { onDelete: "cascade" }),
+  projectionVersion: integer("projection_version").notNull().default(1),
+  requestId: text("request_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+}, (table) => [uniqueIndex("artifact_share_owner_request_idx").on(table.userId, table.requestId),
+  index("artifact_share_artifact_idx").on(table.artifactId),
+  check("artifact_share_projection_version", sql`${table.projectionVersion} = 1`)]);

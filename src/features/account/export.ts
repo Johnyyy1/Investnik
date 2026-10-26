@@ -1,7 +1,7 @@
 import { asc, eq, inArray } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
-  account, capstoneSubmission, missionAttempt, analyticsEarlyReturn, learningProfile, lesson, lessonAward, lessonProgress, learningModule, portfolio, portfolioAllocation,
+  artifactShare, account, capstoneSubmission, missionAttempt, analyticsEarlyReturn, learningProfile, lesson, lessonAward, lessonProgress, learningModule, portfolio, portfolioAllocation,
   portfolioAllocationLine, portfolioTrade, progressionUnlock, session, skillAttempt, trainingAction, trainingSession, user, learnerArtifact,
 } from "@/db/schema";
 
@@ -20,7 +20,7 @@ export async function readAccountExportRows(database: Database, userId: string) 
     isAnonymous: user.isAnonymous, anonymousKind: user.anonymousKind, createdAt: user.createdAt, updatedAt: user.updatedAt,
   }).from(user).where(eq(user.id, userId));
   if (!owner) return null;
-  const [accounts, sessions, profiles, progress, awards, unlocks, portfolios, artifacts, earlyReturns, trainingSessions, skillAttempts, missionAttempts, capstoneSubmissions] = await Promise.all([
+  const [accounts, sessions, profiles, progress, awards, unlocks, portfolios, artifacts, earlyReturns, trainingSessions, skillAttempts, missionAttempts, capstoneSubmissions, sharedOutputs] = await Promise.all([
     database.select({ providerId: account.providerId, accountId: account.accountId, scope: account.scope, createdAt: account.createdAt, updatedAt: account.updatedAt })
       .from(account).where(eq(account.userId, userId)).orderBy(asc(account.createdAt)),
     database.select({ createdAt: session.createdAt, updatedAt: session.updatedAt, expiresAt: session.expiresAt, ipAddress: session.ipAddress, userAgent: session.userAgent })
@@ -41,6 +41,7 @@ export async function readAccountExportRows(database: Database, userId: string) 
       .from(skillAttempt).where(eq(skillAttempt.userId, userId)).orderBy(asc(skillAttempt.attemptedAt), asc(skillAttempt.requestId)),
     database.select().from(missionAttempt).where(eq(missionAttempt.userId, userId)).orderBy(asc(missionAttempt.createdAt), asc(missionAttempt.id)),
     database.select().from(capstoneSubmission).where(eq(capstoneSubmission.userId, userId)).orderBy(asc(capstoneSubmission.capstoneId), asc(capstoneSubmission.version)),
+    database.select({ artifactId: artifactShare.artifactId, projectionVersion: artifactShare.projectionVersion, createdAt: artifactShare.createdAt, revokedAt: artifactShare.revokedAt }).from(artifactShare).where(eq(artifactShare.userId, userId)).orderBy(asc(artifactShare.createdAt)),
   ]);
   const portfolioIds = portfolios.map((row) => row.id);
   const [trades, allocations] = portfolioIds.length === 0 ? [[], []] : await Promise.all([
@@ -53,7 +54,7 @@ export async function readAccountExportRows(database: Database, userId: string) 
   const allocationIds = allocations.map((row) => row.id);
   const lines = allocationIds.length === 0 ? [] : await database.select().from(portfolioAllocationLine)
     .where(inArray(portfolioAllocationLine.allocationId, allocationIds)).orderBy(asc(portfolioAllocationLine.position));
-  return { owner, accounts, sessions, profile: profiles.at(0) ?? null, progress, awards, unlocks, portfolios, trades, allocations, lines, artifacts, earlyReturn: earlyReturns.at(0) ?? null, trainingSessions, trainingActions, skillAttempts, missionAttempts, capstoneSubmissions };
+  return { owner, accounts, sessions, profile: profiles.at(0) ?? null, progress, awards, unlocks, portfolios, trades, allocations, lines, artifacts, earlyReturn: earlyReturns.at(0) ?? null, trainingSessions, trainingActions, skillAttempts, missionAttempts, capstoneSubmissions, sharedOutputs };
 }
 
 export type AccountExportRows = NonNullable<Awaited<ReturnType<typeof readAccountExportRows>>>;
@@ -79,6 +80,7 @@ export function buildAccountExport(rows: AccountExportRows, exportedAt = new Dat
     sessions: rows.sessions,
     learningProfile: rows.profile ? withoutKey(rows.profile, "userId") : null,
     lessonProgress: rows.progress,
+    sharedOutputs: rows.sharedOutputs,
     learnerArtifacts: rows.artifacts.map((artifact) => withoutKey(withoutKey(artifact, "userId"), "requestId")),
     missionAttempts: rows.missionAttempts.map((attempt) => withoutKey(withoutKey(attempt, "userId"), "requestId")),
     // Capstones (#126): every submitted version with its frozen automatic criteria; milestone states are derived from them.

@@ -36,3 +36,13 @@ Beacon posílá jen povolený zdroj `seo:slug` nebo souhrn `share:investment-pla
 - Běžná vývojová DB se nemění. Fyzické telefony a čtečky obrazovky vyžadují samostatné ověření.
 
 Výsledek ověření A dne 26. 10. 2026: všechny statické brány prošly; 212 souborů / 2 223 unit testů. Produkční i vývojový browser suite prošel v celém uvedeném rozlišení a s 200% textem; také přehled faktů (šest šířek, klávesnice a čerstvost). Screenshoty zkontrolované na desktopu a telefonu; kontrast společného tlačítka opraven tak, aby ho čtecí šablona nepřebarvovala. Integrace souběžných příchodů i rerun aditivní migrace prošly na samostatném lokálním PostgreSQL clusteru, port 5549. Běžný Docker ani vývojová databáze nebyly potřeba.
+
+## B: dobrovolné sdílení IPS
+
+První vhodný výstup je strukturované shrnutí IPS, dostupné z Nastavení → Moje data. Volba je úmyslně úzká: přenositelné procesní návyky bez osobního finančního profilu, konkrétních instrumentů a textových poznámek. Nákladové profily zatím nejsou sdílené: obsahují částky i uživatelský název a nemají hotový veřejný srovnávací výstup. Finanční check-up a rozpočet se nesdílejí vůbec.
+
+Veřejné pole vždy pochází z konkrétní neměnné verze výstupu přes zmrazený filtr v1. Náhled používá stejný objekt jako stránka a PNG. Oprávnění ke sdílení neukládá další kopii výstupu; grant má cizí klíč na původní revizi. Vlastník může zrušit i odkazy na starší verze. Žádné odměny ani změny učení či účetnictví. Ochranu soukromí, lifecycle a testy popisuje [úložiště výstupů](learner-artifacts.md#optional-public-ips-summaries-430).
+
+Část B potřebuje společný anonymní beacon a čtecí šablonu z části A; proto má samostatný PR nad větví A. Nejprve sloučit A, poté B. V části B se nemění publikované ani odložené stránky a nevznikají nové daňové/regulatorní údaje ani nové klíče faktů. Seznam verzí z části A platí beze změny.
+
+Výsledek ověření B dne 26. 10. 2026: lint, knip (s lokální testovací konfigurací), typegen + typecheck, všech 214 souborů / 2 230 unit testů, build a check:facts prošly. Persistence suite a skutečný účet/relace v prohlížeči prošly v izolované databázi, včetně veřejného PNG, stažení, nezměněného staršího snímku a 404 obou adres po zrušení. Celá požadovaná matice rozlišení, 200% text a axe WCAG A/AA prošla; stejný runtime znovu ověřil SEO stránky. Screenshoty i výsledný PNG byly vizuálně zkontrolovány. Samostatná revize nevrátila žádné opravitelné nálezy v soukromí, bezpečnosti ani použití designového systému. Drizzle generování nad doplněnými snapshoty nenavrhuje další migraci. Testy jsou zapojené do existujícího CI; fyzická zařízení a čtečky obrazovky nebyly testované.
