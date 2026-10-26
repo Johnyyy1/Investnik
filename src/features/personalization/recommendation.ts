@@ -29,7 +29,7 @@ export function recommendLearning({ profile = readLearnerProfile(), progress = [
   prerequisites?: CurriculumPrerequisites;
 } = {}): LearningRecommendation {
   const diagnostic = readDiagnostic(profile.diagnostic);
-  const scaffoldLevel: ScaffoldLevel = diagnostic?.level === "foundations_needed" ? "guided" : diagnostic?.level === "strong_foundations" ? "compact" : "standard";
+  let scaffoldLevel: ScaffoldLevel = diagnostic?.level === "foundations_needed" ? "guided" : diagnostic?.level === "strong_foundations" ? "compact" : "standard";
   const completed = new Set(progress.filter((state) => state.status === "completed").map((state) => state.lessonId));
   const published = curriculum.filter((lesson) => lesson.status === "available");
   const unfinishedFoundations = published.filter((lesson) => lesson.moduleSlug === "investing-foundations" && !completed.has(lesson.id));
@@ -41,6 +41,7 @@ export function recommendLearning({ profile = readLearnerProfile(), progress = [
   const readinessStep = financialCheckup && checkupNextStep(financialCheckup);
   const readinessLesson = readinessStep && readinessStep !== "continue_learning" ? (published.find((lesson) => lesson.id === checkupAdvice[readinessStep].lessonId) ?? published.find((lesson) => lesson.id === "before-investing-checkup")) : undefined;
   if (readinessLesson) next = readinessLesson;
+  if (next?.id === "returns-what-is-a-return" && completed.has("foundations-risk-reward")) scaffoldLevel = "compact";
   const contexts = { LONG_TERM_ETF: "etf", COMPANIES: "stock", PORTFOLIO: "portfolio", QUANT: "data", CONFIDENCE: "neutral" } as const;
   const exampleContext = (profile.primaryGoal && profile.primaryGoal !== "CONFIDENCE" ? contexts[profile.primaryGoal] : null)
     ?? (profile.interests.some((interest) => ["DATA", "QUANT", "BACKTESTING"].includes(interest)) ? "data" : profile.interests.includes("ETFS") ? "etf" : profile.interests.some((interest) => ["STOCKS", "FUNDAMENTALS"].includes(interest)) ? "stock" : profile.interests.includes("PORTFOLIO") ? "portfolio" : "neutral");

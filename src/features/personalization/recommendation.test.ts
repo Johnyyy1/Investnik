@@ -33,6 +33,19 @@ describe("deterministic recommendations", () => {
       expect(recommendLearning({ profile: preferences, progress: foundationsDone })).toMatchObject({ nextLessonId: "returns-what-is-a-return", reasonCode, exampleContext });
     }
   });
+  it("offers compact 3.1.1 review after completing 1.1.6 without skipping any lesson", () => {
+    for (const count of [0, 3, 5]) {
+      const input = { ...profile, diagnostic: evaluateDiagnostic(diagnosticWithCorrectCount(count)) };
+      expect(recommendLearning({ profile: input, progress: foundationsDone })).toMatchObject({
+        nextLessonId: "returns-what-is-a-return", scaffoldLevel: "compact",
+      });
+      const inProgress = foundationsDone.map((state) => state.lessonId === "foundations-risk-reward" ? { ...state, status: "in_progress" } : state);
+      expect(recommendLearning({ profile: input, progress: inProgress }).scaffoldLevel).toBe(count === 0 ? "guided" : count === 5 ? "compact" : "standard");
+      expect(recommendLearning({ profile: input, progress: [...foundationsDone, { lessonId: "returns-what-is-a-return", status: "completed" }] })).toMatchObject({
+        nextLessonId: "returns-simple-returns", scaffoldLevel: count === 0 ? "guided" : count === 5 ? "compact" : "standard",
+      });
+    }
+  });
   it("moves on to Volatility once Returns is finished, in curriculum order", () => {
     const returnsDone = availableLessons.filter((lesson) => lesson.moduleSlug === "returns").map((lesson) => ({ lessonId: lesson.id, status: "completed" }));
     expect(recommendLearning({ progress: [...foundationsDone, ...returnsDone] })).toMatchObject({ nextLessonId: "volatility-what-is-volatility", reasonCode: "VOLATILITY_AFTER_RETURNS" });

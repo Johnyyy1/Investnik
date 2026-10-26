@@ -151,6 +151,29 @@ try {
           await largeText.evaluate((element) => element.parentNode?.removeChild(element));
           await page.setViewportSize({ width, height: 900 });
         }
+        if (block.type === "interactiveFigure" && block.figure === "return-calculator") {
+          const calculator = page.getByRole("region", { name: "Kalkulačka výnosu", exact: true });
+          const start = calculator.getByLabel("Počáteční cena", { exact: true });
+          const end = calculator.getByLabel("Konečná cena", { exact: true });
+          await start.fill("80");
+          await end.fill("92");
+          assert.match(await calculator.innerText(), /12 Kč/);
+          assert.match(await calculator.innerText(), /\+15,00 %/);
+          await start.fill("0");
+          await calculator.getByRole("alert").filter({ hasText: "větší než nula" }).waitFor();
+          await start.fill("100");
+          await start.focus();
+          await page.keyboard.press("Tab");
+          assert.equal(await end.evaluate((element) => element === document.activeElement), true, "calculator is keyboard navigable");
+          assert.notEqual(await end.locator("..").evaluate((element) => getComputedStyle(element).outlineStyle), "none", "calculator has visible keyboard focus");
+          await audit("return calculator after editing", width);
+          await page.setViewportSize({ width: 320, height: 900 });
+          const largeText = await page.addStyleTag({ content: "html { font-size: 200% !important; }" });
+          assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, "return calculator at 320px and 200% text");
+          await page.screenshot({ path: `${screenshots}/return-calculator-320-200.png` });
+          await largeText.evaluate((element) => element.parentNode?.removeChild(element));
+          await page.setViewportSize({ width, height: 900 });
+        }
         if (block.type === "interactiveFigure" && block.figure === "financial-checkup") {
           const checkup = page.getByRole("region", { name: "Finanční základ", exact: true });
           await checkup.getByRole("combobox").first().waitFor();
