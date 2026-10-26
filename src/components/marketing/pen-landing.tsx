@@ -16,7 +16,7 @@ import { Wordmark } from "@/components/brand/wordmark";
 const path: readonly { title: string; detail: string; status: string; state: "next" | "open" | "planned" }[] = [
   { title: "0 · Než začneš investovat", detail: "Rozpočet, drahý dluh, cíle a horizont, finanční check-up. Rezervu, penzijko s DIP a podvody připravujeme.", status: "Doporučený začátek", state: "next" },
   { title: "1 · Jak investice fungují", detail: "Akcie, dluhopisy, ETF a indexy, fondy a jejich náklady, aktivní a indexové investování. Závěrečnou kontrolu připravujeme.", status: "Dostupné", state: "open" },
-  { title: "2 · Investování v Česku v praxi", detail: "Náklady fondu: TER a rozdíl ve výkonnosti vůči indexu. Brokera a účet, celkové náklady, výběr ETF, české daně, první plán a nákup nanečisto připravujeme.", status: "První lekce dostupná", state: "open" },
+  { title: "2 · Investování v Česku v praxi", detail: "Náklady fondu i obchodu: TER, rozdíl vůči indexu, spread a minimální poplatek. Brokera a účet, další náklady, výběr ETF, české daně, první plán a nákup nanečisto připravujeme.", status: "První lekce dostupné", state: "open" },
   { title: "Vlastní investiční plán (IPS)", detail: "Cíle, rozložení, pravidelné vklady a pravidlo pro propad zapíšeš v Labu.", status: "Dostupné v Labu", state: "open" },
   { title: "Krizový nácvik", detail: "Modelovou krizí projdeš měsíc po měsíci bez skutečných peněz a ověříš, jestli se držíš svého plánu.", status: "Dostupné v Labu", state: "open" },
 ];

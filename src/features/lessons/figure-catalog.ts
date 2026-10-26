@@ -5,6 +5,7 @@
 /** `research` is a versioned static file of published study results; the figure labels its source and date itself. */
 type FigureDefinition = { owner: "curriculum"; data: "model" | "provider" | "learner" | "research"; model: string };
 export const lessonFigureCatalog = {
+  "trade-cost-breakdown": { owner: "curriculum", data: "model", model: "src/features/finance/trade-cost-breakdown.ts" },
   "financial-checkup-result": { owner: "curriculum", data: "learner", model: "src/features/lessons/before-investing/checkup-model.ts" },
   "financial-checkup": { owner: "curriculum", data: "learner", model: "src/features/lessons/before-investing/checkup-model.ts" },
   "goal-map": { owner: "curriculum", data: "learner", model: "src/features/lessons/before-investing/goals-model.ts" },
