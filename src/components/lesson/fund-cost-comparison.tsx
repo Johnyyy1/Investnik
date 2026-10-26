@@ -16,9 +16,9 @@ const fields = [
 ] as const;
 const money = (value: number) => `${new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 0 }).format(Math.round(value) || 0)} Kč`;
 
-export function FundCostComparison() {
+export function FundCostComparison({ initialYears = "20" }: { initialYears?: string }) {
   const modeId = useId();
-  const [draft, setDraft] = useState({ entry: "3", ongoing: "1,9", gross: "6", years: "20" });
+  const [draft, setDraft] = useState({ entry: "3", ongoing: "1,9", gross: "6", years: initialYears });
   const [regular, setRegular] = useState(false);
   const values = fields.map(({ id }) => parseNumericAnswer(draft[id]));
   const valid = fields.map(({ min, max, id }, index) => Number.isFinite(values[index]) && values[index] >= min && values[index] <= max && (id !== "years" || Number.isInteger(values[index])));

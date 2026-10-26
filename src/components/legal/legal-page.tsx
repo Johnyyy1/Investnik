@@ -16,12 +16,12 @@ export const LEGAL_UPDATED_AT = "21. října 2026";
 
 export type LegalSection = { id: string; title: string; body: ReactNode };
 
-export function LegalPage({ title, intro, sections, updatedAt = LEGAL_UPDATED_AT }: { title: string; intro: ReactNode; sections: readonly LegalSection[]; updatedAt?: string }) {
+export function LegalPage({ title, intro, sections, updatedAt = LEGAL_UPDATED_AT, eyebrow = "Právní informace" }: { title: string; intro: ReactNode; sections: readonly LegalSection[]; updatedAt?: string; eyebrow?: string }) {
   return <div className={styles.page}>
     <header className={styles.header}><Link className={styles.brand} href="/" aria-label="Investník · úvodní stránka"><Wordmark /></Link></header>
     <main className={styles.main}>
       <article className={styles.article} aria-labelledby="legal-title">
-        <p className={styles.eyebrow}>Právní informace</p>
+        <p className={styles.eyebrow}>{eyebrow}</p>
         <h1 id="legal-title">{title}</h1>
         <p className={styles.updated}>Poslední aktualizace: {updatedAt}</p>
         <div className={styles.intro}>{intro}</div>

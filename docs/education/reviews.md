@@ -114,3 +114,13 @@ Práce proběhla v izolovaném worktree z `origin/main`; rozpracované změny v 
 Záznamy odborné revize daňových a regulatorních lekcí podle [redakčního workflow](editorial-workflow.md) (#133). Strojově čitelný záznam je v [content-reviews.ts](../../src/features/facts/content-reviews.ts); každý má zde řádek ve tvaru `lessonId · datum · role · rozhodnutí · verze faktů · PR` se shrnutím připomínek. Záznamy se nepřepisují.
 
 Zatím žádný záznam. Žádná daňová ani regulatorní lekce není publikována; [Rezerva: kolik a kde](../../src/features/lessons/before-investing/emergency-fund.ts) čeká jako koncept na odbornou revizi.
+
+## Revizní fronta veřejných průvodců — #430
+
+Stejná publikační brána jako u lekcí; stabilní ID `guide-*` se zapisuje do `contentReviews.lessonId`. Zatím žádné odborné schválení:
+
+- `guide-dip`: ověřit aktuální podmínky DIP včetně výjimek a dodanění; `dip.podminky` je blokovaný.
+- `guide-tax`: rozlišit prodej, zisk a distribuce ETF, ověřit držbu a evidenci tranší; současný koncept není návod k podání.
+- `guide-broker`: ověřit celý postup kontroly subjektu, oprávnění a domovského dohledu; bez jmen a žebříčků.
+
+Koncepty jsou pouze v `/dev/pruvodce/[slug]` pod `next dev`. Soupis použitých verzí a důvod odložení je v [growth.md](../growth.md).

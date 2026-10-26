@@ -1,15 +1,22 @@
+import { shiftDate } from "@/features/gamification/domain";
 import {
-  buildFunnel, buildLessonDropOff, buildWeeklyCohorts, EARLY_RETURN_DAYS, INACTIVE_AFTER_DAYS,
+  analyticsDate, buildFunnel, buildLessonDropOff, buildWeeklyCohorts, EARLY_RETURN_DAYS, INACTIVE_AFTER_DAYS,
   type LearnerFacts, type LessonProgressFact,
 } from "./funnel";
 
 /** The windows the issue asks for: the last 7 and the last 30 days. */
 export const FUNNEL_WINDOWS = [7, 30] as const;
 
-export type FunnelFacts = { learners: readonly LearnerFacts[]; progress: readonly LessonProgressFact[]; visits: readonly { day: string; views: number }[] };
+export type FunnelFacts = { learners: readonly LearnerFacts[]; progress: readonly LessonProgressFact[]; visits: readonly { day: string; views: number }[]; acquisition?: readonly { day: string; source: string; views: number }[] };
 
 export function buildFunnelReport(facts: FunnelFacts, now: Date, { weeks = 8 }: { weeks?: number } = {}) {
   return {
+    acquisition: FUNNEL_WINDOWS.map((days) => {
+      const from = shiftDate(analyticsDate(now), 1 - days);
+      const sources = new Map<string, number>();
+      for (const row of facts.acquisition ?? []) if (row.day >= from && row.day <= analyticsDate(now)) sources.set(row.source, (sources.get(row.source) ?? 0) + row.views);
+      return { days, sources: [...sources].sort(([a], [b]) => a.localeCompare(b)).map(([source, views]) => ({ source, views })) };
+    }),
     generatedAt: now.toISOString(),
     funnels: FUNNEL_WINDOWS.map((days) => buildFunnel(facts.learners, facts.visits, days, now)),
     weeklyCohorts: buildWeeklyCohorts(facts.learners, weeks, now),
@@ -53,5 +60,7 @@ export function formatFunnelReport(report: FunnelReport) {
       report.lessonDropOff.map((lesson) => [`${lesson.displayCode ?? "mimo kurikulum"} ${lesson.title}`, String(lesson.started), String(lesson.completed), String(lesson.abandoned), String(lesson.stoppedAfter)])),
     `Opuštěno: otevřeno, nedokončeno a ${INACTIVE_AFTER_DAYS} dní beze změny. Skončili po lekci: poslední dokončená lekce a ${INACTIVE_AFTER_DAYS} dní žádná další.`,
   ].join("\n"));
+  sections.push("## Příchody podle kanálu (zobrazení, nikoli lidé ani přiřazené registrace)");
+  for (const window of report.acquisition) sections.push(`Posledních ${window.days} dní\n` + table(["Zdroj", "Zobrazení"], window.sources.map((row) => [row.source, String(row.views)])));
   return sections.join("\n\n");
 }

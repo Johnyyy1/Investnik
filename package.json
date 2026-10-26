@@ -107,7 +107,9 @@
     "test:lesson-calculators-browser": "node scripts/validate-lesson-calculators.mjs",
     "test:lesson-walkthrough": "tsx scripts/validate-lesson-walkthrough.mts",
     "test:missions-persistence": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-missions.mts",
-    "test:missions-browser": "node scripts/validate-missions-browser.mjs"
+    "test:missions-browser": "node scripts/validate-missions-browser.mjs",
+    "test:growth-acquisition": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-growth-acquisition.mts",
+    "test:guides-browser": "node scripts/validate-growth-browser.mjs"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.12",

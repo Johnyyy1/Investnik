@@ -54,7 +54,9 @@ describe("metadata routes", () => {
   });
 
   it("lists only public pages on the canonical origin", () => {
-    expect(sitemap().map(({ url }) => url)).toEqual(["https://investnik.cz", "https://investnik.cz/privacy", "https://investnik.cz/terms"]);
+    expect(sitemap().map(({ url }) => url).sort()).toEqual([
+      "", "/privacy", "/terms", "/pruvodce", "/pruvodce/rozpocet-a-mira-uspor", "/pruvodce/kolik-stoji-poplatky", "/pruvodce/co-je-etf", "/pruvodce/sporit-nebo-investovat",
+    ].map((path) => `https://investnik.cz${path}`).sort());
   });
 
   it("installs as Investník with the brand icons", () => {

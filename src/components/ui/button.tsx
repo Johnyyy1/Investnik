@@ -44,7 +44,7 @@ export function Button({ variant, size, loading = false, disabled, className, ch
 }
 
 export function ButtonLink({ variant, size, className, ...props }: ComponentProps<typeof Link> & VariantProps<typeof buttonVariants>) {
-  return <Link {...props} className={cn(buttonVariants({ variant, size }), className)} />;
+  return <Link data-slot="button" {...props} className={cn(buttonVariants({ variant, size }), className)} />;
 }
 
 export function IconButton({ "aria-label": ariaLabel, ...props }: Omit<ButtonProps, "size" | "children"> & { "aria-label": string; children: ReactNode }) {

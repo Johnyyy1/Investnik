@@ -44,7 +44,7 @@ export type FunnelStepId = "visit" | "start" | "diagnostic" | "first-lesson" | "
 
 /** Steps without an authoritative record yet are reported as unavailable, never as zero. */
 export const funnelSteps: readonly { id: FunnelStepId; label: string; unavailable?: string }[] = [
-  { id: "visit", label: "Návštěva úvodní stránky" },
+  { id: "visit", label: "Návštěva veřejné vstupní stránky" },
   { id: "start", label: "Nový účet nebo host" },
   { id: "diagnostic", label: "Diagnostika" },
   { id: "first-lesson", label: "První dokončená lekce" },
