@@ -42,19 +42,15 @@ describe("lab bridge", () => {
 describe("lesson follow-up links", () => {
   it("hides unavailable targets and renders their explanation only after publication", () => {
     const block = foundationsContent.find((lesson) => lesson.id === "foundations-markets")!.blocks.find((block) => block.type === "labBridge")!;
+    const publishedLink = vi.spyOn(catalog, "lessonLink").mockReturnValue(null);
     const hidden = renderToStaticMarkup(<GuidedBlock block={block} />);
     expect(hidden).not.toContain("<a ");
     expect(hidden).not.toContain("2.2.2");
     expect(hidden).not.toContain("2.5.3");
-    // Simulate publication without introducing a planned lesson into the real catalog.
-    const publishedLink = vi.spyOn(catalog, "lessonLink").mockImplementation((id) => id === "costs-spread-and-fees" ? { href: "/learn/costs/spread-and-trading-fees", label: "Lekce: Spread a transakční poplatek" } : null);
-    try {
-      const published = renderToStaticMarkup(<GuidedBlock block={block} />);
-      expect(published).toContain('href="/learn/costs/spread-and-trading-fees"');
-      expect(published).toContain("Kolik tě spread stojí v korunách");
-      expect(published).not.toContain("2.5.3");
-    } finally {
-      publishedLink.mockRestore();
-    }
+    publishedLink.mockRestore();
+    const published = renderToStaticMarkup(<GuidedBlock block={block} />);
+    expect(published).toContain('href="/learn/costs/spread-and-trading-fees"');
+    expect(published).toContain("Kolik tě spread stojí v korunách");
+    expect(published).not.toContain("2.5.3");
   });
 });

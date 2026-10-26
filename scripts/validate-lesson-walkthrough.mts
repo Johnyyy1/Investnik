@@ -104,6 +104,18 @@ try {
       await page.getByRole("heading", { level: 2, name: step.title, exact: true }).waitFor();
       await idle();
       await audit(where, width);
+      if (lesson.id === "costs-spread-and-fees") {
+        for (const size of [1440, 390]) {
+          await page.setViewportSize({ width: size, height: 900 });
+          await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; });
+          await page.screenshot({ path: `${screenshots}/${lesson.id}-${index + 1}-${size}.png`, fullPage: true });
+        }
+        await page.setViewportSize({ width: 320, height: 900 });
+        const enlarged = await page.addStyleTag({ content: "html { font-size: 200% !important; }" });
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${where}: 320px with 200% text`);
+        await enlarged.evaluate((element) => element.parentNode?.removeChild(element));
+        await page.setViewportSize({ width, height: 900 });
+      }
       const question = step.blocks.find(isQuestion);
       if (question) {
         await answer(question, wrongAnswers(question));
@@ -150,6 +162,39 @@ try {
           await page.screenshot({ path: `${screenshots}/debt-calculator-320-200.png` });
           await largeText.evaluate((element) => element.parentNode?.removeChild(element));
           await page.setViewportSize({ width, height: 900 });
+        }
+        if (block.type === "interactiveFigure" && block.figure === "trade-cost-breakdown") {
+          const calculator = page.getByRole("region", { name: "Rozpad nákladů obchodu", exact: true });
+          const result = page.getByRole("region", { name: "Výsledek rozpadu nákladů obchodu", exact: true });
+          const amount = calculator.getByLabel("Objem obchodu ve středu kotace", { exact: true });
+          await result.waitFor();
+          assert.match(await result.innerText(), /61,50\s*Kč/);
+          assert.match(await result.innerText(), /2,05 %/);
+          for (const raw of ["", "bad", "-1"]) {
+            await amount.fill(raw);
+            assert.equal(await amount.getAttribute("aria-invalid"), "true");
+            assert.equal(await result.count(), 0);
+          }
+          await amount.fill("6000");
+          assert.match(await result.innerText(), /1,05 %/);
+          const rate = calculator.getByLabel("Sazba poplatku", { exact: true });
+          await rate.fill("1,3333");
+          assert.equal(await result.count(), 0, "unsupported fee precision has an explicit error");
+          await rate.fill("0,15");
+          const maximum = calculator.getByLabel("Maximální poplatek", { exact: true });
+          await maximum.fill("59");
+          assert.equal(await result.count(), 0, "maximum below minimum is rejected");
+          await maximum.fill("10000");
+          await amount.focus();
+          await page.keyboard.press("Tab");
+          const slider = calculator.getByRole("slider", { name: "Objem obchodu ve středu kotace · posuvník", exact: true });
+          assert.equal(await slider.evaluate((element) => element === document.activeElement), true);
+          await slider.press("ArrowRight");
+          assert.notEqual(await slider.evaluate((element) => getComputedStyle(element).outlineStyle), "none");
+          await amount.fill("3000");
+          await calculator.getByLabel("Celý spread", { exact: true }).fill("0,10");
+          assert.match(await result.innerText(), /2,05 %/);
+          await audit("trade-cost calculator after editing", width);
         }
         if (block.type === "interactiveFigure" && block.figure === "return-calculator") {
           const calculator = page.getByRole("region", { name: "Kalkulačka výnosu", exact: true });
@@ -267,7 +312,7 @@ try {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }
-    if (lesson.id === "costs-ter-tracking-difference") {
+    if (["costs-ter-tracking-difference", "costs-spread-and-fees"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "200000" }, `${lesson.id} earns the L2 Practice Capital once`);
     }

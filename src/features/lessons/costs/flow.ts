@@ -1,6 +1,19 @@
 import type { StepDefinition } from "../types";
 
 export const costsSteps: Readonly<Record<string, readonly StepDefinition[]>> = {
+  "costs-spread-and-fees": [
+    { title: "Stejný ceník, jiný dopad", blocks: ["opening", "prediction"] },
+    { title: "Náklad poloviny spreadu", blocks: ["spread", "model-scope", "spread-practice"] },
+    { title: "Sečti poplatek a spread", blocks: ["worked"] },
+    { title: "Doplň výpočet", blocks: ["faded"] },
+    { title: "Samostatný nákup", blocks: ["total-practice"] },
+    { title: "Jak často nakupovat", blocks: ["frequency", "frequency-decision"] },
+    { title: "Vyzkoušej náklady", blocks: ["explorer"] },
+    { title: "Náklad při prodeji", blocks: ["sale"] },
+    { title: "Ověření znalostí", kind: "mastery", blocks: ["recall"] },
+    { title: "Tvoje kontrolní pravidlo", blocks: ["reflection"] },
+    { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
+  ],
   "costs-ter-tracking-difference": [
     { title: "Které ETF je levnější?", blocks: ["opening", "prediction"] },
     { title: "Co je TER", blocks: ["ter", "ter-scope", "ter-payment"] },
