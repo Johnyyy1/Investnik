@@ -20,7 +20,7 @@ The product prepares people to start investing and maintain a plan: financial re
 
 This file defines how coding agents should work in this repository.
 
-Parallel coding tasks must follow [WORKTREES.md](WORKTREES.md) before editing. Use an isolated worktree/session per issue; never switch or reset the shared primary checkout to achieve this.
+Before starting any implementation, ensure this task runs in an isolated Git worktree. If the current session is not isolated, create and switch to a dedicated worktree when supported. Never modify the shared main checkout. Follow [WORKTREES.md](WORKTREES.md).
 
 The product direction adopted on 2026-10-21 is recorded in [docs/product-direction.md](docs/product-direction.md). Read it before changing curriculum, learning progression, Lab behavior, rewards, or product priorities. It defines the target direction; inspect code and [docs/product-reset.md](docs/product-reset.md) for current implementation and compatibility contracts. The strategy 2026–27 and S0–S3 gates in that document and [roadmap #362](https://github.com/Johnyyy1/Investnik/issues/362) supersede the old C2 Phase 1–6 implementation order. Older descriptions of a metrics-first course or portfolio-value-first hierarchy do not override this direction.
 
