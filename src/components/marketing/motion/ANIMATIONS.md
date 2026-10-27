@@ -17,7 +17,7 @@ The landing page (`src/components/marketing/pen-landing.tsx`) has a GSAP motion 
 | `motion/reveal.tsx` | Markup-only helpers: `<SplitHeading>`, `magneticProps`. They render plain HTML with `data-*` hooks, so SSR and no-JS output is the final state. |
 | `motion/utils.ts` | `useReveal`, `splitHeading` / `useSplitHeadings`, `magnetic`, `hoverLift`, `pressFeedback`, `fontsReady`. |
 | `motion/smooth-scroll.ts` | Lenis on the GSAP ticker. In-page `#anchors` go through `lenis.scrollTo` and then move focus to the target. `#main` (the skip link) stays native. Deep links re-land after pin refreshes. |
-| `motion/events.ts` | DOM events that let the motion layer drive the React previews (`LessonPreview`, `PortfolioPreview`). React still renders everything, and the demos never touch real state. |
+| `motion/events.ts` | DOM events that let the motion layer drive the React lesson preview (`LessonPreview`). React still renders everything, and the demos never touch real state. |
 | `motion/sections/*.ts` | Choreography for each section (below). |
 
 ### Rules the code follows
@@ -26,7 +26,7 @@ The landing page (`src/components/marketing/pen-landing.tsx`) has a GSAP motion 
 - **Keyboard:** anything containing links or buttons is hidden with `opacity` (not `autoAlpha`), so it stays in the tab order. Tabbing to it scrolls it into view, which triggers its reveal.
 - **Desktop ≥ 1024px vs mobile:** pinning, the magnetic effect and the 60 → 40 % demo are desktop only. Mobile gets shorter reveals (y 24px, 0.6s).
 - **Hover effects** (`data-lift`, `data-magnetic`) run only on `(hover: hover) and (pointer: fine)`.
-- Only `transform`, `opacity` and SVG stroke (`drawSVG`) are animated. Exceptions: the lesson feedback `height: auto` expand (inside a card, after layout), the box-shadow on hover lift, and the Portfolio preview, which re-renders its own donut and slider fills from tweened numbers.
+- Only `transform`, `opacity` and SVG stroke (`drawSVG`) are animated. Exceptions: the lesson feedback `height: auto` expand (inside a card, after layout), the box-shadow on hover lift.
 - SplitText uses `aria: "auto"`, and every split is reverted once its reveal finishes.
 
 ## Section choreography
@@ -40,7 +40,7 @@ The landing page (`src/components/marketing/pen-landing.tsx`) has a GSAP motion 
 | 3 | Hero lesson card | card top hits 80% of viewport (desktop) | A ghost cursor picks B and clicks check. The feedback expands, the "Správně" badge pops (`back.out(1.4)`) with a 10-dot burst, and the progress fills. The lesson previews are read-only illustrations (no clickable answers or submit), so the demo always runs to its end state. | `sections/lesson-demo.ts › armHeroDemo`, `burst()` |
 | 4 | Jak to funguje | card top hits 78% | Path rows cascade (0.12s stagger), statuses fade in, and "Doporučený začátek" pulses gently. Steps 01 → 02 → 03: number flips in, copy reveals, the previous step dims, and a line draws. Pinned (+1700px scroll) on desktop at least 880px tall; unpinned scrub on shorter desktops; plain staggered reveals on mobile. | `sections/journey.ts` (`end: "+=1700"`, `MQ.tall` in `lib/gsap.ts`) |
 | 5 | Krátké lekce | heading words / card top hits 70% | Heading word reveal. The cursor picks the wrong answer A, which shakes; the explanation slides in and B glows. | `armCompactDemo` (shake keyframes, glow repeats) |
-| 6 | Portfolio Lab | preview top hits 65% (75% on mobile) | Heading line reveal. Stocks, bonds and cash grow from 0 to 60/30/10 (staggered 0.15s) with live CZK amounts and donut. "100 %" lands with a drawn tick. On desktop the hint nudges, stocks go 60 → 40 % (cash takes the difference, as the slider would) and settle back. Any input ends it immediately. The "Uložit portfolio" confirmation eases in. | `sections/portfolio.ts` (`grow`, hold `"+=1.8"`) |
+| 6 | Portfolio Lab | demo top hits 65% (75% on mobile) | Heading line reveal. The step-1 cost rows of the purchase review settle in one by one and the total lands last; the crisis drill draws the model index (`model-crisis-v1`, months 0–12) and marks the −30 % month. React state is never touched; any input ends it immediately. | `sections/portfolio.ts` |
 | 7 | Trust | card top hits 78% | The illustration fades in and the items ease in slowly, one by one. | `sections/progress.ts` |
 | 8 | Final CTA | scroll | Heading char reveal (0.025s stagger; words on mobile), illustration fades in place (no movement), copy and actions reveal. The primary button sheens on hover only (never at rest), plus magnetic hover. | `sections/closing.ts`, `sheen()` in `utils.ts` |
 | 9 | Footer | footer enters viewport | Single fade-up | `initFooter` |

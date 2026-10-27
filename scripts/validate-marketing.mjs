@@ -21,7 +21,8 @@ page.on("pageerror", error => errors.push(error.message));
 const lesson = () => page.locator("main > section").first();
 const compactLesson = () => page.locator('section[aria-labelledby="lesson-title"]');
 const portfolio = () => page.locator("#portfolio-lab");
-const sliders = () => portfolio().getByRole("slider");
+const demo = () => portfolio().locator("[data-portfolio-demo]");
+const crisis = () => portfolio().locator("[data-crisis]");
 const button = (scope, name) => scope.getByRole("button", { name, exact: true });
 async function recordSession(ctx) {
   const session = await (await ctx.request.get(`${baseURL}/api/auth/get-session`)).json();
@@ -122,13 +123,9 @@ async function layout(width, enlarged = false) {
   }
   return dimensions;
 }
-async function mix() {
-  const percentages = await sliders().evaluateAll(inputs => inputs.map(input => Number(input.value)));
-  assert.equal(percentages.reduce((a, b) => a + b, 0), 100);
-  assert.ok(percentages.every(percent => Number.isInteger(percent) && percent >= 0 && percent <= 100));
-  const amounts = await portfolio().locator('output').allTextContents();
-  assert.deepEqual(amounts.map(value => Number(value.replace(/\D/g, ""))), percentages);
-  return percentages;
+/** Cost rows of the step-1 review, read as text (the demo uses the real fictional tariffs). */
+async function costs() {
+  return demo().locator("[data-demo-step='1'] [data-cost-rows] dd").allTextContents();
 }
 async function snapshot(owner) {
   const [result] = await sql`
@@ -183,7 +180,7 @@ try {
   assert.equal(await page.getByRole("link", { name: "Přejít k obsahu" }).evaluate(element => element === document.activeElement), true);
   await page.keyboard.press("Enter");
   assert.equal(await page.locator("main").evaluate(element => element === document.activeElement), true);
-  assert.equal(await button(portfolio(), "Uložit portfolio").evaluate(element => getComputedStyle(element).transitionDuration), "0s");
+  assert.equal(await button(portfolio(), "Koupit nanečisto").evaluate(element => getComputedStyle(element).transitionDuration), "0s");
   assert.equal(await page.locator('img[src*="curiosity"]').evaluate(element => getComputedStyle(element).animationName), "none");
   const writes = [];
   page.on("request", request => { if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method())) writes.push(request.url()); });
@@ -194,19 +191,36 @@ try {
     await demo.getByRole("status").filter({ hasText: "Přesně." }).first().waitFor();
   }
   await lesson().locator('[data-answer="B"][data-selected]').waitFor(); // the compact card shows only the explanation once answered
-  assert.deepEqual(await mix(), [60, 30, 10]);
-  for (const [name, value] of [["Akcie", "40"], ["Dluhopisy", "100"], ["Hotovost", "100"], ["Akcie", "100"], ["Dluhopisy", "25"]]) {
-    await portfolio().getByRole("slider", { name, exact: true }).fill(value); await mix();
+  // Portfolio Lab demo: real tariff costs, the decision-time card, process feedback and the crisis drill, all local.
+  const nbsp = text => text.replace(/\u00a0/g, " ");
+  assert.deepEqual((await costs()).map(nbsp), ["4 500 Kč", "10 Kč", "22,50 Kč", "32,50 Kč"]);
+  await portfolio().getByRole("radio", { name: /Investník nižší konverze/ }).check();
+  assert.deepEqual((await costs()).map(nbsp), ["4 500 Kč", "25 Kč", "4,50 Kč", "29,50 Kč"]);
+  await portfolio().getByRole("radio", { name: /Investník standard/ }).check();
+  const tabs = portfolio().getByRole("tab");
+  assert.equal(await tabs.count(), 3);
+  await tabs.first().focus(); await page.keyboard.press("ArrowRight");
+  assert.equal(await tabs.nth(1).getAttribute("aria-selected"), "true", "Arrow keys move between demo steps");
+  await portfolio().getByRole("radio", { name: /Fiktivní firma/ }).check();
+  await demo().locator("[data-decision-card]").getByText("Tento nákup není ve tvém plánu").waitFor();
+  await button(portfolio(), "Pokračovat stejně").click();
+  assert.equal(await tabs.first().getAttribute("aria-selected"), "true", "The card informs and never blocks");
+  await button(portfolio(), "Změnit instrument").click();
+  await button(portfolio(), "Zpět k plánu").click();
+  await demo().getByLabel("Částka").first().fill("99999");
+  assert.equal(await button(portfolio(), "Koupit nanečisto").isDisabled(), true, "No purchase beyond the demo capital");
+  await demo().getByLabel("Částka").first().fill("4500");
+  await button(portfolio(), "Koupit nanečisto").click();
+  const feedback = demo().locator("[data-demo-step='3']");
+  assert.deepEqual(await feedback.locator("[data-criterion]").evaluateAll(items => items.map(item => item.getAttribute("data-criterion"))), ["in", "in", "info", "info"]);
+  assert.equal(await feedback.getByText(/\d+\/100/).count(), 0, "No composite score");
+  for (const [name, expected] of [[/Prodat/, "Prodeje mimo pravidla: 1"], [/Držet/, "Prodeje mimo pravidla: 0"], [/Dokoupit/, "Podíl v indexu: 90 % · v pásmu"]]) {
+    await crisis().getByRole("radio", { name }).check();
+    await crisis().getByRole("status").getByText(expected).waitFor();
   }
-  await portfolio().getByRole("slider", { name: "Akcie", exact: true }).focus();
-  await page.keyboard.press("ArrowLeft"); await mix();
-  await button(portfolio(), "Uložit portfolio").click();
-  await portfolio().getByRole("status").filter({ hasText: "pouze v této ukázce" }).waitFor();
-  await button(portfolio(), "Vrátit původní mix").click();
-  assert.deepEqual(await mix(), [60, 30, 10]);
   assert.deepEqual(writes, [], "Marketing interactions perform no network mutation");
   assert.equal((await (await context.request.get(`${baseURL}/api/auth/get-session`)).json()), null, "Previews never create an anonymous identity");
-  checks.push("Both lesson previews are read-only (no controls) and show the answered state. Three keyboard/pointer allocation controls keep 100%; save/reset remains local; no mutation request or session creation.");
+  checks.push("Both lesson previews are read-only (no controls) and show the answered state. Portfolio Lab demo: real tariff costs for both profiles, keyboard tabs, a non-blocking off-plan card, capital guard, explainable criteria without a score, crisis drill judged by the plan; no mutation request or session creation.");
   await page.emulateMedia({ reducedMotion: "no-preference" });
   for (const [label, path, heading] of [["Začít vstupním testem", "/onboarding", "Co se chceš naučit?"], ["Přihlásit se", "/sign-in", "Vítej zpět"]]) {
     await page.goto(baseURL);
@@ -260,8 +274,9 @@ try {
   }
   const before = await snapshot(owner);
   await page.goto(baseURL);
-  await portfolio().getByRole("slider", { name: "Akcie", exact: true }).fill("40");
-  await button(portfolio(), "Uložit portfolio").click();
+  await portfolio().getByRole("radio", { name: /Investník nižší konverze/ }).check();
+  await button(portfolio(), "Koupit nanečisto").click();
+  await crisis().getByRole("radio", { name: /Prodat/ }).check();
   assert.deepEqual(await snapshot(owner), before, "Authenticated previews preserve exact lesson, reward, trade and generation records");
   await button(page, "Vyzkoušet demo").click(); await page.waitForURL("**/learn");
   assert.equal(await recordSession(context), owner, "Existing session reused");

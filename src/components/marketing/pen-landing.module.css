@@ -11,7 +11,6 @@
   --divider: var(--color-border);
   --muted: var(--color-muted);
   --soft: var(--color-surface-muted);
-  --bonds: #8c90f6;
   --cash: var(--color-warning);
   color-scheme: light;
   color: var(--ink);
@@ -163,48 +162,10 @@
 .labIntro h2 { font-size: 6.25rem; line-height: 1.02; letter-spacing: -.045em; margin-top: 20px; }
 .labExplanation > p { font-size: 1.125rem; line-height: 1.55; color: #e5e5dc; }
 .labExplanation > small { display: block; font-size: .8125rem; margin-top: 20px; color: #d8dad0; }
-.portfolioPreview { margin-top: 56px; background: var(--surface); color: var(--ink); border-radius: 12px; overflow: hidden; }
-.portfolioHeader { min-height: 70px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 40px; border-bottom: 1px solid var(--divider); line-height: 1.25; }
-.portfolioHeader strong { font-size: 1.125rem; font-weight: 600; }
-.portfolioHeader > span { font-size: .75rem; color: var(--muted); }
-.portfolioBody { display: grid; grid-template-columns: 480px minmax(0, 1fr); gap: 64px; padding: 40px; }
-.capital { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 28px; }
-.capital > span { font-size: .875rem; color: var(--muted); }
-.capital > strong { font-size: 1.625rem; letter-spacing: -.02em; line-height: 1.2; }
-.assetRow { margin-bottom: 28px; }
-.assetTop, .assetBottom { display: flex; justify-content: space-between; gap: 12px; }
-.assetTop { font-size: 1.0625rem; font-weight: 600; margin-bottom: 10px; }
-.assetTop output { font-variant-numeric: tabular-nums; }
-.assetBottom { font-size: .875rem; color: var(--muted); margin-top: 8px; line-height: 1.4; }
-.assetBottom span:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
-.assetRow input { --allocation-track: var(--color-track); appearance: none; width: 100%; height: 44px; margin: 2px 0; border: 0; background: transparent; display: block; cursor: pointer; touch-action: pan-y; }
-.assetRow input::-webkit-slider-runnable-track { height: 6px; border: 1px solid #7b7b70; border-radius: 4px; background: var(--allocation-fill); }
-.assetRow input::-moz-range-track { height: 4px; border: 1px solid #7b7b70; border-radius: 4px; background: var(--allocation-fill); }
-.assetRow input::-webkit-slider-thumb { margin-top: -8px; appearance: none; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--ink); background: var(--surface); box-shadow: 0 0 0 12px transparent; }
-.assetRow input::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--ink); background: var(--surface); }
-.stocksRange { --allocation-color: var(--teal2); }
-.bondsRange { --allocation-color: var(--bonds); }
-.cashRange { --allocation-color: var(--cash); }
-.allocationTotal { display: flex; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--divider); font-size: .8125rem; color: var(--teal); }
-.allocationTotal strong { color: var(--ink); font-size: .875rem; font-weight: 500; }
-.portfolioActions { display: flex; gap: 12px; margin-top: 28px; }
-.portfolioSave { font-size: .9375rem; padding-inline: 20px; }
-.resetLink { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: var(--teal); background: transparent; border: 0; cursor: pointer; }
-.savedStatus { font-size: .8125rem; color: var(--teal); }
-.savedStatus:not(:empty) { margin-top: 12px; }
-.allocationInsights h3 { font-size: 2rem; line-height: 1.35; letter-spacing: -.023em; }
-.chartLayout { display: flex; align-items: center; gap: 32px; margin: 26px 0; }
-.donut { width: 248px; height: 248px; border-radius: 50%; flex-shrink: 0; position: relative; }
-.donut::after { content: ""; position: absolute; inset: 32px; border-radius: 50%; background: var(--surface); }
-.legend { display: grid; gap: 20px; font-size: .875rem; }
-.legend > span { display: flex; align-items: center; gap: 12px; white-space: nowrap; }
-.legend i { width: 9px; height: 9px; display: block; border-radius: 50%; }
-.legendStocks { background: var(--teal2); }.legendBonds { background: var(--bonds); }.legendCash { background: var(--cash); }
-.allocationInterpretation { display: block; border-top: 1px solid var(--divider); padding-top: 24px; font-size: 1.3125rem; font-weight: 600; margin-bottom: 12px; }
-.allocationInsights > p { font-size: 1rem; line-height: 1.55; color: var(--muted); }
-.allocationInsights .portfolioHint { margin-top: 12px; color: var(--teal); }
-.portfolioLegal { padding: 18px 32px; font-size: .8125rem; color: var(--muted); background: #efefe5; }
-.labClosing { padding-top: 56px; font-size: 1.0625rem; }
+.labDemo { margin-top: 56px; display: grid; grid-template-columns: minmax(0, 864fr) minmax(0, 392fr); gap: 56px; align-items: start; }
+.labFooter { margin-top: 56px; padding-top: 28px; border-top: 1px solid #f7f2e833; display: flex; justify-content: space-between; align-items: center; gap: 32px; }
+.labFooter p { font-size: .8125rem; line-height: 1.5; color: #e0e3d8; max-width: 640px; }
+.labFooter .primaryButton { flex-shrink: 0; }
 .progressSection { padding: 100px 0; }
 .progressSection h2 { font-size: 4.125rem; line-height: 1.1; letter-spacing: -.035em; margin: 32px 0; }
 .progressLayout { display: grid; grid-template-columns: 570px minmax(0, 1fr); gap: 112px; align-items: center; }
@@ -236,7 +197,7 @@
   .mobileNav a:hover { color: var(--teal); text-decoration: underline; text-underline-offset: 4px; }
   .topNav a:not(:last-child):hover, .textAction:hover, .footer nav a:hover { color: var(--teal); background-size: 100% 1px; }
   .topNav a:last-child:hover { background: var(--teal); border-color: var(--teal); color: var(--color-primary-foreground); }
-  .primaryButton:hover, .portfolioSave:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
+  .primaryButton:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
   .primaryButton:hover svg { transform: translateX(4px); }
   .landing .secondaryButton:hover { background: #e7f0eb; border-color: var(--teal); }
 }
@@ -268,14 +229,7 @@
   .labSection { padding: 80px 0 56px; }
   .labIntro { grid-template-columns: 550px minmax(0, 1fr); gap: 32px; }
   .labIntro h2 { font-size: 4.75rem; letter-spacing: -.042em; }
-  .portfolioPreview { margin-top: 40px; }
-  .portfolioBody { grid-template-columns: minmax(0, 1fr); padding: 32px; gap: 40px; }
-  .allocationControls { order: 2; }
-  .allocationInsights { order: 1; }
-  .allocationControls { width: 100%; }
-  .capital, .assetRow, .allocationTotal, .portfolioActions, .savedStatus { max-width: 100%; }
-  .chartLayout { gap: 32px; }
-  .labClosing { padding-top: 40px; }
+  .labDemo { grid-template-columns: minmax(0, 1fr); gap: 48px; margin-top: 40px; }
   .progressSection { padding: 80px 0; }
   .progressSection h2 { font-size: 3.5rem; margin-block: 28px; }
   .progressLayout { grid-template-columns: 400px minmax(0, 1fr); gap: 48px; }
@@ -314,8 +268,6 @@
   .lessonSectionCopy h2 { margin-block: 24px; }
   .labIntro { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .labIntro h2 { font-size: 3.875rem; }
-  .portfolioHeader { padding-inline: 28px; }
-  .portfolioBody { padding: 28px; }
   .progressSection h2 { font-size: 3rem; }
   .progressLayout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .progressImage { height: 330px; }
@@ -381,21 +333,9 @@
   .labIntro h2 { font-size: min(13.334vw, 3.25rem); line-height: 1.04; letter-spacing: -.042em; margin-top: 16px; }
   .labExplanation > p { font-size: 1.0625rem; }
   .labExplanation > small { margin-top: 16px; }
-  .portfolioPreview { margin-top: 32px; }
-  .portfolioHeader { padding: 20px; align-items: flex-start; flex-direction: column; gap: 8px; }
-  .portfolioBody { padding: 20px; gap: 36px; }
-  .allocationInsights h3 { font-size: 1.625rem; }
-  .chartLayout { flex-wrap: wrap; gap: 16px; margin-block: 24px; }
-  .donut { width: 128px; height: 128px; }
-  .donut::after { inset: 16px; }
-  .legend { gap: 16px; font-size: .875rem; }
-  .allocationInterpretation { font-size: 1.25rem; }
-  .allocationInsights > p { font-size: .9375rem; }
-  .capital > strong { font-size: 1.5rem; }
-  .assetBottom { flex-direction: column; gap: 4px; font-size: .8125rem; }
-  .portfolioActions .portfolioSave { flex: 1; }
-  .portfolioLegal { padding: 20px; }
-  .labClosing { padding-top: 32px; font-size: 1rem; }
+  .labDemo { margin-top: 32px; }
+  .labFooter { flex-direction: column; align-items: stretch; gap: 24px; margin-top: 48px; }
+  .labFooter .primaryButton { justify-content: center; }
   .progressSection { padding: 64px 0; }
   .progressSection h2 { font-size: 2.5rem; line-height: 1.1; margin-block: 28px; }
   .progressImage { height: 240px; }
@@ -419,8 +359,6 @@
   .courseRow small { margin-left: 28px; }
   .lessonBottom { flex-wrap: wrap; }
   .lessonBottom .lessonSubmit { margin-left: auto; }
-  .chartLayout { flex-wrap: wrap; }
-  .legend > span { white-space: normal; }
 }
 /* Text zoom reflows the editorial columns rather than clipping copy. */
 @media (min-width: 501px) {

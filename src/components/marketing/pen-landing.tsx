@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, CalendarCheck, CircleDashed, CircleDot, Play, Scale, ShieldCheck, type LucideIcon } from "lucide-react";
 import { DemoButton } from "@/components/auth/demo-button";
-import { LessonPreview, MobileNavigation, PortfolioPreview } from "./pen-interactions";
+import { LessonPreview, MobileNavigation } from "./pen-interactions";
+import { CrisisDrill, PortfolioLabDemo } from "./portfolio-lab-demo";
 import { MotionRoot } from "./motion/motion-root";
 import { SplitHeading, magneticProps } from "./motion/reveal";
 import { legalLinks } from "@/components/legal/legal-links";
@@ -113,9 +114,9 @@ export function PenLanding() {
       </section>
       <section className={styles.labSection} id="portfolio-lab" aria-labelledby="lab-title">
         <div className={styles.container}>
-          <div className={styles.labIntro}><div><p className={styles.eyebrow} data-reveal="fade">PORTFOLIO LAB A KRIZOVÝ NÁCVIK</p><SplitHeading id="lab-title" mode="lines">Proces,<br/>ne výnos.</SplitHeading></div><div className={styles.labExplanation} data-reveal data-reveal-delay="0.25"><p>Svůj plán si vyzkoušíš s cvičným kapitálem. Zpětná vazba ukazuje náklady, rozložení portfolia a soulad s tvým investičním plánem. Vyčkat nebo dodržet plán může být správný výsledek.</p><small>Investiční plán sestavíš v Labu hned po uložení účtu a krizový nácvik na něj navazuje. Portfolio Lab navazuje na lekce o tom, jak investice fungují.</small></div></div>
-          <div data-reveal><PortfolioPreview/></div>
-          <div className={styles.labClosing}><p data-reveal>Nejdřív plán. Pak zkouška v modelové krizi.</p></div>
+          <div className={styles.labIntro}><div><p className={styles.eyebrow} data-reveal="fade">PORTFOLIO LAB A KRIZOVÝ NÁCVIK</p><SplitHeading id="lab-title" mode="lines">Proces,<br/>ne výnos.</SplitHeading></div><div className={styles.labExplanation} data-reveal data-reveal-delay="0.25"><p>Svůj plán si vyzkoušíš s cvičným kapitálem, který dostaneš za lekce. Lab ukáže náklady, rozložení a soulad s tvým investičním plánem. A někdy je správným výsledkem prostě vyčkat.</p><small>Hodnotí se postup, ne zisk. Nic se doopravdy nekupuje.</small></div></div>
+          <div className={styles.labDemo} role="group" aria-label="Ukázka Portfolio Labu; nic nekupuje ani neukládá" data-reveal><PortfolioLabDemo/><CrisisDrill/></div>
+          <div className={styles.labFooter}><p>Výukový model s fiktivními cenami a tarify. Nejde o investiční doporučení ani odhad budoucího výnosu.</p><Link href="/onboarding" prefetch={false} className={styles.primaryButton} data-lift data-press {...magneticProps}>Začít učením <ArrowRight aria-hidden="true" size={18}/></Link></div>
         </div>
       </section>
       <section className={styles.progressSection} aria-labelledby="progress-title">
