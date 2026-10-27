@@ -68,6 +68,7 @@ const BudgetBuilder = lazyComponent(() => import("./budget-builder"), (module) =
 const FinancialCheckup = lazyComponent(() => import("./financial-checkup"), (module) => module.FinancialCheckup);
 const FeeProfileForm = lazyComponent(() => import("./fee-profile-form"), (module) => module.FeeProfileForm);
 const GoalMap = lazyComponent(() => import("./goal-map"), (module) => module.GoalMap);
+const IpsPlanCheck = lazyComponent(() => import("./ips-plan-check"), (module) => module.IpsPlanCheck);
 const ReturnCalculator = lazyComponent(() => import("./return-calculator"), (module) => module.ReturnCalculator);
 const PriceSeriesExplorer = lazyComponent(() => import("./price-series-explorer"), (module) => module.PriceSeriesExplorer);
 const HistoricalReturnsExercise = lazyComponent(() => import("./historical-returns-exercise"), (module) => module.HistoricalReturnsExercise);
@@ -95,6 +96,7 @@ const figures: Record<FigureKind, { preload: () => Promise<unknown>; render: (da
   "financial-checkup": { preload: FinancialCheckup.preload, render: ({ guest, onOutputReady }) => <FinancialCheckup guest={guest} onReady={onOutputReady} /> },
   "fee-profile": { preload: FeeProfileForm.preload, render: ({ guest }) => <FeeProfileForm guest={guest} /> },
   "goal-map": { preload: GoalMap.preload, render: ({ guest, onOutputReady }) => <GoalMap guest={guest} onReady={onOutputReady} /> },
+  "ips-builder": { preload: IpsPlanCheck.preload, render: ({ guest, onOutputReady }) => <IpsPlanCheck guest={guest} onReady={onOutputReady} /> },
   "growth-comparison": { preload: GrowthComparison.preload, render: () => <GrowthComparison /> },
   "ownership-explorer": { preload: ShareExplorer.preload, render: () => <ShareExplorer kind="ownership" /> },
   "market-cap-explorer": { preload: ShareExplorer.preload, render: () => <ShareExplorer kind="market-cap" /> },

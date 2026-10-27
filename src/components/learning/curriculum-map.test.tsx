@@ -58,8 +58,8 @@ describe("Curriculum map presentation", () => {
     const levels = curriculumMapModel(summary(availableLessons.map((lesson) => done(lesson.id))));
     expect(levels.filter((level) => level.current)).toEqual([]);
     expect(levels.find((level) => level.id === "L4")).toMatchObject({ total: 0, status: "planned", percentage: null });
-    // Counts describe published lessons: 2.1.6, 2.2.1 and 2.2.2 are the only published L2 lessons, the other L2 modules stay planned.
-    expect(levels.find((level) => level.id === "L2")!.modules.map((module) => [module.code, module.status])).toEqual([["2.1", "done"], ["2.2", "done"], ["2.3", "planned"], ["2.4", "planned"], ["2.5", "planned"]]);
+    // Counts describe published lessons: modules 2.1, 2.2 and 2.5 have published lessons, 2.3 and 2.4 stay planned.
+    expect(levels.find((level) => level.id === "L2")!.modules.map((module) => [module.code, module.status])).toEqual([["2.1", "done"], ["2.2", "done"], ["2.3", "planned"], ["2.4", "planned"], ["2.5", "done"]]);
     expect(levels.filter((level) => level.optional).map((level) => level.id)).toEqual(["L4", "L5", "L6", "V"]);
     const html = renderToStaticMarkup(createElement(CurriculumMap, { levels, milestones: noEvidence }));
     expect(html).toContain("Prohloubení");

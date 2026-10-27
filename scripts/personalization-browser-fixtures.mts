@@ -19,6 +19,7 @@ const { completeLesson } = await import("../src/features/progress/repository");
 const { saveLearnerArtifact } = await import("../src/features/artifacts/repository");
 const { CHECKUP_LESSON_ID } = await import("../src/features/lessons/before-investing/checkup-model");
 const { GOALS_LESSON_ID } = await import("../src/features/lessons/before-investing/goals-model");
+const { exampleIps } = await import("../src/features/ips/test-fixtures");
 const { executeTrade } = await import("../src/features/portfolio/repository");
 const mode = process.env.PERSONALIZATION_QA_LESSONS ?? "foundations";
 assert.ok(["foundations", "first-return", "all-published"].includes(mode));
@@ -34,6 +35,10 @@ for (const lesson of mode === "first-return" ? lessons.slice(0, 1) : lessons) {
   if (lesson.id === CHECKUP_LESSON_ID) await saveLearnerArtifact(id!, {
     content: { kind: "financial_checkup", payload: { budget: "reviewed", expensiveDebt: "none", reserve: "ready_for_goal", goals: "defined", retirement: "reviewed", nextStep: "continue_learning" } },
     sourceLessonId: lesson.id, consent: true, requestId: randomUUID(),
+  });
+  // Lesson 2.5.1 completes only with a saved complete IPS, written in the Lab builder outside the lesson.
+  if (lesson.id === "first-plan-ips") await saveLearnerArtifact(id!, {
+    content: { kind: "investment_plan", payload: exampleIps }, sourceLessonId: null, consent: true, requestId: randomUUID(),
   });
   await sql`insert into lesson_progress (user_id, lesson_id, status, last_position, updated_at) values (${id!}, ${lesson.id}, 'in_progress', ${lessonSteps(lesson.id).length - 1}, now()) on conflict (user_id, lesson_id) do update set last_position = excluded.last_position`;
   await completeLesson(id!, lesson.id);

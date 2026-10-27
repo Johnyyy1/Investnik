@@ -2,6 +2,7 @@ import { spreadAndTradingFeesLesson } from "./costs/spread-and-trading-fees";
 import { currencyConversionLesson } from "./costs/currency-conversion";
 import { costsOver30YearsLesson } from "./costs/costs-over-30-years";
 import { compareTwoBrokersLesson } from "./costs/compare-two-brokers";
+import { investmentPolicyStatementLesson } from "./first-plan/investment-policy-statement";
 import { foundationsCheckpointLesson } from "./foundations/checkpoint";
 import { platformTypesLesson } from "./broker-and-account/platform-types";
 import { whenToFileLesson } from "./czech-taxes/when-to-file";
@@ -45,7 +46,7 @@ export { emergencyFundLesson, pensionAndDipLesson };
 /** Placed, unpublished lessons awaiting expert review; never served at their public URL. */
 export const draftLessons = [foundationsCheckpointLesson, platformTypesLesson, whenToFileLesson, emergencyFundLesson, pensionAndDipLesson, scamsAndFinfluencersLesson] as const;
 
-export const authoredLessons = [financialCheckupLesson, budgetLesson, debtOrInvestLesson, goalsAndHorizonLesson, ...foundationsContent, whatIsAReturnLesson, simpleReturnsLesson, compoundingAndCumulativeReturnsLesson, comparingInvestmentsLesson, logReturnsLesson, returnsCheckpointLesson, whatIsVolatilityLesson, standardDeviationLesson, annualisingVolatilityLesson, maxDrawdownLesson, volatilityCheckpointLesson, whatIsCorrelationLesson, notCausationLesson, correlationInCrisesLesson, correlationRealDataLesson, concentrationLesson, sectorsAndCountriesLesson, etfLookThroughLesson, correlationAndRiskLesson, diversificationScenarioLesson, terAndTrackingDifferenceLesson, spreadAndTradingFeesLesson, currencyConversionLesson, costsOver30YearsLesson, compareTwoBrokersLesson, readingAFeeScheduleLesson] as const;
+export const authoredLessons = [financialCheckupLesson, budgetLesson, debtOrInvestLesson, goalsAndHorizonLesson, ...foundationsContent, whatIsAReturnLesson, simpleReturnsLesson, compoundingAndCumulativeReturnsLesson, comparingInvestmentsLesson, logReturnsLesson, returnsCheckpointLesson, whatIsVolatilityLesson, standardDeviationLesson, annualisingVolatilityLesson, maxDrawdownLesson, volatilityCheckpointLesson, whatIsCorrelationLesson, notCausationLesson, correlationInCrisesLesson, correlationRealDataLesson, concentrationLesson, sectorsAndCountriesLesson, etfLookThroughLesson, correlationAndRiskLesson, diversificationScenarioLesson, terAndTrackingDifferenceLesson, spreadAndTradingFeesLesson, currencyConversionLesson, costsOver30YearsLesson, compareTwoBrokersLesson, readingAFeeScheduleLesson, investmentPolicyStatementLesson] as const;
 
 export function getAuthoredLesson(moduleSlug: string, lessonSlug: string) {
   return authoredLessons.find((lesson) => lesson.moduleSlug === moduleSlug && lesson.slug === lessonSlug);

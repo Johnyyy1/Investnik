@@ -10,6 +10,7 @@ export const lessonFigureCatalog = {
   "financial-checkup": { owner: "curriculum", data: "learner", model: "src/features/lessons/before-investing/checkup-model.ts" },
   "fee-profile": { owner: "curriculum", data: "learner", model: "src/features/lessons/broker-and-account/fee-schedule-model.ts" },
   "goal-map": { owner: "curriculum", data: "learner", model: "src/features/lessons/before-investing/goals-model.ts" },
+  "ips-builder": { owner: "curriculum", data: "learner", model: "src/features/ips/schema.ts" },
   "state-support-calculator": { owner: "curriculum", data: "model", model: "src/features/lessons/before-investing/pension-model.ts" },
   "emergency-fund-calculator": { owner: "curriculum", data: "model", model: "src/features/lessons/before-investing/emergency-fund-model.ts" },
   "debt-vs-invest-calculator": { owner: "curriculum", data: "model", model: "src/features/lessons/before-investing/debt-model.ts" },
