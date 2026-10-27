@@ -4,7 +4,7 @@ import { PORTFOLIO_LAB_UNLOCK_CAPITAL_MINOR } from "@/features/progression/unloc
 import { LESSON_PRACTICE_CAPITAL_MINOR } from "@/features/rewards/practice-capital";
 import { modelSeries } from "@/features/training/scenarios";
 import {
-  checkAmount, CRISIS_LEVELS, crisisOutcome, DEMO_DEFAULT_AMOUNT_KC, DEMO_LESSON_CAPITAL_MINOR,
+  checkAmount, CRISIS_LEVELS, crisisOutcome, DEMO_CAPITAL_MINOR, DEMO_DEFAULT_AMOUNT_KC, DEMO_LESSON_CAPITAL_MINOR,
   DEMO_UNLOCK_CAPITAL_MINOR, demoCost, demoProcess, wholePercent,
 } from "./portfolio-lab-demo-model";
 
@@ -13,6 +13,7 @@ const [standard, lowFx] = BROKER_FEE_PROFILES.map((profile) => profile.id);
 describe("landing Portfolio Lab demo", () => {
   it("uses the reward policy amounts the product grants", () => {
     expect(DEMO_UNLOCK_CAPITAL_MINOR).toBe(PORTFOLIO_LAB_UNLOCK_CAPITAL_MINOR);
+    expect(DEMO_CAPITAL_MINOR).toBe(DEMO_UNLOCK_CAPITAL_MINOR);
     expect(DEMO_LESSON_CAPITAL_MINOR).toBe(LESSON_PRACTICE_CAPITAL_MINOR);
   });
 

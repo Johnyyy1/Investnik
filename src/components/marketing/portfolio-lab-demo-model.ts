@@ -12,7 +12,8 @@ import { MODEL_CRISIS_LEVELS } from "@/features/training/model-crisis";
  */
 export const DEMO_UNLOCK_CAPITAL_MINOR = 500_000n;
 export const DEMO_LESSON_CAPITAL_MINOR = 200_000n;
-export const DEMO_CAPITAL_MINOR = DEMO_UNLOCK_CAPITAL_MINOR;
+/** The demo starts with exactly the unlock grant. */
+export const DEMO_CAPITAL_MINOR: bigint = 500_000n;
 export const DEMO_DEFAULT_AMOUNT_KC = 4_500;
 export const DEMO_COMPARISON_AMOUNTS_KC = [2_000, 20_000] as const;
 
@@ -50,7 +51,6 @@ export function demoCost(amountKc: number, tariffId: DemoTariffId) {
     debitMinor: -cost.cashDeltaBaseMinor,
   };
 }
-export type DemoCost = ReturnType<typeof demoCost>;
 
 export type AmountCheck = { ok: true; amountKc: number } | { ok: false; message: string };
 /** Whole koruny only; the purchase plus its costs must fit in the demo capital (no negative cash). */
@@ -91,7 +91,6 @@ export function demoProcess(amountKc: number, tariffId: DemoTariffId, instrument
     trades: 1,
   };
 }
-export type DemoProcess = ReturnType<typeof demoProcess>;
 
 /** First year of the Lab's model crisis (`model-crisis-v1`): index levels for months 0–12. */
 export const CRISIS_LEVELS = MODEL_CRISIS_LEVELS.slice(0, 13).map(Number);
