@@ -7,7 +7,7 @@ Implementace [#171](https://github.com/Johnyyy1/Investnik/issues/171). Publikova
 - Průchod: 12 kroků, předpověď (nižší TER ≠ jistě levnější fond) → TER a jak se platí → rozdíl vůči indexu se vzorcem a řešeným příkladem (+8,00 %: A −0,15, B −0,20 p. b.) → samostatný výpočet (6,22 − 6,40 = −0,18 p. b.) → proč rozdíl není přesně −TER → průměr za 3 roky (−0,143 vs. −0,203 p. b.) → kolísání rozdílu (tracking error) → časté omyly → dvě ověřovací otázky → vlastní vysvětlení → Lab a shrnutí.
 - Všechna čísla jsou modelová. Lekce nejmenuje skutečné fondy ani brokery a nepoužívá datovaná fakta, proto nemá `factContext` ani odbornou revizi; srážkové daně popisuje obecně bez sazeb. KID zmiňuje jen obecně (`eu.priips_ucits` je publikačně blokovaný). Termíny podle [slovníku](../terminology.md) a definic ESMA/2014/937.
 - Odměna podle politiky v4: L2 = 60 XP a 2 000 Kč cvičného kapitálu za první dokončení. Odemčení Labu se nemění.
-- Lab: přehled ETF na detailu instrumentu odkazuje na lekci vedle údaje Nákladovost. Rozdíl vůči indexu Investník nepočítá (chybí výnosy fondu i indexu ve stejné metodice, AGENTS.md § 20) a lekce to výslovně říká.
+- Lab: přehled ETF na detailu instrumentu odkazuje na lekci vedle údaje Nákladovost. Rozdíl vůči indexu Investník nepočítá (chybí výnosy fondu i indexu ve stejné metodice, [agentní pravidla § 20](../agents/finance-and-data.md#20-backtest-metrics-and-conventions)) a lekce to výslovně říká.
 - Doporučení: nový důvod `COSTS_AFTER_FUNDS`. Modul je v úložném pořadí poslední, takže stávajícím učícím se doporučení nepředbíhá.
 
 ## Ověření
