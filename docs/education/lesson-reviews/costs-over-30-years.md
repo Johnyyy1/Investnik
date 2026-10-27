@@ -5,7 +5,7 @@ Issue: [#174](https://github.com/Johnyyy1/Investnik/issues/174). Editorial/conte
 | Brief | Implementation |
 | --- | --- |
 | Identity | `costs-over-30-years`, `module-costs`, `/learn/costs/costs-over-30-years` (slug as proposed in the brief) |
-| Placement | L2, module 2.2, code 2.2.4, required; prerequisites `costs-ter-tracking-difference`, `costs-spread-and-fees`, `foundations-risk-reward` (#171, #172, #160); skills `fund-costs`, `compounding` |
+| Placement | L2, module 2.2, code 2.2.4, required; prerequisites `costs-ter-tracking-difference`, `costs-spread-and-fees`, `foundations-risk-reward` (#171, #172, #160); skills `cost-drag` (new, with the recall item) and `compounding` |
 | Outcome | Compute the future value of a regular investment at different total costs, explain why costs grow with time and portfolio value, read a Backtesting Lab result with and without costs, and separate a fixed-return model from a historical simulation |
 | Inputs | Fictional investor Jana, 2,000 Kč at the start of each month for 30 years, assumed gross return 6% a year, total annual costs 0.2 / 1.5 / 2.5% |
 | Assessment | Prediction (~33%), calculator exercise (1,500 thousand Kč ± 1), backtest interpretation (monthly vs. no rebalancing), mastery recall and one reflection with three criteria |
