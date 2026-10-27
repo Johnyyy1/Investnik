@@ -5,6 +5,7 @@ import { chartPoints } from "@/features/instruments/history";
 import { adjustmentPolicies, type Currency } from "@/features/market-data/contracts";
 import type { MarketDataService } from "@/features/market-data/service";
 import { priceToDecimal, priceUnitsFromNumber } from "@/features/portfolio/decimal";
+import { MODEL_CRISIS_LEVELS } from "./model-crisis";
 
 export type TrainingSource =
   | { kind: "model" }
@@ -26,8 +27,7 @@ export interface TrainingScenario {
   endMonth?: CalendarMonth;
 }
 
-/** −30 % over six months, back to the start after ten more, then a slow rise. Levels are exact. */
-const MODEL_LEVELS = ["100", "94", "88", "83", "78", "74", "70", "72", "75", "78", "81", "84", "87", "90", "93", "96", "100", "102", "104", "106", "108", "110", "112", "114", "116"];
+const MODEL_LEVELS: readonly string[] = MODEL_CRISIS_LEVELS;
 // The model's calendar is arbitrary; it only fixes month lengths for MWR/TWR and the calendar rebalancing month.
 const MODEL_START_MONTH = "2000-01";
 

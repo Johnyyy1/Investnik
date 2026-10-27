@@ -2,6 +2,13 @@ import Lenis from "lenis";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import type { SectionInit } from "./types";
 
+let activeLenis: Lenis | null = null;
+/** Scroll to an absolute position through Lenis when it runs (same easing as anchors), natively otherwise. */
+export function scrollToY(y: number) {
+  if (activeLenis) activeLenis.scrollTo(y, { duration: 0.9 });
+  else window.scrollTo({ top: y });
+}
+
 /**
  * Lenis smooth scroll driven by the GSAP ticker so ScrollTrigger and Lenis share one clock.
  * In-page anchors are routed through lenis.scrollTo; the skip link (#main) stays fully native.
@@ -9,6 +16,7 @@ import type { SectionInit } from "./types";
  */
 export const initSmoothScroll: SectionInit = ({ root }) => {
   const lenis = new Lenis({ duration: 1.1, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
+  activeLenis = lenis;
   lenis.on("scroll", ScrollTrigger.update);
   const tick = (time: number) => lenis.raf(time * 1000);
   gsap.ticker.add(tick);
@@ -53,6 +61,7 @@ export const initSmoothScroll: SectionInit = ({ root }) => {
     stopLanding();
     gsap.ticker.remove(tick);
     gsap.ticker.lagSmoothing(500, 33);
+    if (activeLenis === lenis) activeLenis = null;
     lenis.destroy();
   };
 };

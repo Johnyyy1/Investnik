@@ -44,7 +44,9 @@ export const initNav: SectionInit = ({ root }) => {
       const y = self.scroll();
       gsap.to(bg, { autoAlpha: y > 24 ? 1 : 0, duration: 0.35, overwrite: "auto" });
       const keepVisible = details?.open || header.contains(document.activeElement);
-      const hide = self.direction === 1 && y > 240 && !keepVisible;
+      // While the Portfolio Lab demo is pinned the bar would cover its step tabs, so it stays away.
+      const pinned = root.hasAttribute("data-lab-pinned");
+      const hide = (pinned || (self.direction === 1 && y > 240)) && !keepVisible;
       if (hide || self.direction === -1 || y <= 240) {
         gsap.to(header, { yPercent: hide ? -110 : 0, duration: 0.45, ease: EASE.enter, overwrite: "auto" });
       }

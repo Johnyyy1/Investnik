@@ -1,79 +1,101 @@
 import { gsap, ScrollTrigger, EASE } from "@/lib/gsap";
-import { $ } from "../utils";
-import { PORTFOLIO_DEMO_EVENT, type PortfolioDemoDetail, type PortfolioDemoView } from "../events";
+import { $, $$ } from "../utils";
+import { scrollToY } from "../smooth-scroll";
+import {
+  PORTFOLIO_STEP_EVENT, PORTFOLIO_STEP_REQUEST_EVENT,
+  type PortfolioStep, type PortfolioStepDetail, type PortfolioStepRequestDetail,
+} from "../events";
 import type { SectionInit } from "../types";
 
-const FINAL: PortfolioDemoView = { stocks: 60, bonds: 30, cash: 10 };
+/**
+ * Wide enough for the side-by-side layout and tall enough for the tallest step without clipping (measured:
+ * ≈ 770 px at 1440, 795 px at 1280, 840 px at 1200, plus the 16 px top offset). In em so a larger default
+ * font size needs a taller window.
+ */
+export const PORTFOLIO_PIN_QUERY = "(min-width: 87.5em) and (min-height: 49.5em), (min-width: 80em) and (min-height: 51em), (min-width: 75em) and (min-height: 54em)";
+const PIN_TOP = 16;
+/** Scroll distance per step while pinned. */
+const STEP_SCROLL = 720;
+const STEPS = 3;
 
 /**
- * Portfolio Lab: the 60 / 30 / 10 split grows from zero (sliders, amounts, donut and legend all tween live
- * through the preview's own render), "100 %" lands last with a drawn tick, then the "Můj první mix" hint is
- * acted out once: stocks 60 → 40 % with cash taking the difference (same rule as the slider), then back.
- * Values are display-only; the preview's real mix is never changed. Any user input ends the demo at once.
+ * Portfolio Lab demo.
+ *
+ * Pinned (tall desktops): the demo and the crisis drill hold in place while the scroll walks through the
+ * three steps (purchase → off-plan card → process feedback); a thin bar under the tabs shows the progress.
+ * After step 3 the page scrolls on. Tabs and step buttons scroll to their step, so position and state agree.
+ *
+ * Everywhere with motion: the step-1 cost rows settle in one by one and the crisis drill draws its model
+ * index. Only transform, opacity and stroke are animated; any input ends the entrance at once.
  */
 export const initPortfolio: SectionInit = ({ root, c, inContext }) => {
-  const preview = $(root, "[data-portfolio]");
-  if (!preview) return;
-  const total = $(preview, "[data-total]")!;
-  const tickPath = $(preview, "[data-total-tick]")!.querySelector("path")!;
-  const donut = $(preview, "[data-donut]")!;
-  const hint = $(preview, "[data-portfolio-hint]")!;
-  const saveStatus = $(preview, "[data-saved-status]")!;
+  const demo = $(root, "[data-portfolio-demo]");
+  const crisis = $(root, "[data-crisis]");
+  const pinTarget = $(root, "[data-lab-demo]");
+  if (!demo || !crisis || !pinTarget) return;
+  const rows = $$(demo, "[data-demo-step='1'] [data-cost-rows] > div");
+  const total = $(demo, "[data-demo-step='1'] [data-cost-total]");
+  const line = $(crisis, "[data-crisis-line]");
+  const low = $(crisis, "[data-crisis-low]");
 
-  const state: PortfolioDemoView = { stocks: 0, bonds: 0, cash: 0 };
-  const send = (view: PortfolioDemoView | null) => preview.dispatchEvent(new CustomEvent<PortfolioDemoDetail>(PORTFOLIO_DEMO_EVENT, { detail: { view } }));
-  const push = () => send({ ...state });
-
-  send({ ...state });
-  gsap.set(total, { autoAlpha: 0, y: 8 });
-  gsap.set(tickPath, { drawSVG: "0%" });
-  gsap.set(donut, { rotation: -60, scale: 0.9 });
+  // --- Entrance -------------------------------------------------------------------------------------------
+  gsap.set(rows, { autoAlpha: 0, y: 8 });
+  if (line) gsap.set(line, { drawSVG: "0%" });
+  if (low) gsap.set(low, { scale: 0, transformOrigin: "50% 50%" });
 
   let tl: gsap.core.Timeline | undefined;
   const finish = () => {
     tl?.kill();
-    Object.assign(state, FINAL);
-    send(null);
-    gsap.set(total, { autoAlpha: 1, y: 0 });
-    gsap.set(tickPath, { drawSVG: "100%" });
-    gsap.set(donut, { rotation: 0, scale: 1 });
-    gsap.set(hint, { clearProps: "transform" });
-    preview.removeEventListener("pointerdown", finish);
-    preview.removeEventListener("keydown", finish);
+    gsap.set(rows, { autoAlpha: 1, y: 0 });
+    if (total) gsap.set(total, { clearProps: "transform" });
+    if (line) gsap.set(line, { drawSVG: "100%" });
+    if (low) gsap.set(low, { scale: 1 });
+    for (const el of [demo, crisis]) { el.removeEventListener("pointerdown", finish); el.removeEventListener("keydown", finish); }
   };
-  preview.addEventListener("pointerdown", finish);
-  preview.addEventListener("keydown", finish);
+  for (const el of [demo, crisis]) { el.addEventListener("pointerdown", finish); el.addEventListener("keydown", finish); }
 
   ScrollTrigger.create({
-    trigger: preview, start: c.mobile ? "top 75%" : "top 65%", once: true,
+    trigger: demo, start: c.mobile ? "top 75%" : "top 65%", once: true,
     onEnter: () => inContext(() => {
-      const grow = c.mobile ? 1 : 1.3;
-      tl = gsap.timeline({ onUpdate: push, onComplete: finish });
-      tl.to(donut, { rotation: 0, scale: 1, duration: grow + 0.4, ease: EASE.enterLong }, 0)
-        .to(state, { stocks: 60, duration: grow, ease: EASE.enter }, 0)
-        .to(state, { bonds: 30, duration: grow, ease: EASE.enter }, 0.15)
-        .to(state, { cash: 10, duration: grow, ease: EASE.enter }, 0.3)
-        .to(total, { autoAlpha: 1, y: 0, duration: 0.5, ease: EASE.enter }, ">-0.1")
-        .to(tickPath, { drawSVG: "100%", duration: 0.45, ease: "power2.out" }, "<0.15")
-        .fromTo(total.querySelector("strong"), { scale: 0.9 }, { scale: 1, duration: 0.5, ease: EASE.reward, transformOrigin: "100% 50%" }, "<");
-      if (!c.mobile) {
-        // "Zkus snížit akcie na 40 %." – acted out once, then settled back.
-        tl.to(hint, { x: 6, duration: 0.35, ease: "power2.out", yoyo: true, repeat: 1 }, "+=1")
-          .to(state, { stocks: 40, cash: 30, duration: 1.4, ease: EASE.scrub }, "+=0.2")
-          .to(state, { stocks: 60, cash: 10, duration: 1.2, ease: EASE.scrub }, "+=1.8");
-      }
+      tl = gsap.timeline({ onComplete: finish });
+      tl.to(rows, { autoAlpha: 1, y: 0, duration: 0.45, ease: EASE.enter, stagger: 0.12 }, 0.1);
+      if (total) tl.fromTo(total, { scale: 0.9 }, { scale: 1, duration: 0.5, ease: EASE.enter, transformOrigin: "100% 50%" }, ">-0.1");
+      if (line) tl.to(line, { drawSVG: "100%", duration: c.mobile ? 1 : 1.4, ease: EASE.enterLong }, 0.2);
+      if (low) tl.to(low, { scale: 1, duration: 0.4, ease: EASE.enter }, c.mobile ? 0.7 : 0.9);
     }),
   });
 
-  // Save: the press itself is handled by data-press; the confirmation text eases in after React renders it.
-  const save = preview.querySelector<HTMLButtonElement>("[data-press]");
-  const onSave = () => requestAnimationFrame(() => {
-    if (saveStatus.textContent) gsap.fromTo(saveStatus, { autoAlpha: 0, y: 6 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: EASE.enter });
+  // --- Scroll-driven steps --------------------------------------------------------------------------------
+  const send = (detail: PortfolioStepDetail) => demo.dispatchEvent(new CustomEvent<PortfolioStepDetail>(PORTFOLIO_STEP_EVENT, { detail }));
+  const mm = gsap.matchMedia();
+  mm.add(PORTFOLIO_PIN_QUERY, () => {
+    let current: PortfolioStep = 1;
+    send({ driven: true, step: current });
+    const stepAt = (progress: number) => Math.min(STEPS, Math.floor(progress * STEPS) + 1) as PortfolioStep;
+    const bar = () => $(demo, "[data-step-progress]"); // rendered by React once driven mode is on
+    const trigger = ScrollTrigger.create({
+      trigger: pinTarget, start: `top top+=${PIN_TOP}`, end: `+=${STEP_SCROLL * STEPS}`,
+      pin: true, anticipatePin: 1, invalidateOnRefresh: true,
+      onToggle: self => { root.toggleAttribute("data-lab-pinned", self.isActive); },
+      onUpdate: self => {
+        const progressBar = bar();
+        if (progressBar) gsap.set(progressBar, { scaleX: self.progress });
+        const next = stepAt(self.progress);
+        if (next !== current) { current = next; send({ step: next }); }
+      },
+    });
+    // Land a little inside the step's range so rounding never shows the neighbour.
+    const onRequest = (event: Event) => {
+      const { step } = (event as CustomEvent<PortfolioStepRequestDetail>).detail;
+      scrollToY(trigger.start + (trigger.end - trigger.start) * ((step - 1) / STEPS + 0.04));
+    };
+    demo.addEventListener(PORTFOLIO_STEP_REQUEST_EVENT, onRequest);
+    return () => {
+      demo.removeEventListener(PORTFOLIO_STEP_REQUEST_EVENT, onRequest);
+      root.removeAttribute("data-lab-pinned");
+      send({ driven: false });
+    };
   });
-  save?.addEventListener("click", onSave);
 
-  return () => {
-    save?.removeEventListener("click", onSave);
-    finish();
-  };
+  return () => { mm.revert(); finish(); };
 };
