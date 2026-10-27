@@ -1,6 +1,6 @@
 # Krizový nácvik (simulated time)
 
-Issue #139. **Lab → Krizový nácvik** (`/lab/training`) lets a learner step through a crisis month by month with fictional training money and check whether they keep their own IPS (#128). It is the shared engine for lessons 2.5.2, 2.5.4, B.1.1, B.1.2, B.1.10 and Capstone A; wiring those lessons to it is separate work.
+Issue #139. **Lab → Krizový nácvik** (`/lab/training`) lets a learner step through a crisis month by month with fictional training money and check whether they keep their own IPS (#128). It is the shared engine for lessons 2.5.2, 2.5.4, B.1.1, B.1.2, B.1.10 and Capstone A. Lesson 2.5.2 (#196) is wired through the `training-contributions-v1` mission (docs/guided-missions.md); the other lessons are separate work.
 
 ## Isolation
 

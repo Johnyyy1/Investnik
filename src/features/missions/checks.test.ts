@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { checkIpsPurchase, checkScenario, type ScenarioDecision } from "./checks";
+import { checkIpsPurchase, checkScenario, contributionMonthsWithBuy, type ScenarioDecision } from "./checks";
 import { exampleIps } from "@/features/ips/test-fixtures";
 import { requireMissions } from "./requirements";
 import { getMission } from "./registry";
+import { DEFAULT_FEE_PROFILE } from "@/features/portfolio/costs";
+import { decimalToPriceUnits } from "@/features/portfolio/decimal";
+import { replayTraining, trainingPlanFromIps, type TrainingSetup } from "@/features/training/domain";
+import { modelSeries } from "@/features/training/scenarios";
 
 export const decision: ScenarioDecision = { allocation: { svet: 80, tech: 0, cip: 0, energie: 0, banka: 0, leky: 0 }, prediction: "fail" };
 describe("server mission criteria", () => {
@@ -25,6 +29,21 @@ describe("server mission criteria", () => {
     for (const wrong of [{ ...trade, side: "SELL" }, { ...trade, instrumentAssetType: "equity" }, { ...trade, instrumentId: "US:VWCE" }, { ...trade, executedAt: new Date(at.getTime() - 1) }]) expect(checkIpsPurchase(exampleIps, at, [wrong])).toBeUndefined();
     expect(checkIpsPurchase({ ...exampleIps, allocation: { lines: [{ assetClass: "equity", weightBps: 8000 }], cashBps: 2000 } }, at, [trade])).toBeUndefined();
     expect(checkIpsPurchase({}, at, [trade])).toBeUndefined();
+  });
+  it("counts only months whose IPS contribution was invested in the same month, from the replayed training log", () => {
+    const series = modelSeries();
+    const setup: TrainingSetup = {
+      dates: series.points.map(({ date }) => date), prices: series.points.map(({ price }) => decimalToPriceUnits(price)),
+      initialCapitalMinor: 10_000_000n, feeProfile: DEFAULT_FEE_PROFILE, plan: { ...trainingPlanFromIps(exampleIps, 2), contributionMinor: "250000" },
+    };
+    const buy = { kind: "buy", amountMinor: 250_000n } as const, advance = { kind: "advance" } as const;
+    const regular = Array.from({ length: 12 }, () => [advance, buy]).flat();
+    expect(contributionMonthsWithBuy(replayTraining(setup, regular))).toBe(12);
+    // A lump sum in month 0 and twelve months of only advancing leaves every contribution as cash.
+    expect(contributionMonthsWithBuy(replayTraining(setup, [buy, ...Array.from({ length: 12 }, () => advance)]))).toBe(0);
+    // Two buys in one month still count once; selling is not a purchase.
+    expect(contributionMonthsWithBuy(replayTraining(setup, [advance, buy, buy, advance, { kind: "sell", quantityUnits: 1_000_000_000n }]))).toBe(1);
+    expect(contributionMonthsWithBuy(replayTraining({ ...setup, plan: { ...setup.plan, contributionMinor: "0" } }, regular))).toBe(0);
   });
   it("binds requirements to the registered lesson and server evidence", async () => {
     expect(() => getMission("constructor")).toThrow();

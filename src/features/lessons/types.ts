@@ -39,7 +39,7 @@ export type DocumentColumn = { id: string; label: string; align?: "start" | "end
 export type DocumentRow = { id: string; cells: Record<string, string>; selectable?: boolean; note: string };
 
 /** Existing Lab routes a lesson mission may open. A mission never points at planned functionality. */
-export type LabMissionTarget = "/lab/portfolio" | "/lab/backtesting" | "/lab/compare";
+export type LabMissionTarget = "/lab/portfolio" | "/lab/backtesting" | "/lab/compare" | "/lab/training";
 
 export type LessonBlock =
   | ExerciseBlock

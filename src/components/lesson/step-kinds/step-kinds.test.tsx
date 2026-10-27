@@ -65,7 +65,7 @@ describe("content step kinds", () => {
     expect(html).toContain('href="/lab/portfolio"');
     expect(html).toContain('target="_blank"');
     expect(html).toContain("Přeskočit, použiju ukázková data");
-    expect(Object.keys(labMissionTargets).sort()).toEqual(["/lab/backtesting", "/lab/compare", "/lab/portfolio"]);
+    expect(Object.keys(labMissionTargets).sort()).toEqual(["/lab/backtesting", "/lab/compare", "/lab/portfolio", "/lab/training"]);
   });
 
   it("L: shows registry values and a calm pending state with the educational notice", () => {

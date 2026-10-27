@@ -4,7 +4,7 @@ Missions connect a lesson step to server-verified evidence. They never award XP 
 
 ## Authoring and rollout
 
-The seven lesson codes listed in #142 (2.5.2, 2.5.3, 3.4.5, 3.4.6, 3.5.2, B.1.3, B.1.5) are not authored lessons in the current registry. This implementation supplies the engine and working isolated exercise routes; it does not publish placeholder lessons or add new requirements to old published steps. The existing optional `labMission` continues to show sample analysis.
+Of the seven lesson codes listed in #142 (2.5.2, 2.5.3, 3.4.5, 3.4.6, 3.5.2, B.1.3, B.1.5), only 2.5.2 (#196) is published; it requires `training-contributions-v1`. The others are not authored lessons in the current registry. The original #142 implementation supplied the engine and working isolated exercise routes; it did not publish placeholder lessons or add new requirements to old published steps. The existing optional `labMission` continues to show sample analysis.
 
 A new lesson opts in by adding `missionId` to its `labMission` block and registering a definition in [the mission registry](../src/features/missions/registry.ts):
 
@@ -22,6 +22,8 @@ Criteria are versioned by the mission/check ID. Do not repurpose an ID or change
 
 - `ips-etf-purchase-v1` (personal, reserved for the future first-practice-purchase lesson): the server finds the latest valid saved IPS with explicit instrument identities and a matching ETF BUY executed after that version was saved. Free-text instrument names, sales, investment returns, trade counts and client-supplied trade IDs cannot prove completion. The successful evidence records the IPS revision ID and trade ID. The mission page explicitly says it uses the personal *practice* portfolio. A learner without capital gets a path back to learning; no extra trade is requested once evidence exists.
 - `diversification-rules-v1` (scenario) and `allocation-training-v1` (training): `/lab/missions/{id}` reuses the existing six fictional instruments and four declared diversification rules. The learner submits only allocation percentages and a prediction. The server strictly validates their shape and limits, evaluates the rules and appends the decision and result. A wrong prediction or an unfavorable fictional return does not fail a portfolio that meets the rules. These are exercises in a fixed allocation, not a persistent training account, recurring contributions or new trading rules.
+
+- `training-contributions-v1` (training, lesson 2.5.2 `first-plan-automation`): server-owned like the personal check; the client sends no decision. The server replays every Krizový nácvik session of the learner (#139) from its append-only `training_action` log and counts months in which the IPS contribution arrived and at least one BUY happened in that same month. Twelve such months in one session complete the mission. A lump sum, contributions left as cash, sales, returns and the scenario's outcome do not count. The evidence records the session ID, its frozen IPS version and contribution, and the counted months. Verification reads training data only and writes nothing there or to the portfolio.
 
 Other tasks in #142, such as rebalancing by contribution and releasing cash in a crisis, need their own authored scenario, immutable source evidence and deterministic check before registration. Do not map them to the diversification check or pretend their outputs exist.
 
