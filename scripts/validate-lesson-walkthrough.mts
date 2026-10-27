@@ -105,7 +105,7 @@ try {
       await page.getByRole("heading", { level: 2, name: step.title, exact: true }).waitFor();
       await idle();
       await audit(where, width);
-      if (lesson.id === "costs-spread-and-fees") {
+      if (["costs-spread-and-fees", "costs-currency-conversion"].includes(lesson.id)) {
         for (const size of [1440, 390]) {
           await page.setViewportSize({ width: size, height: 900 });
           await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; });
@@ -335,7 +335,7 @@ try {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }
-    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule"].includes(lesson.id)) {
+    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule", "costs-currency-conversion"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "200000" }, `${lesson.id} earns the L2 Practice Capital once`);
     }

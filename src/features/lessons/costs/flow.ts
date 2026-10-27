@@ -1,6 +1,19 @@
 import type { StepDefinition } from "../types";
 
 export const costsSteps: Readonly<Record<string, readonly StepDefinition[]>> = {
+  "costs-currency-conversion": [
+    { title: "Platí Pavel za měnu?", blocks: ["opening", "prediction"] },
+    { title: "Kolik stojí konverze", blocks: ["conversion", "worked"] },
+    { title: "Spočítej konverzi", blocks: ["conversion-practice"] },
+    { title: "Tam a zpět", blocks: ["round-trip", "round-trip-practice"] },
+    { title: "Měna fondu není měnové riziko", blocks: ["currency-risk", "risk-practice"] },
+    { title: "Když koruna posílí", blocks: ["strong-koruna"] },
+    { title: "Kdy měnové riziko řešit", blocks: ["hedging"] },
+    { title: "Jak ušetřit na konverzi", blocks: ["reduce", "misconceptions"] },
+    { title: "Ověření znalostí", kind: "mastery", blocks: ["recall"] },
+    { title: "Vysvětli to vlastními slovy", blocks: ["reflection"] },
+    { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
+  ],
   "costs-spread-and-fees": [
     { title: "Stejný ceník, jiný dopad", blocks: ["opening", "prediction"] },
     { title: "Náklad poloviny spreadu", blocks: ["spread", "model-scope", "spread-practice"] },
