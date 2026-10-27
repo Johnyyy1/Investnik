@@ -16,8 +16,16 @@
 @media (hover: hover) and (pointer: fine) { .tab[aria-selected="false"]:hover { border-color: #f7f2e8b3; color: var(--color-background); } }
 
 /* Stacked step labels (mobile) */
-.stepBlock[hidden] { display: none; }
-.stepBlock + .stepBlock { margin-top: 24px; }
+.panelList .stepBlock + .stepBlock { margin-top: 24px; }
+/* Tabs: all panels share one grid cell; the inactive ones stay laid out but invisible and inert. */
+.panelStack { display: grid; }
+.panelStack > .stepBlock { grid-area: 1 / 1; display: flex; flex-direction: column; transition: opacity .28s ease, visibility .28s; }
+.panelStack > .stepBlock > .panel { flex: 1; display: flex; flex-direction: column; }
+.panelStack > .stepBlock > .panel > :last-child { flex: 1; }
+.panelStack > .stepBlock[data-inactive] { opacity: 0; visibility: hidden; }
+.tabsWrap { display: flex; flex-direction: column; gap: 10px; }
+.scrollProgress { height: 2px; border-radius: 1px; background: #f7f2e833; overflow: hidden; }
+.scrollProgress span { display: block; height: 100%; background: var(--color-warning); transform: scaleX(0); transform-origin: 0 50%; }
 .stepLabel { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; color: var(--color-background); }
 .stepLabel > span { flex-shrink: 0; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--color-background); color: var(--color-foreground); font-size: .8125rem; font-weight: 700; }
 .stepLabel h3 { font-size: 1.25rem !important; line-height: 1.2; letter-spacing: -.01em !important; display: flex; flex-direction: column; }
@@ -115,20 +123,24 @@
 .cardActions { display: flex; flex-direction: column; gap: 8px; }
 
 /* Step 3 */
-.processBody { display: flex; flex-direction: column; gap: 16px; padding: 28px; }
+.processBody { display: flex; flex-direction: column; gap: 14px; padding: 24px 28px 28px; }
 .processHead { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
 .processHead .panelHeading h4 { font-size: 1.375rem; }
 .valueMeta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: .75rem; color: var(--color-muted); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .processGrid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start; }
 .criteria { list-style: none; margin: 0; padding: 0; border: 1px solid var(--color-divider); border-radius: 10px; }
-.criterion { padding: 14px 16px; border-bottom: 1px solid var(--color-divider); display: flex; flex-direction: column; gap: 4px; }
+/* Two columns keep step 3 about as tall as step 1, so the pinned demo fits laptop viewports. */
+.criteria { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.criteria > .criterion:nth-child(odd) { border-right: 1px solid var(--color-divider); }
+.criteria > .criterion:nth-last-child(-n + 2) { border-bottom: 0; }
+.criterion { padding: 12px 16px; border-bottom: 1px solid var(--color-divider); display: flex; flex-direction: column; gap: 4px; }
 .criterion:last-child { border-bottom: 0; }
 .criterionHead { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .criterionHead h5 { font-family: var(--font-sans); font-size: .875rem; font-weight: 600; margin: 0; }
 .criterion > strong { font-size: .875rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .criterion > p { font-size: .75rem; color: var(--color-muted); }
 .criterion details { font-size: .75rem; }
-.criterion summary { display: inline-flex; align-items: center; min-height: 32px; color: var(--color-primary); font-weight: 600; cursor: pointer; }
+.criterion summary { display: inline-flex; align-items: center; min-height: 28px; color: var(--color-primary); font-weight: 600; cursor: pointer; }
 .criterion details p { color: var(--color-secondary); line-height: 1.5; padding-bottom: 4px; }
 .criterionStatus { display: inline-flex; align-items: center; gap: 4px; font-size: .75rem; font-weight: 600; white-space: nowrap; }
 .criterionStatus[data-kind="in"] { color: var(--color-primary); }
@@ -188,6 +200,9 @@
 }
 @media (max-width: 800px) {
   .body { grid-template-columns: minmax(0, 1fr); }
+  .criteria { grid-template-columns: minmax(0, 1fr); }
+  .criteria > .criterion:nth-child(odd) { border-right: 0; }
+  .criteria > .criterion:nth-last-child(2) { border-bottom: 1px solid var(--color-divider); }
   .processBody { padding: 24px; }
   .processHead { flex-direction: column; align-items: flex-start; gap: 8px; }
   .valueMeta { align-items: flex-start; text-align: left; }

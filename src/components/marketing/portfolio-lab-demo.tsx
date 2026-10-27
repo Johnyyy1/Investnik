@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { ArrowRight, CircleAlert, CircleCheck, Info, MapPinned, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPracticeCapitalMinor as money } from "@/features/rewards/presentation";
@@ -10,9 +10,10 @@ import {
   DEMO_DEFAULT_AMOUNT_KC, DEMO_INSTRUMENTS, DEMO_LESSON_CAPITAL_MINOR, DEMO_PLAN, DEMO_TARIFFS, DEMO_UNLOCK_CAPITAL_MINOR, demoCost,
   demoProcess, tariff, wholePercent, type CrisisChoice, type DemoInstrumentId, type DemoTariffId,
 } from "./portfolio-lab-demo-model";
+import { PORTFOLIO_STEP_EVENT, PORTFOLIO_STEP_REQUEST_EVENT, type PortfolioStep, type PortfolioStepDetail, type PortfolioStepRequestDetail } from "./motion/events";
 import styles from "./portfolio-lab-demo.module.css";
 
-type Step = 1 | 2 | 3;
+type Step = PortfolioStep;
 const STEPS: readonly { step: Step; label: string }[] = [
   { step: 1, label: "Nákup s náklady" },
   { step: 2, label: "Karta v okamžiku rozhodnutí" },
@@ -38,24 +39,56 @@ const PLAN_LINE = `${planPct(DEMO_PLAN.etfBps)} ETF, ${planPct(DEMO_PLAN.cashBps
  * Landing illustration of the Portfolio Lab loop (Pen 14.2): a purchase with real fictional-tariff costs,
  * a decision-time card for an off-plan instrument, and process feedback against an illustrative plan,
  * plus a one-decision crisis drill. Local state only: no portfolio, session, reward or request.
+ *
+ * On tall desktops the motion layer pins the demo and drives the step from the scroll position
+ * (PORTFOLIO_STEP_EVENT). In that mode tabs and step buttons ask it to scroll to the step instead of
+ * switching locally, so the scroll position and the visible step never disagree. Until the visitor picks an
+ * instrument, the scroll also acts out the off-plan choice on step 2.
  */
 export function PortfolioLabDemo() {
   const tabs = useTabsLayout();
   const [step, setStep] = useState<Step>(1);
+  const [driven, setDriven] = useState(false);
   const [amountRaw, setAmountRaw] = useState(formatDecimal(DEMO_DEFAULT_AMOUNT_KC));
   const [tariffId, setTariffId] = useState<DemoTariffId>(DEMO_TARIFFS[0].id);
   const [instrument, setInstrument] = useState<DemoInstrumentId>("etf");
   const [waited, setWaited] = useState(false);
+  const picked = useRef(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const baseId = useId();
   const panelRefs = useRef<Record<Step, HTMLElement | null>>({ 1: null, 2: null, 3: null });
   const tabRefs = useRef<Record<Step, HTMLButtonElement | null>>({ 1: null, 2: null, 3: null });
   const amount = checkAmount(amountRaw, tariffId);
 
-  function goTo(next: Step) {
+  // Layout effect: the listener must exist before the motion layer's layout effect switches driven mode on.
+  useLayoutEffect(() => {
+    const element = rootRef.current;
+    if (!element) return;
+    const onStep = (event: Event) => {
+      const { driven: nextDriven, step: nextStep } = (event as CustomEvent<PortfolioStepDetail>).detail;
+      if (nextDriven !== undefined) setDriven(nextDriven);
+      if (nextStep === undefined) return;
+      setStep(nextStep);
+      setWaited(false);
+      if (!picked.current) setInstrument(nextStep === 2 ? "stock" : "etf");
+    };
+    element.addEventListener(PORTFOLIO_STEP_EVENT, onStep);
+    return () => element.removeEventListener(PORTFOLIO_STEP_EVENT, onStep);
+  }, []);
+
+  function show(next: Step) {
     setWaited(false);
-    if (tabs) setStep(next);
-    // Focus the destination heading after React shows it; on mobile this also scrolls it into view.
+    if (driven) rootRef.current?.dispatchEvent(new CustomEvent<PortfolioStepRequestDetail>(PORTFOLIO_STEP_REQUEST_EVENT, { detail: { step: next } }));
+    else if (tabs) setStep(next);
+  }
+  function goTo(next: Step) {
+    show(next);
+    // Focus the destination heading once it shows; on mobile this also scrolls it into view.
     requestAnimationFrame(() => panelRefs.current[next]?.querySelector<HTMLElement>("[data-panel-heading]")?.focus({ preventScroll: tabs }));
+  }
+  function pick(id: DemoInstrumentId) {
+    picked.current = true;
+    setInstrument(id);
   }
   function onTabKey(event: React.KeyboardEvent, current: Step) {
     const order: Step[] = [1, 2, 3];
@@ -64,14 +97,16 @@ export function PortfolioLabDemo() {
       : event.key === "Home" ? 1 : event.key === "End" ? 3 : null;
     if (!next) return;
     event.preventDefault();
-    setStep(next);
-    tabRefs.current[next]?.focus();
+    show(next);
+    tabRefs.current[next]?.focus({ preventScroll: true });
   }
 
   const panel = (current: Step, children: ReactNode) => {
     const label = STEPS[current - 1].label;
-    const hidden = tabs && step !== current;
-    return <section key={current} ref={(element) => { panelRefs.current[current] = element; }} className={styles.stepBlock} hidden={hidden}
+    // With tabs every panel shares one grid cell, so the demo keeps the tallest step's height and never jumps.
+    const inactive = tabs && step !== current;
+    return <section key={current} ref={(element) => { panelRefs.current[current] = element; }} className={styles.stepBlock}
+      data-inactive={inactive ? "" : undefined} inert={inactive} aria-hidden={inactive || undefined}
       id={`${baseId}-panel-${current}`} role={tabs ? "tabpanel" : undefined} aria-labelledby={tabs ? `${baseId}-tab-${current}` : `${baseId}-step-${current}`}
       data-demo-step={current}>
       {!tabs && <div className={styles.stepLabel}><span aria-hidden="true">{current}</span><h3 id={`${baseId}-step-${current}`}><small>Krok {current} ze 3</small>{label}</h3></div>}
@@ -85,19 +120,24 @@ export function PortfolioLabDemo() {
     </section>;
   };
 
-  return <div className={styles.demo} data-portfolio-demo>
-    {tabs && <div role="tablist" aria-label="Kroky ukázky Portfolio Labu" className={styles.tablist}>
-      {STEPS.map(({ step: tab, label }) => <button key={tab} type="button" role="tab" id={`${baseId}-tab-${tab}`} aria-controls={`${baseId}-panel-${tab}`}
-        aria-selected={step === tab} tabIndex={step === tab ? 0 : -1} className={styles.tab} ref={(element) => { tabRefs.current[tab] = element; }}
-        onClick={() => { setWaited(false); setStep(tab); }} onKeyDown={(event) => onTabKey(event, tab)}>
-        <span className={styles.tabNumber} aria-hidden="true">{tab}</span>{label}
-      </button>)}
+  return <div ref={rootRef} className={styles.demo} data-portfolio-demo data-driven={driven ? "" : undefined}>
+    {tabs && <div className={styles.tabsWrap}>
+      <div role="tablist" aria-label="Kroky ukázky Portfolio Labu" className={styles.tablist}>
+        {STEPS.map(({ step: tab, label }) => <button key={tab} type="button" role="tab" id={`${baseId}-tab-${tab}`} aria-controls={`${baseId}-panel-${tab}`}
+          aria-selected={step === tab} tabIndex={step === tab ? 0 : -1} className={styles.tab} ref={(element) => { tabRefs.current[tab] = element; }}
+          onClick={() => show(tab)} onKeyDown={(event) => onTabKey(event, tab)}>
+          <span className={styles.tabNumber} aria-hidden="true">{tab}</span>{label}
+        </button>)}
+      </div>
+      {driven && <div className={styles.scrollProgress} aria-hidden="true"><span data-step-progress /></div>}
     </div>}
-    {panel(1, <PurchaseStep amountRaw={amountRaw} setAmountRaw={setAmountRaw} tariffId={tariffId} setTariffId={setTariffId}
-      instrument={instrument} waited={waited} onWait={() => setWaited(true)} onChange={() => goTo(2)} onBuy={() => goTo(3)} />)}
-    {panel(2, <DecisionStep amountRaw={amountRaw} setAmountRaw={setAmountRaw} tariffId={tariffId} instrument={instrument}
-      setInstrument={setInstrument} onBack={() => { setInstrument("etf"); goTo(1); }} onContinue={() => goTo(1)} />)}
-    {panel(3, <ProcessStep amountKc={amount.ok ? amount.amountKc : null} tariffId={tariffId} instrument={instrument} onFix={() => goTo(1)} />)}
+    <div className={tabs ? styles.panelStack : styles.panelList}>
+      {panel(1, <PurchaseStep amountRaw={amountRaw} setAmountRaw={setAmountRaw} tariffId={tariffId} setTariffId={setTariffId}
+        instrument={instrument} waited={waited} onWait={() => setWaited(true)} onChange={() => goTo(2)} onBuy={() => goTo(3)} />)}
+      {panel(2, <DecisionStep amountRaw={amountRaw} setAmountRaw={setAmountRaw} tariffId={tariffId} instrument={instrument}
+        setInstrument={pick} onBack={() => { picked.current = false; setInstrument("etf"); goTo(1); }} onContinue={() => goTo(1)} />)}
+      {panel(3, <ProcessStep amountKc={amount.ok ? amount.amountKc : null} tariffId={tariffId} instrument={instrument} onFix={() => goTo(1)} />)}
+    </div>
   </div>;
 }
 

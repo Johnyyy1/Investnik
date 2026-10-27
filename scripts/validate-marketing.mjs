@@ -222,6 +222,27 @@ try {
   assert.equal((await (await context.request.get(`${baseURL}/api/auth/get-session`)).json()), null, "Previews never create an anonymous identity");
   checks.push("Both lesson previews are read-only (no controls) and show the answered state. Portfolio Lab demo: real tariff costs for both profiles, keyboard tabs, a non-blocking off-plan card, capital guard, explainable criteria without a score, crisis drill judged by the plan; no mutation request or session creation.");
   await page.emulateMedia({ reducedMotion: "no-preference" });
+  // Tall desktop with motion: the demo pins and the scroll walks 1 → 2 → 3, then the page scrolls on.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(baseURL);
+  await page.locator("[data-portfolio-demo][data-driven]").waitFor();
+  await page.mouse.move(720, 450);
+  const seen = [];
+  let released = false;
+  for (let i = 0; i < 400 && !released; i++) {
+    await page.mouse.wheel(0, 120);
+    await page.waitForTimeout(40);
+    const state = await page.evaluate(() => ({
+      pinned: document.querySelector("[data-lab-pinned]") !== null,
+      step: document.querySelector("#portfolio-lab [role=tab][aria-selected=true] span")?.textContent,
+      top: document.querySelector("#portfolio-lab").getBoundingClientRect().bottom,
+    }));
+    if (state.pinned && seen.at(-1) !== state.step) seen.push(state.step);
+    released = seen.length > 0 && !state.pinned && state.top < 900;
+  }
+  assert.deepEqual(seen, ["1", "2", "3"], "Pinned scroll walks the three steps in order");
+  assert.equal(released, true, "The page scrolls on after step 3");
+  checks.push("Tall desktop with motion: the Portfolio Lab demo pins, scroll walks steps 1 → 2 → 3 and releases.");
   for (const [label, path, heading] of [["Začít vstupním testem", "/onboarding", "Co se chceš naučit?"], ["Přihlásit se", "/sign-in", "Vítej zpět"]]) {
     await page.goto(baseURL);
     await page.getByRole("link", { name: label, exact: true }).first().click();

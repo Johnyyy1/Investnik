@@ -115,7 +115,7 @@ export function PenLanding() {
       <section className={styles.labSection} id="portfolio-lab" aria-labelledby="lab-title">
         <div className={styles.container}>
           <div className={styles.labIntro}><div><p className={styles.eyebrow} data-reveal="fade">PORTFOLIO LAB A KRIZOVÝ NÁCVIK</p><SplitHeading id="lab-title" mode="lines">Proces,<br/>ne výnos.</SplitHeading></div><div className={styles.labExplanation} data-reveal data-reveal-delay="0.25"><p>Svůj plán si vyzkoušíš s cvičným kapitálem, který dostaneš za lekce. Lab ukáže náklady, rozložení a soulad s tvým investičním plánem. A někdy je správným výsledkem prostě vyčkat.</p><small>Hodnotí se postup, ne zisk. Nic se doopravdy nekupuje.</small></div></div>
-          <div className={styles.labDemo} role="group" aria-label="Ukázka Portfolio Labu; nic nekupuje ani neukládá" data-reveal><PortfolioLabDemo/><CrisisDrill/></div>
+          <div className={styles.labDemo} data-lab-demo role="group" aria-label="Ukázka Portfolio Labu; nic nekupuje ani neukládá" data-reveal><PortfolioLabDemo/><CrisisDrill/></div>
           <div className={styles.labFooter}><p>Výukový model s fiktivními cenami a tarify. Nejde o investiční doporučení ani odhad budoucího výnosu.</p><Link href="/onboarding" prefetch={false} className={styles.primaryButton} data-lift data-press {...magneticProps}>Začít učením <ArrowRight aria-hidden="true" size={18}/></Link></div>
         </div>
       </section>
