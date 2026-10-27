@@ -61,11 +61,11 @@ describe("market quotes and their costs (#159)", () => {
     expect(question.options.find((option) => option.id === question.correctOptionId)?.label).toBe("Ask · 100,20 Kč");
   });
 
-  it("links the published spread lesson and keeps the future first-purchase lesson hidden", () => {
+  it("links the published spread and first-purchase lessons", () => {
     const bridge = block(lesson, "lab-bridge", "labBridge");
     expect(bridge.lessonLinks?.map((link) => link.lessonId)).toEqual(["costs-spread-and-fees", "first-plan-first-purchase"]);
     expect(lessonLink("costs-spread-and-fees")?.href).toBe("/learn/costs/spread-and-trading-fees");
-    expect(lessonLink("first-plan-first-purchase")).toBeNull();
+    expect(lessonLink("first-plan-first-purchase")?.href).toBe("/learn/first-plan/first-simulated-purchase");
     expect(bridge.content).toContain("rozpad nákladů");
   });
 });

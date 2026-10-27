@@ -21,6 +21,8 @@ export const deterministicInstruments: readonly Instrument[] = [
   { instrumentId: "CZ-XPRA:CZGB35", symbol: "CZGB35", name: "Český státní dluhopis 2035", assetType: "bond", exchangeMic: "XPRA", quoteCurrency: "CZK" },
   { instrumentId: "CASH:CZK", symbol: "CZK", name: "Hotovost v českých korunách", assetType: "cash", exchangeMic: null, quoteCurrency: "CZK" },
   { instrumentId: "US-XCBO:SPX", symbol: "SPX", name: "S&P 500 Index", assetType: "index", exchangeMic: "XCBO", quoteCurrency: "USD" },
+  // A fictional ETF on the sample clock's open venue makes the first-purchase rehearsal executable.
+  { instrumentId: "SAMPLE-XNAS:CVETF", symbol: "CVETF", name: "Modelové ETF Nácvik", assetType: "etf", exchangeMic: "XNAS", quoteCurrency: "USD" },
 ];
 
 export const deterministicPrices: Readonly<Record<InstrumentId, number>> = {
@@ -31,6 +33,7 @@ export const deterministicPrices: Readonly<Record<InstrumentId, number>> = {
   "CZ-XPRA:CZGB35": 100.6,
   "CASH:CZK": 1,
   "US-XCBO:SPX": 5_140,
+  "SAMPLE-XNAS:CVETF": 25,
 };
 
 const dates = ["2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-12", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16"];
@@ -130,6 +133,7 @@ export const deterministicHistory: Readonly<Record<InstrumentId, DeterministicHi
   "CZ-XPRA:CZGB35": { points: bars([100.2, 100.25, null, 100.3, 100.35, 100.4, 100.38, 100.45, 100.5, 100.6]), completeness: "partial" },
   "CASH:CZK": { points: bars([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], false), completeness: "complete" },
   "US-XCBO:SPX": { points: [...sampleSpxHistory(), ...bars([5_000, 5_040, 4_980, 4_890, 4_950, 5_020, 5_090, 5_060, 5_110, 5_140], false)], completeness: "complete" },
+  "SAMPLE-XNAS:CVETF": { points: bars([24, 24.2, 24.1, 23.8, 24, 24.4, 24.6, 24.5, 24.8, 25]), completeness: "complete" },
 };
 
 export const deterministicFxRates: Readonly<Record<string, number>> = {

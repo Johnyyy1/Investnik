@@ -51,6 +51,6 @@ describe("lesson follow-up links", () => {
     const published = renderToStaticMarkup(<GuidedBlock block={block} />);
     expect(published).toContain('href="/learn/costs/spread-and-trading-fees"');
     expect(published).toContain("Kolik tě spread stojí v korunách");
-    expect(published).not.toContain("2.5.3");
+    expect(published).toContain('href="/learn/first-plan/first-simulated-purchase"');
   });
 });

@@ -61,8 +61,8 @@ describe("item bank and mixed checkpoint", () => {
     }
   });
 
-  it("offers checkpoints for Foundations and the two published costs lessons", () => {
-    expect(checkpointModules.map((entry) => entry.code)).toEqual(["1.1", "2.2"]);
+  it("offers mixed checkpoints for modules with skills from multiple published lessons", () => {
+    expect(checkpointModules.map((entry) => entry.code)).toEqual(["1.1", "2.2", "2.5"]);
   });
 
   it("draws one item per skill from at least two lessons, interleaved, the same for the same seed", () => {

@@ -22,6 +22,7 @@ import { getAuthoredLesson } from "../src/features/lessons/registry";
 import { getGuidedSteps } from "../src/features/lessons/steps";
 import { defaultFeeProfileDraft, feeProfileFromDraft } from "../src/features/lessons/broker-and-account/fee-schedule-model";
 import { artifactExamples } from "../src/features/artifacts/test-fixtures";
+import { prepareFirstPurchase } from "./first-purchase-fixtures";
 import { exampleIps } from "../src/features/ips/test-fixtures";
 
 const baseURL = process.env.WALKTHROUGH_TEST_URL ?? "http://localhost:3187";
@@ -107,10 +108,10 @@ try {
       await page.getByRole("heading", { level: 2, name: step.title, exact: true }).waitFor();
       await idle();
       await audit(where, width);
-      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips"].includes(lesson.id)) {
+      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-first-purchase"].includes(lesson.id)) {
         for (const size of [1440, 390]) {
           await page.setViewportSize({ width: size, height: 900 });
-          await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; });
+          await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))); });
           await page.screenshot({ path: `${screenshots}/${lesson.id}-${index + 1}-${size}.png`, fullPage: true });
         }
         await page.setViewportSize({ width: 320, height: 900 });
@@ -131,6 +132,53 @@ try {
         await audit(`${where} after feedback`, width);
       }
       for (const block of step.blocks) {
+        if (block.type === "labMission" && block.missionId === "ips-etf-purchase-v2") {
+          const verify = button("Ověřit misi");
+          await verify.waitFor();
+          assert.equal(await button("Pokračovat").isDisabled(), true, "mission requires server evidence");
+          await verify.click();
+          await page.getByRole("status").filter({ hasText: /Zatím nemáš cvičný kapitál|Nejdřív ulož IPS|Zatím chybí/ }).waitFor();
+          assert.equal(await button("Pokračovat").isDisabled(), true);
+          await button("Ukázat modelový rozbor (misi tím nesplníš)").click();
+          assert.equal(await button("Pokračovat").isDisabled(), true, "sample analysis cannot satisfy the mission");
+          await button("Zpět na zadání mise").click();
+          await prepareFirstPurchase(sql, userId!);
+          const popup = page.waitForEvent("popup");
+          await page.getByRole("link", { name: /^Otevřít Portfolio Lab/ }).click();
+          const lab = await popup;
+          lab.on("pageerror", (error) => errors.push(`${where} Lab: ${error.message}`));
+          const search = lab.getByRole("combobox").first();
+          await search.fill("CVETF");
+          await lab.getByRole("option", { name: /CVETF/ }).click();
+          await lab.getByRole("heading", { name: "Modelové ETF Nácvik", exact: true }).waitFor();
+          await lab.getByRole("button", { name: "Koupit CVETF", exact: true }).first().click();
+          const order = lab.getByRole("dialog", { name: "Investovat do CVETF" });
+          await order.getByLabel("Množství", { exact: true }).fill("0.1");
+          await order.getByRole("button", { name: "Zkontrolovat pokyn", exact: true }).click();
+          await order.getByRole("heading", { name: "Zkontroluj investici", exact: true }).waitFor();
+          await order.getByRole("button", { name: "Upravit pokyn", exact: true }).click();
+          await order.getByLabel("Množství", { exact: true }).fill("1.03");
+          await order.getByRole("button", { name: "Zkontrolovat pokyn", exact: true }).click();
+          assert.match(await order.getByTestId("review-cash-delta").innerText(), /598,74/);
+          const beforeTrade: unknown = await sql`select * from lesson_award where user_id=${userId!} order by lesson_id`;
+          await order.getByRole("button", { name: "Potvrdit nákup CVETF", exact: true }).click();
+          await lab.getByRole("status").filter({ hasText: "Nákup dokončen" }).getByRole("link", { name: /Zobrazit portfolio/ }).click();
+          await lab.getByTestId("holding-CVETF").waitFor();
+          assert.equal(await lab.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, "the new holding fits the Lab viewport");
+          assert.deepEqual(await sql`select * from lesson_award where user_id=${userId!} order by lesson_id`, beforeTrade, "a trade creates no reward");
+          await lab.close();
+          await verify.focus();
+          await page.keyboard.press("Tab");
+          await page.keyboard.press("Shift+Tab");
+          assert.equal(await verify.evaluate((element) => element === document.activeElement), true);
+          assert.notEqual(await verify.evaluate((element) => getComputedStyle(element).outlineStyle), "none", "mission verification has visible keyboard focus");
+          await verify.press("Enter");
+          await page.getByRole("status").filter({ hasText: "Server ověřil cvičný nákup ETF" }).waitFor();
+          await page.reload();
+          await page.getByRole("status").filter({ hasText: "Mise už je ověřená" }).waitFor();
+          assert.equal(await button("Pokračovat").isEnabled(), true, "verified evidence survives reload");
+          await audit(`${where} verified`, width);
+        }
         if (block.type === "rubricSelfAssessment") throw new Error(`No walkthrough driver for a saved rubric (${block.id})`);
         if (block.type === "interactiveFigure" && block.figure === "debt-vs-invest-calculator") {
           const result = page.getByRole("region", { name: "Výsledek porovnání dluhu a investice", exact: true });
@@ -375,7 +423,7 @@ try {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }
-    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips"].includes(lesson.id)) {
+    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-first-purchase"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "200000" }, `${lesson.id} earns the L2 Practice Capital once`);
     }

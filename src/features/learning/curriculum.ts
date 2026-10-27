@@ -118,6 +118,7 @@ export const skills = {
   "cost-drag": "Dopad celkových ročních nákladů za desítky let",
   "plan-costs": "Roční náklady plánu u dvou brokerů",
   "investment-policy": "Investiční plán (IPS): ověřitelná pravidla sepsaná předem",
+  "order-review": "Kontrola instrumentu, pokynu a celkových nákladů před nákupem",
   "tracking-difference": "TER, rozdíl a kolísání rozdílu vůči indexu",
   "fee-schedule": "Ceník brokera: poplatek s minimem a maximem a skryté náklady",
   "active-vs-passive": "Aktivní správa proti indexu",
@@ -169,6 +170,7 @@ export const lessonPlacements: readonly LessonPlacement[] = [
   place("costs-ter-tracking-difference", "2.2", 1, "required", ["foundations-funds"], ["tracking-difference", "fund-costs"]),
   place("taxes-filing-obligation", "2.4", 1, "required", ["foundations-stocks"], ["tax-filing"]),
   place("first-plan-ips", "2.5", 1, "required", ["before-investing-goals", "costs-broker-comparison"], ["investment-policy"]),
+  place("first-plan-first-purchase", "2.5", 3, "required", ["first-plan-ips", "costs-spread-and-fees", "costs-currency-conversion", "foundations-markets"], ["order-review"]),
   // Reserve/pension remain unpublished; recommendation prerequisites include only available lessons.
   place("before-investing-checkup", "0.1", 7, "recommended", ["before-investing-budget", "before-investing-debt", "before-investing-goals"], ["savings-rate", "debt-priorities", "inflation", "goals-and-horizon", "fraud-prevention"]),
   place("before-investing-scams", "0.1", 6, "recommended", [], ["scam-prevention"]),
@@ -256,6 +258,7 @@ export const skillItems: readonly SkillItem[] = [
   item("costs-broker-comparison", "mix-drag", "cost-drag"),
   item("first-plan-ips", "recall-sections", "investment-policy"),
   item("first-plan-ips", "recall-why", "investment-policy"),
+  item("first-plan-first-purchase", "recall", "order-review"),
   item("costs-ter-tracking-difference", "mastery-td", "tracking-difference"),
   item("costs-ter-tracking-difference", "mastery-ter", "tracking-difference"),
   item("broker-fee-schedule", "mastery-minimum", "fee-schedule"),

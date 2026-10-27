@@ -4,7 +4,7 @@ Missions connect a lesson step to server-verified evidence. They never award XP 
 
 ## Authoring and rollout
 
-The seven lesson codes listed in #142 (2.5.2, 2.5.3, 3.4.5, 3.4.6, 3.5.2, B.1.3, B.1.5) are not authored lessons in the current registry. This implementation supplies the engine and working isolated exercise routes; it does not publish placeholder lessons or add new requirements to old published steps. The existing optional `labMission` continues to show sample analysis.
+Lesson 2.5.3 now uses the personal purchase check v2. The other lesson codes originally listed in #142 (2.5.2, 3.4.5, 3.4.6, 3.5.2, B.1.3, B.1.5) remain outside this mission rollout. This implementation supplies the engine and working isolated exercise routes; it does not publish placeholder lessons or add new requirements to old published steps. The existing optional `labMission` continues to show sample analysis.
 
 A new lesson opts in by adding `missionId` to its `labMission` block and registering a definition in [the mission registry](../src/features/missions/registry.ts):
 
@@ -21,6 +21,7 @@ Criteria are versioned by the mission/check ID. Do not repurpose an ID or change
 ## Implemented checks
 
 - `ips-etf-purchase-v1` (personal, reserved for the future first-practice-purchase lesson): the server finds the latest valid saved IPS with explicit instrument identities and a matching ETF BUY executed after that version was saved. Free-text instrument names, sales, investment returns, trade counts and client-supplied trade IDs cannot prove completion. The successful evidence records the IPS revision ID and trade ID. The mission page explicitly says it uses the personal *practice* portfolio. A learner without capital gets a path back to learning; no extra trade is requested once evidence exists.
+- `ips-etf-purchase-v2` (personal, lesson `first-plan-first-purchase`): preserves v1 and additionally checks one ETF purchase's full cash debit (fees and FX markup included) against monthly IPS contribution × instrument weight, within ±1%, with centralized minor-unit rounding. It records the target, tolerance and actual debit with plan/trade IDs. Zero contributions cannot pass. Several purchases cannot be combined to satisfy the budget. This is an exercise convention, not investment advice. The authored lesson explains the Lab's current quantity input and unavailable limit/spread/slippage simulation.
 - `diversification-rules-v1` (scenario) and `allocation-training-v1` (training): `/lab/missions/{id}` reuses the existing six fictional instruments and four declared diversification rules. The learner submits only allocation percentages and a prediction. The server strictly validates their shape and limits, evaluates the rules and appends the decision and result. A wrong prediction or an unfavorable fictional return does not fail a portfolio that meets the rules. These are exercises in a fixed allocation, not a persistent training account, recurring contributions or new trading rules.
 
 Other tasks in #142, such as rebalancing by contribution and releasing cash in a crisis, need their own authored scenario, immutable source evidence and deterministic check before registration. Do not map them to the diversification check or pretend their outputs exist.

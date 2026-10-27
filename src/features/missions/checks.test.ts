@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkIpsPurchase, checkScenario, type ScenarioDecision } from "./checks";
+import { checkIpsPurchase, checkPlannedIpsPurchase, checkScenario, type ScenarioDecision } from "./checks";
 import { exampleIps } from "@/features/ips/test-fixtures";
 import { requireMissions } from "./requirements";
 import { getMission } from "./registry";
@@ -32,5 +32,34 @@ describe("server mission criteria", () => {
     await expect(requireMissions(["allocation-training-v1"], "foundations-portfolio", async () => true)).resolves.toBeUndefined();
     await expect(requireMissions(["allocation-training-v1"], "foundations-stocks", async () => true)).rejects.toThrow();
     await expect(requireMissions([], "foundations-stocks", async () => false)).resolves.toBeUndefined();
+  });
+  it("checks the planned contribution share against the full cash debit, with exact 1% boundaries", () => {
+    const at = new Date("2026-10-27T10:00:00Z");
+    // 2,500.25 Kč × 80% = 2,000.20 Kč; tolerance rounds to 20.00 Kč.
+    const target = 250025n * 8000n / 10000n;
+    const trade = { id: "planned", instrumentId: "IE-XETR:VWCE", side: "BUY", instrumentAssetType: "etf", executedAt: at, cashDeltaBaseMinor: -target };
+    expect(checkPlannedIpsPurchase(exampleIps, at, [trade])).toMatchObject({ trade, targetMinor: target, toleranceMinor: 2000n });
+    for (const delta of [-2000n, 2000n]) expect(checkPlannedIpsPurchase(exampleIps, at, [{ ...trade, cashDeltaBaseMinor: -(target + delta) }])).toBeDefined();
+    for (const delta of [-2001n, 2001n, target * 9n]) expect(checkPlannedIpsPurchase(exampleIps, at, [{ ...trade, cashDeltaBaseMinor: -(target + delta) }])).toBeUndefined();
+    for (const wrong of [{ ...trade, side: "SELL" }, { ...trade, instrumentAssetType: "equity" }, { ...trade, instrumentId: "US:VWCE" }, { ...trade, executedAt: new Date(at.getTime() - 1) }, { ...trade, cashDeltaBaseMinor: target }]) expect(checkPlannedIpsPurchase(exampleIps, at, [wrong])).toBeUndefined();
+    expect(checkPlannedIpsPurchase({ ...exampleIps, contribution: { ...exampleIps.contribution, amountMinor: "0" } }, at, [trade])).toBeUndefined();
+    expect(checkPlannedIpsPurchase({}, at, [trade])).toBeUndefined();
+  });
+  it("does not accept a tiny purchase or add several trades to reach the target", () => {
+    const at = new Date();
+    const trade = { id: "tiny", instrumentId: "IE-XETR:VWCE", side: "BUY", instrumentAssetType: "etf", executedAt: at, cashDeltaBaseMinor: -100n };
+    expect(checkIpsPurchase(exampleIps, at, [trade])).toBeDefined(); // Preserve v1 evidence semantics.
+    expect(checkPlannedIpsPurchase(exampleIps, at, [trade])).toBeUndefined();
+    expect(checkPlannedIpsPurchase(exampleIps, at, Array.from({ length: 2 }, () => ({ ...trade, cashDeltaBaseMinor: -100010n })))).toBeUndefined();
+    const small = { ...exampleIps, contribution: { ...exampleIps.contribution, amountMinor: "25" } };
+    expect(checkPlannedIpsPurchase(small, at, [{ ...trade, cashDeltaBaseMinor: -20n }])?.toleranceMinor).toBe(0n);
+  });
+  it("uses the shared half-away rounding for fractional contribution shares", () => {
+    const at = new Date();
+    const plan = { ...exampleIps, allocation: { lines: [{ instrumentId: "IE-XETR:VWCE", weightBps: 5000 }], cashBps: 5000 }, contribution: { ...exampleIps.contribution, amountMinor: "101" } };
+    const trade = { id: "rounded", instrumentId: "IE-XETR:VWCE", side: "BUY", instrumentAssetType: "etf", executedAt: at, cashDeltaBaseMinor: -51n };
+    // 1.01 Kč × 50% = 0.505 Kč → 0.51 Kč; 1% of 51 haléřů → 1 haléř.
+    expect(checkPlannedIpsPurchase(plan, at, [trade])).toMatchObject({ targetMinor: 51n, toleranceMinor: 1n });
+    expect(checkPlannedIpsPurchase(plan, at, [{ ...trade, cashDeltaBaseMinor: -53n }])).toBeUndefined();
   });
 });

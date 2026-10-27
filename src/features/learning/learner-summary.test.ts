@@ -25,7 +25,7 @@ describe("real learner summary", () => {
   it("continues a module after completion even if the recommendation changed", () => {
     const summary = getLearnerSummary([row("returns-what-is-a-return", "completed")]);
     expect(summary.next.id).toBe("returns-simple-returns");
-    expect(summary.percentage).toBe(3);
+    expect(summary.percentage).toBe(Math.round(100 / availableLessons.length));
     expect(getLearnerSummary([row("foundations-why-invest", "completed")], "returns").next.id).toBe("foundations-stocks");
   });
   it("moves to Returns when all available Foundations lessons are completed", () => {

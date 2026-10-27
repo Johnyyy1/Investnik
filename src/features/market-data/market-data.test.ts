@@ -44,6 +44,18 @@ describe("deterministic instrument search", () => {
 });
 
 describe("quotes and usability", () => {
+  it("offers a fictional ETF executable at the default sample clock without bypassing market hours", async () => {
+    const service = createDeterministicMarketDataService();
+    const [instrument] = await service.searchInstruments("CVETF");
+    expect(instrument).toMatchObject({ instrumentId: "SAMPLE-XNAS:CVETF", name: "Modelové ETF Nácvik", assetType: "etf", exchangeMic: "XNAS" });
+    const quote = await service.getQuote(instrument.instrumentId);
+    expect(quote).toMatchObject({ price: 25, currency: "USD", usability: { marketState: "open", usableForExecution: true }, provenance: { isDeterministic: true, dataKind: "synthetic" } });
+    const weekend = createDeterministicMarketDataService({ clock: () => new Date("2026-01-17T12:00:00Z") });
+    expect((await weekend.getQuote(instrument.instrumentId)).usability.usableForExecution).toBe(false);
+    const history = await service.getHistoricalPrices({ ...historyRequest(instrument.instrumentId), adjustment: adjustmentPolicies["split-adjusted"] });
+    expect(history.points.at(-1)?.close).toBe(quote.price);
+    expect(history.provenance.isDeterministic).toBe(true);
+  });
   it("returns the same normalized deterministic quote on every call", async () => {
     const service = createDeterministicMarketDataService();
     const first = await service.getQuote(AAPL);

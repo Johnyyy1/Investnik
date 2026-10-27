@@ -222,7 +222,7 @@ try {
   await answerChoice(page, "Limitní nákupní pokyn na 100 Kč");
   await page.getByRole("heading", { name: "Věz, co kotace slibuje — a co ne", exact: true }).waitFor();
   assert.equal(await page.getByRole("link", { name: /lekci 2\.2\.2/ }).getAttribute("href"), "/learn/costs/spread-and-trading-fees", "Published follow-up is linked");
-  assert.equal(await page.getByRole("link", { name: /lekci 2\.5\.3/ }).count(), 0, "Unpublished follow-up is hidden");
+  assert.equal(await page.getByRole("link", { name: /lekci 2\.5\.3/ }).getAttribute("href"), "/learn/first-plan/first-simulated-purchase", "Published first purchase follow-up is linked");
   await assertResponsive(page, "markets-summary", [320, 390, 1440]);
   await completeLesson(page, 300);
 
