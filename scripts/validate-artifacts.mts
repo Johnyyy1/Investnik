@@ -80,6 +80,12 @@ try {
   assert.ok(exported.learnerArtifacts.every((row: object) => !Object.hasOwn(row, "userId") && !Object.hasOwn(row, "requestId")));
   console.log("PASS: migration/rerun, all typed payloads, concurrent versions, retry idempotency, ownership, guest rejection and full export.");
 
+  // Lesson 2.5.1 requires a complete plan: the original v1 shape stays valid history but lacks sections.
+  assert.equal(await hasValidArtifact(db, owner, "investment_plan"), false, "an original IPS does not satisfy a plan requirement");
+  const { exampleIps } = await import("../src/features/ips/test-fixtures");
+  await saveInput(owner, { content: { kind: "investment_plan", payload: exampleIps }, sourceLessonId: null, consent: true, requestId: randomUUID() });
+  assert.equal(await hasValidArtifact(db, owner, "investment_plan"), true, "a complete IPS version from the Lab builder satisfies it");
+
   const { getStepDefinitions } = await import("../src/features/lessons/steps");
   const { completeLesson, saveLessonProgress } = await import("../src/features/progress/repository");
   const steps = getStepDefinitions(lessonId);

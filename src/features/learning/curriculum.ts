@@ -7,6 +7,7 @@ import { RETURNS_MODULE_ID, returnsLessons } from "../lessons/returns/manifest";
 import { VOLATILITY_MODULE_ID, volatilityLessons } from "../lessons/volatility/manifest";
 import { CORRELATION_MODULE_ID, correlationLessons } from "../lessons/correlation/manifest";
 import { DIVERSIFICATION_MODULE_ID, diversificationLessons } from "../lessons/diversification/manifest";
+import { FIRST_PLAN_MODULE_ID, firstPlanLessons } from "../lessons/first-plan/manifest";
 
 /**
  * Curriculum 2.0 registry. Typed code, no database.
@@ -31,6 +32,8 @@ export const storageModules = [
   { id: COSTS_MODULE_ID, slug: "costs", title: "Poplatky a celkové náklady", description: "Zjisti, kolik tě investování skutečně stojí uvnitř fondu i mimo něj.", status: "available", lessons: costsLessons },
   // Last in storage order so publishing 2.1.6 does not pull ahead of an existing learner's next step.
   { id: BROKER_AND_ACCOUNT_MODULE_ID, slug: "broker-and-account", title: "Broker a investiční účet", description: "Rozliš typy platforem, prověř, komu svěřuješ své peníze, a přečti ceník.", status: "available", lessons: brokerAndAccountLessons },
+  // Last in storage order for the same reason: publishing 2.5.1 must not reorder an existing learner's next step.
+  { id: FIRST_PLAN_MODULE_ID, slug: "first-plan", title: "První plán a první nákup", description: "Sepiš investiční plán dřív, než ho budeš potřebovat.", status: "available", lessons: firstPlanLessons },
 ] as const;
 
 export type MilestoneId = "A" | "B" | "C" | "D";
@@ -114,6 +117,7 @@ export const skills = {
   "currency-risk": "Náklad měnové konverze a měnové riziko fondu",
   "cost-drag": "Dopad celkových ročních nákladů za desítky let",
   "plan-costs": "Roční náklady plánu u dvou brokerů",
+  "investment-policy": "Investiční plán (IPS): ověřitelná pravidla sepsaná předem",
   "tracking-difference": "TER, rozdíl a kolísání rozdílu vůči indexu",
   "fee-schedule": "Ceník brokera: poplatek s minimem a maximem a skryté náklady",
   "active-vs-passive": "Aktivní správa proti indexu",
@@ -164,6 +168,7 @@ export const lessonPlacements: readonly LessonPlacement[] = [
   place("costs-broker-comparison", "2.2", 5, "required", ["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years"], ["plan-costs", "tracking-difference", "trade-costs", "cost-drag"]),
   place("costs-ter-tracking-difference", "2.2", 1, "required", ["foundations-funds"], ["tracking-difference", "fund-costs"]),
   place("taxes-filing-obligation", "2.4", 1, "required", ["foundations-stocks"], ["tax-filing"]),
+  place("first-plan-ips", "2.5", 1, "required", ["before-investing-goals", "costs-broker-comparison"], ["investment-policy"]),
   // Reserve/pension remain unpublished; recommendation prerequisites include only available lessons.
   place("before-investing-checkup", "0.1", 7, "recommended", ["before-investing-budget", "before-investing-debt", "before-investing-goals"], ["savings-rate", "debt-priorities", "inflation", "goals-and-horizon", "fraud-prevention"]),
   place("before-investing-scams", "0.1", 6, "recommended", [], ["scam-prevention"]),
@@ -249,6 +254,8 @@ export const skillItems: readonly SkillItem[] = [
   item("costs-broker-comparison", "mix-td", "tracking-difference"),
   item("costs-broker-comparison", "mix-trade", "trade-costs"),
   item("costs-broker-comparison", "mix-drag", "cost-drag"),
+  item("first-plan-ips", "recall-sections", "investment-policy"),
+  item("first-plan-ips", "recall-why", "investment-policy"),
   item("costs-ter-tracking-difference", "mastery-td", "tracking-difference"),
   item("costs-ter-tracking-difference", "mastery-ter", "tracking-difference"),
   item("broker-fee-schedule", "mastery-minimum", "fee-schedule"),

@@ -91,7 +91,9 @@ export async function hasValidArtifact(reader: Reader, userId: string, kind: Art
       kind === "lesson_output" && blockId ? eq(outputBlock, blockId) : undefined)).orderBy(desc(learnerArtifact.version)).limit(1);
   if (!latest || (sourceLessonId !== undefined && latest.sourceLessonId !== sourceLessonId)) return false;
   const content = artifactContentSchema.safeParse({ kind: latest.kind, payload: latest.payload });
-  return content.success && (content.data.kind !== "lesson_output" || validAuthoredOutput(content.data.payload, latest.sourceLessonId));
+  return content.success && (content.data.kind !== "lesson_output" || validAuthoredOutput(content.data.payload, latest.sourceLessonId))
+    // Only schema v2 has every IPS section; an original plan is not a complete one.
+    && (content.data.kind !== "investment_plan" || "schemaVersion" in content.data.payload);
 }
 
 /** Owned revision history, including legacy payloads; never accepts a client-supplied owner. */

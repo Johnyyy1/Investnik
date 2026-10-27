@@ -22,6 +22,7 @@ export const reasonLabels: Record<ReasonCode, string> = {
   CHECKUP_READINESS: "Podle uloženého check-upu se vyplatí vrátit k finančnímu základu. Jde o doporučení, žádný obsah se nezamyká.",
   BUDGET_READINESS: "Rozpočet ti pomůže ověřit, kolik můžeš pravidelně odkládat.",
   BROKER_FEES_AFTER_MARKETS: "Víš, jak se na burze nakupuje. Teď v ceníku brokera najdeš, kolik zaplatíš za samotný nákup.",
+  PLAN_AFTER_COSTS: "Víš, kolik tě plán bude stát. Teď si ho sepíšeš i s pravidly pro propad, dokud je klid.",
   COSTS_AFTER_FUNDS: "Fondy už znáš. Teď zjistíš, kolik tě skutečně stojí a jak věrně sledují index.",
   FOUNDATIONS_START: "Začínáš od základů, proto doporučujeme první lekci.",
   FOUNDATIONS_CONTINUE: "Pokračujeme v Základech tam, kde to máš rozdělané.",

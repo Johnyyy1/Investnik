@@ -21,6 +21,8 @@ import { isQuestion, parseSelection, type QuestionBlock } from "../src/features/
 import { getAuthoredLesson } from "../src/features/lessons/registry";
 import { getGuidedSteps } from "../src/features/lessons/steps";
 import { defaultFeeProfileDraft, feeProfileFromDraft } from "../src/features/lessons/broker-and-account/fee-schedule-model";
+import { artifactExamples } from "../src/features/artifacts/test-fixtures";
+import { exampleIps } from "../src/features/ips/test-fixtures";
 
 const baseURL = process.env.WALKTHROUGH_TEST_URL ?? "http://localhost:3187";
 const screenshots = process.env.WALKTHROUGH_SCREENSHOT_DIR ?? "test-results/lesson-walkthrough";
@@ -105,7 +107,7 @@ try {
       await page.getByRole("heading", { level: 2, name: step.title, exact: true }).waitFor();
       await idle();
       await audit(where, width);
-      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison"].includes(lesson.id)) {
+      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips"].includes(lesson.id)) {
         for (const size of [1440, 390]) {
           await page.setViewportSize({ width: size, height: 900 });
           await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; });
@@ -219,6 +221,23 @@ try {
           await page.screenshot({ path: `${screenshots}/return-calculator-320-200.png` });
           await largeText.evaluate((element) => element.parentNode?.removeChild(element));
           await page.setViewportSize({ width, height: 900 });
+        }
+        if (block.type === "interactiveFigure" && block.figure === "ips-builder") {
+          const check = page.getByRole("region", { name: "Stav investičního plánu", exact: true });
+          await check.getByText("Zatím nemáš uložený investiční plán.", { exact: true }).waitFor();
+          assert.equal(await button("Pokračovat").isDisabled(), true, "the IPS step requires a saved plan");
+          assert.equal(await check.getByRole("link", { name: "Sepsat plán (nová karta)", exact: true }).getAttribute("href"), "/lab/plan");
+          // The learner writes the plan in the Lab builder in another tab; only the stored version counts.
+          const plan = (version: number, payload: unknown) => sql`insert into learner_artifact (id, user_id, kind, version, payload, source_lesson_id, request_id) values (${randomUUID()}, ${userId!}, 'investment_plan', ${version}, ${sql.json(payload as never)}, null, ${randomUUID()})`;
+          await plan(1, artifactExamples.investment_plan);
+          await check.getByRole("button", { name: "Zkontrolovat uložený plán", exact: true }).click();
+          await check.getByText(/^Máš uložený původní plán/).waitFor();
+          assert.equal(await button("Pokračovat").isDisabled(), true, "an original plan without every section is not enough");
+          await plan(2, exampleIps);
+          await check.getByRole("button", { name: "Zkontrolovat uložený plán", exact: true }).click();
+          await check.getByText(/^Plán je uložený: verze 2 z /).waitFor();
+          assert.equal(await button("Pokračovat").isEnabled(), true, "a saved complete plan enables continuation");
+          await audit(`${where} after saving`, width);
         }
         if (block.type === "interactiveFigure" && block.figure === "financial-checkup") {
           const checkup = page.getByRole("region", { name: "Finanční základ", exact: true });
@@ -356,7 +375,7 @@ try {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }
-    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison"].includes(lesson.id)) {
+    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "200000" }, `${lesson.id} earns the L2 Practice Capital once`);
     }
