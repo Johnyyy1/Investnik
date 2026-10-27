@@ -7,10 +7,10 @@ Návrhy obrazovek pro nové kurikulum a milník A, které nejsou typy kroků lek
 - drží se PNG v této složce a komponent z nástěnky „00 · Komponenty“ ([components/](product-screens/components)); nekreslí vlastní variantu;
 - data bere z existujícího zdroje pravdy, nikdy z čísel v návrhu, protože ta jsou ilustrativní;
 - nejdřív si přečte otevřené otázky dané obrazovky (NQ-20 až NQ-47 níže). Nerozhodnutou otázku neřeší potichu: zvolí doporučení z návrhu, uvede ho v PR, nebo se zastaví;
-- dodrží AGENTS.md, hlavně § 9 (odměny), § 17 (Portfolio Lab), § 18 (izolace scénářů), § 20a (fakta) a § 33/34 (UI vs doménová práce);
+- dodrží [AGENTS.md](../../AGENTS.md), hlavně § 33/34 (UI vs doménová práce), a přečte [odměny (§ 9)](../agents/finance-and-data.md#9-practice-capital), [Portfolio Lab (§ 17)](../agents/ui-and-design.md#17-portfolio-lab-ux-principles) a [izolaci scénářů a fakta (§ 18 a 20a)](../agents/learning-and-facts.md);
 - přiloží screenshoty 390 a 1440 px a porovná je s PNG.
 
-Rozdíl proti návrhům: nástěnky ještě místy zmiňují politiku odměn **v3**, v kódu platí **v4**. Rozhoduje kód a AGENTS.md § 9. Rebrand na Investník (NQ-25) už v repozitáři je.
+Rozdíl proti návrhům: nástěnky ještě místy zmiňují politiku odměn **v3**, v kódu platí **v4**. Rozhoduje kód a [politika odměn v agentních pravidlech (§ 9)](../agents/finance-and-data.md#9-practice-capital). Rebrand na Investník (NQ-25) už v repozitáři je.
 
 ## Nástěnka 1 · Učení a postup
 

@@ -6,7 +6,7 @@ labels: lesson
 ---
 
 <!--
-Agent: před prací si přečti AGENTS.md (část 8), docs/education/lesson-standard.md a docs/education/lesson-steps.md.
+Agent: před prací si přečti AGENTS.md, docs/agents/learning-and-facts.md (část 8), docs/education/lesson-standard.md a docs/education/lesson-steps.md.
 Lekci skládej jen z existujících typů kroků. Nové komponenty, styly ani layouty nevytvářej.
 Když chybí typ kroku, zastav se a napiš to do PR.
 -->
