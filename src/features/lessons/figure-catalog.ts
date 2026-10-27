@@ -14,6 +14,7 @@ export const lessonFigureCatalog = {
   "emergency-fund-calculator": { owner: "curriculum", data: "model", model: "src/features/lessons/before-investing/emergency-fund-model.ts" },
   "debt-vs-invest-calculator": { owner: "curriculum", data: "model", model: "src/features/lessons/before-investing/debt-model.ts" },
   "fund-cost-comparison": { owner: "curriculum", data: "model", model: "src/features/lessons/foundations/fund-cost-model.ts" },
+  "cost-drag-slider": { owner: "curriculum", data: "model", model: "src/features/lessons/costs/cost-drag-model.ts" },
   "spiva-chart": { owner: "curriculum", data: "research", model: "src/features/lessons/foundations/spiva-data.ts" },
   "budget-builder": { owner: "curriculum", data: "model", model: "src/features/lessons/before-investing/model.ts" },
   "return-calculator": { owner: "curriculum", data: "model", model: "src/features/finance/returns.ts" },

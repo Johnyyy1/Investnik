@@ -1,6 +1,17 @@
 import type { StepDefinition } from "../types";
 
 export const costsSteps: Readonly<Record<string, readonly StepDefinition[]>> = {
+  "costs-over-30-years": [
+    { title: "Je 1–2 % ročně hodně?", blocks: ["opening", "prediction"] },
+    { title: "Modelový výpočet", blocks: ["model", "formula", "worked"] },
+    { title: "Proč tolik", blocks: ["why"] },
+    { title: "Vyzkoušej si kalkulačku", blocks: ["calculator", "calculator-practice"] },
+    { title: "Historický experiment", blocks: ["backtest", "backtest-practice"] },
+    { title: "Co z toho plyne", blocks: ["certainty", "misconceptions"] },
+    { title: "Ověření znalostí", kind: "mastery", blocks: ["recall"] },
+    { title: "Vysvětli to vlastními slovy", blocks: ["reflection"] },
+    { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
+  ],
   "costs-currency-conversion": [
     { title: "Platí Pavel za měnu?", blocks: ["opening", "prediction"] },
     { title: "Kolik stojí konverze", blocks: ["conversion", "worked"] },
