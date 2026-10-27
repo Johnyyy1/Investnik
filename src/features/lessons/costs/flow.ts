@@ -1,6 +1,20 @@
 import type { StepDefinition } from "../types";
 
 export const costsSteps: Readonly<Record<string, readonly StepDefinition[]>> = {
+  "costs-broker-comparison": [
+    { title: "Který broker vyjde levněji?", blocks: ["opening", "prediction"] },
+    { title: "Dva ceníky, jeden nákup", blocks: ["tariffs", "formula", "worked"] },
+    { title: "Spočítej celý rok", blocks: ["annual"] },
+    { title: "Jak záleží na frekvenci", blocks: ["frequency", "frequency-worked"] },
+    { title: "Čtvrtletní nákupy", blocks: ["quarterly"] },
+    { title: "Kdy se výsledek změní", blocks: ["break-even", "non-price"] },
+    { title: "Smíšené opakování · rozdíl vůči indexu", kind: "mastery", blocks: ["mix-td"] },
+    { title: "Smíšené opakování · náklad nákupu", kind: "mastery", blocks: ["mix-trade"] },
+    { title: "Smíšené opakování · náklady za léta", kind: "mastery", blocks: ["mix-drag"] },
+    { title: "Zdůvodni volbu", blocks: ["justify"] },
+    { title: "Tvoje zdůvodnění", blocks: ["reflection"] },
+    { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
+  ],
   "costs-over-30-years": [
     { title: "Je 1–2 % ročně hodně?", blocks: ["opening", "prediction"] },
     { title: "Modelový výpočet", blocks: ["model", "formula", "worked"] },
