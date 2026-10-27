@@ -62,6 +62,7 @@ const StateSupportCalculator = lazyComponent(() => import("./state-support-calcu
 const TradeCostBreakdown = lazyComponent(() => import("./trade-cost-breakdown"), (module) => module.TradeCostBreakdown);
 const DebtVsInvestCalculator = lazyComponent(() => import("./debt-vs-invest-calculator"), (module) => module.DebtVsInvestCalculator);
 const FundCostComparison = lazyComponent(() => import("./fund-cost-comparison"), (module) => module.FundCostComparison);
+const CostDragSlider = lazyComponent(() => import("./cost-drag-slider"), (module) => module.CostDragSlider);
 const SpivaChart = lazyComponent(() => import("./spiva-chart"), (module) => module.SpivaChart);
 const BudgetBuilder = lazyComponent(() => import("./budget-builder"), (module) => module.BudgetBuilder);
 const FinancialCheckup = lazyComponent(() => import("./financial-checkup"), (module) => module.FinancialCheckup);
@@ -117,6 +118,7 @@ const figures: Record<FigureKind, { preload: () => Promise<unknown>; render: (da
   "trade-cost-breakdown": { preload: TradeCostBreakdown.preload, render: () => <TradeCostBreakdown /> },
   "debt-vs-invest-calculator": { preload: DebtVsInvestCalculator.preload, render: () => <DebtVsInvestCalculator /> },
   "fund-cost-comparison": { preload: FundCostComparison.preload, render: () => <FundCostComparison /> },
+  "cost-drag-slider": { preload: CostDragSlider.preload, render: () => <CostDragSlider /> },
   "spiva-chart": { preload: SpivaChart.preload, render: () => <SpivaChart /> },
   "budget-builder": { preload: BudgetBuilder.preload, render: () => <BudgetBuilder /> },
   "return-calculator": { preload: ReturnCalculator.preload, render: () => <ReturnCalculator /> },

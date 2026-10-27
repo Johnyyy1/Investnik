@@ -105,7 +105,7 @@ try {
       await page.getByRole("heading", { level: 2, name: step.title, exact: true }).waitFor();
       await idle();
       await audit(where, width);
-      if (["costs-spread-and-fees", "costs-currency-conversion"].includes(lesson.id)) {
+      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years"].includes(lesson.id)) {
         for (const size of [1440, 390]) {
           await page.setViewportSize({ width: size, height: 900 });
           await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; });
@@ -287,6 +287,27 @@ try {
           await largeText.evaluate((element) => element.parentNode?.removeChild(element));
           await page.setViewportSize({ width, height: 900 });
         }
+        if (block.type === "interactiveFigure" && block.figure === "cost-drag-slider") {
+          const calculator = page.getByRole("region", { name: "Kalkulačka nákladů v čase", exact: true });
+          const result = page.getByRole("region", { name: "Výsledek kalkulačky nákladů v čase", exact: true });
+          const cost = calculator.getByLabel("Celkové roční náklady", { exact: true });
+          const years = calculator.getByLabel("Doba investování", { exact: true });
+          await result.waitFor();
+          assert.match(await result.innerText(), /Konečná hodnota po nákladech\s+1\s888\s972 Kč/, "defaults reproduce the 0,2 % row");
+          await cost.fill("1,5");
+          assert.match(await result.innerText(), /Konečná hodnota po nákladech\s+1\s499\s619 Kč/, "1,5 % reproduces the exercise value");
+          assert.match(await result.innerText(), /Vloženo celkem\s+720\s000 Kč/);
+          await years.fill("1,5");
+          assert.equal(await years.getAttribute("aria-invalid"), "true");
+          assert.equal(await result.count(), 0, "fractional years clear the result");
+          await years.fill("30");
+          const slider = calculator.getByRole("slider", { name: "Celkové roční náklady · posuvník", exact: true });
+          await slider.focus();
+          await slider.press("ArrowRight");
+          assert.equal(await cost.inputValue(), "1.55");
+          assert.notEqual(await slider.evaluate((element) => getComputedStyle(element).outlineStyle), "none", "slider has visible keyboard focus");
+          await audit("cost drag calculator after editing", width);
+        }
         if (block.type === "interactiveFigure" && block.figure === "spiva-chart") {
           const chart = page.getByRole("region", { name: "Podíl aktivních fondů, které zaostaly za indexem", exact: true });
           await chart.getByText(/Historická data · S&P Dow Jones Indices, SPIVA U\.S\. Year-End 2025 · stav k 31\. 12\. 2025/).waitFor();
@@ -335,7 +356,7 @@ try {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }
-    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule", "costs-currency-conversion"].includes(lesson.id)) {
+    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule", "costs-currency-conversion", "costs-over-30-years"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "200000" }, `${lesson.id} earns the L2 Practice Capital once`);
     }
