@@ -6,8 +6,9 @@ import { db } from "@/db";
 import { learnerArtifact, missionAttempt, portfolio, portfolioTrade, user } from "@/db/schema";
 import { readPracticeCapitalEntitlementMinor } from "@/features/rewards/repository";
 import { ipsSchema } from "@/features/ips/schema";
-import { checkIpsPurchase, checkPlannedIpsPurchase, checkScenario } from "./checks";
-import { getMission } from "./registry";
+import { readTrainingSessions } from "@/features/training/repository";
+import { checkIpsPurchase, checkPlannedIpsPurchase, checkScenario, contributionMonthsWithBuy } from "./checks";
+import { getMission, isExerciseMission } from "./registry";
 
 type Reader = Pick<typeof db, "select">;
 export async function hasCompletedMission(query: Reader, userId: string, missionId: string) {
@@ -21,7 +22,7 @@ export async function verifyMission(userId: string, missionId: string, requestId
   return db.transaction(async (tx) => {
     const [owner] = await tx.select({ id: user.id }).from(user).where(eq(user.id, userId)).for("update");
     if (!owner) throw new Error("Missing mission owner.");
-    if (mission.context !== "personal") {
+    if (isExerciseMission(mission)) {
       const result = checkScenario(input);
       const [retry] = await tx.select().from(missionAttempt).where(and(eq(missionAttempt.userId, userId), eq(missionAttempt.missionId, missionId), eq(missionAttempt.requestId, requestId)));
       const evidence = { context: mission.context, check: mission.check, params: mission.params, ...result };
@@ -33,6 +34,18 @@ export async function verifyMission(userId: string, missionId: string, requestId
     }
     if (input !== undefined) throw new Error("Personal evidence is server-owned.");
     if (await hasCompletedMission(tx, userId, missionId)) return { completed: true, message: "Mise už je ověřená. Další obchod není potřeba." };
+    if (mission.check === "training-contributions-v1") {
+      // Training sessions are isolated: only their append-only action log is read, nothing is written there.
+      const sessions = await readTrainingSessions(tx, userId);
+      if (!sessions.length) return { completed: false, message: "Zatím nemáš žádný krizový nácvik. Spusť ho v Labu podle svého uloženého plánu." };
+      const best = sessions.map(({ session, state }) => ({ session, months: contributionMonthsWithBuy(state) })).reduce((a, b) => b.months > a.months ? b : a);
+      if (best.months >= mission.params.months) {
+        await tx.insert(missionAttempt).values({ id: randomUUID(), userId, missionId, requestId: "training", completed: true, evidence: { context: mission.context, check: mission.check, params: mission.params, sessionId: best.session.id, ipsVersion: best.session.plan.ipsVersion, contributionMinor: best.session.plan.contributionMinor, months: best.months } });
+        return { completed: true, message: `Mise splněna. Server ověřil ${best.months} měsíců s příspěvkem z plánu a nákupem.` };
+      }
+      if (sessions.every(({ session }) => BigInt(session.plan.contributionMinor) <= 0n)) return { completed: false, message: "Tvůj plán má nulový měsíční příspěvek. Nastav ho v IPS a spusť nový nácvik." };
+      return { completed: false, message: `Zatím ${best.months} z ${mission.params.months} měsíců s příspěvkem a nákupem ve stejném měsíci. Pokračuj v nácviku; výnos se nehodnotí.` };
+    }
     const earned = await readPracticeCapitalEntitlementMinor(tx, userId);
     if (earned === 0n) return { completed: false, message: "Zatím nemáš cvičný kapitál. Vrať se k učení; další obchod teď není potřeba." };
     const [plan] = await tx.select().from(learnerArtifact).where(and(eq(learnerArtifact.userId, userId), eq(learnerArtifact.kind, "investment_plan"))).orderBy(desc(learnerArtifact.version)).limit(1);

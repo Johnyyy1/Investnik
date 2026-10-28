@@ -11,6 +11,15 @@ const zdp = "Zákon č. 586/1992 Sb., o daních z příjmů";
 const fs2026 = { title: "Finanční správa: daňové novinky 2026", url: "https://financnisprava.gov.cz/cs/financni-sprava/media-a-verejnost/tiskove-zpravy-gfr/tiskove-zpravy-2026/danove-novinky-pro-rok-2026" };
 const fs2025 = { title: "Finanční správa: otázky k DPFO za rok 2025", url: "https://financnisprava.gov.cz/cs/dane/dane/dan-z-prijmu/dotazy-a-odpovedi/dan-z-prijmu-fyzickych-osob/aktualne-k-dani-z-prijmu-fyzickych-osob-2025" };
 const retirement = { title: "MF ČR: DIP a daňová podpora spoření na stáří", url: "https://mf.gov.cz/cs/financni-trh/ochrana-spotrebitele/aktuality/2024/dlouhodoby-investicni-produkt-a-danova-podpora-pro-54732" };
+// Benartzi & Thaler (2004), first implementation; the abstract states both rates (checked 2026-10-27).
+const smart = {
+  version: "2026-10-27", jurisdiction: "US", validFrom: "2004-02-01", validTo: undefined, period: "První implementace programu, 40 měsíců (čtyři zvýšení mzdy)",
+  legalBasis: "Výzkum Benartzi a Thaler, Journal of Political Economy 2004, nikoli právní pravidlo",
+  sources: [{ title: "Benartzi a Thaler: Save More Tomorrow (abstrakt)", url: "https://econpapers.repec.org/paper/febnatura/00337.htm" }],
+  verificationStatus: "primary", checkedAt: "2026-10-27", verifiedAt: "2026-10-27", owner: "Redakce — výzkum", nextReviewAt: "2027-04-27",
+  notes: "Účastníci se předem zavázali spořit část budoucích zvýšení mzdy. Nejde o výnos investic ani o účinek Investníku.",
+  research: { sample: "Zaměstnanci jedné americké firmy, kteří program přijali (první ze tří implementací)", period: "40 měsíců od zavedení", limitations: "Jedna firma, penzijní spoření ze mzdy v USA. Ukazuje sílu závazku předem, ne výnos ani výsledek českého jednotlivce." },
+} satisfies Partial<FactVersion>;
 const capitalIncome = { title: "Finanční správa: kapitálové příjmy", url: "https://financnisprava.gov.cz/cs/dane/dane/dan-z-prijmu/fyzicke-osoby/kapitalove-prijmy" };
 
 /** Defaults describe this edition's coverage, not the original commencement of every law.
@@ -59,6 +68,8 @@ export const factRegistry = [
   fact({ key: "krypto.dane", label: "Daně kryptoaktiv", value: { amount: "Samostatný režim osvobození a jeho výjimky", unit: "" }, legalBasis: `${zdp}, ustanovení o kryptoaktivech`, sources: [{ title: "Finanční správa: osvobození převodu kryptoaktiv", url: "https://financnisprava.gov.cz/cs/dane/dane/dan-z-prijmu/dotazy-a-odpovedi/dan-z-prijmu-fyzickych-osob/osvobozeni-prijmu-z-uplatneho-prevodu-kryptoaktiv" }], publicationBlockedBy: followUp, notes: "Nepřebírat změnu stropu cenných papírů do krypta. Ověřit účinnost, limity, elektronické peněžní tokeny a DAC8 v #134; tento záznam nepublikuje číselný výpočet." }),
   fact({ key: "spiva.2025", label: "SPIVA USA — aktivní velké akciové fondy, 2025", value: { amount: 79, unit: "%" }, jurisdiction: "US", validFrom: "2026-03-03", validTo: undefined, period: "Kalendářní rok 2025", legalBasis: "Výzkumná zpráva S&P Dow Jones Indices, nikoli právní pravidlo", sources: [{ title: "S&P DJI: SPIVA U.S. Year-End 2025", url: "https://www.spglobal.com/spdji/en/spiva/article/spiva-us-year-end-2025/" }], verificationStatus: "primary", owner: "Redakce — výzkum", nextReviewAt: "2027-04-21", notes: "Podíl aktivních fondů dané kategorie, které zaostaly za S&P 500; nejde o podíl všech investorů ani pravděpodobnost budoucího neúspěchu.", research: { sample: "Aktivně spravované americké large-cap akciové fondy ve SPIVA", period: "2025", limitations: "USA, jedna kategorie a jeden rok. Není důkazem efektu vzdělávání ani výsledků českého jednotlivce." } }),
   fact({ key: "morningstar.gap", label: "Morningstar — mezera mezi výnosem investorů a fondů", value: { amount: 1.2, unit: "p. b. ročně" }, jurisdiction: "US", period: "Deset let do konce roku 2024; Mind the Gap 2025", legalBasis: "Výzkum Morningstar, nikoli právní pravidlo", sources: [{ title: "Morningstar: Volatility Bedevils Fund Investors", url: "https://www.morningstar.com/financial-advisors/volatility-bedevils-fund-investors" }], owner: "Redakce — výzkum", notes: "Podklad uvádí primární ověření, ale zdroj nyní vrací 403. Záznam zůstává neověřený; nepoužívat jako potvrzenou diagnózu chování.", research: { sample: "Americké podílové fondy a ETF ve studii Morningstar (úplný vzorek k ověření)", period: "2015–2024", limitations: "Agregátní vztah peněžních toků a výnosů není kauzální účinek vzdělávání; nelze jej automaticky přenést na učební aplikaci ani jednotlivce." } }),
+  fact({ ...smart, key: "smart.mira_pred", label: "Save More Tomorrow — průměrná míra úspor účastníků před programem", value: { amount: 3.5, unit: "%" } }),
+  fact({ ...smart, key: "smart.mira_po", label: "Save More Tomorrow — průměrná míra úspor účastníků po 40 měsících", value: { amount: 13.6, unit: "%" } }),
   ...research134Facts,
 ] as const;
 

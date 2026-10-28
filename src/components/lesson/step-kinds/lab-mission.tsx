@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { cardTitle, eyebrow, plainCard } from "./shared";
 
-import { getMission } from "@/features/missions/registry";
+import { getMission, isExerciseMission } from "@/features/missions/registry";
 import dynamic from "next/dynamic";
 
 const VerifiedMission = dynamic(() => import("./verified-mission").then((module) => module.VerifiedMission));
@@ -18,6 +18,7 @@ export const labMissionTargets: Record<LabMissionTarget, string> = {
   "/lab/portfolio": "Portfolio Lab",
   "/lab/backtesting": "Backtesting Lab",
   "/lab/compare": "Porovnání instrumentů",
+  "/lab/training": "Krizový nácvik",
 };
 
 /**
@@ -49,7 +50,7 @@ export function LabMission({ block, lessonId, onOutputReady }: { block: Block; l
       </aside>
       {block.missionId && lessonId ? <VerifiedMission missionId={block.missionId} lessonId={lessonId} onReady={onReady} /> : null}
       <div className="flex flex-col items-stretch gap-1 pt-1">
-        {!verifiedMission || verifiedMission.context === "personal" ? <a href={mission.target} target="_blank" rel="noopener" onClick={() => setOpened(true)} className={buttonVariants({ variant: opened ? "secondary" : "primary" })}>
+        {!verifiedMission || !isExerciseMission(verifiedMission) ? <a href={mission.target} target="_blank" rel="noopener" onClick={() => setOpened(true)} className={buttonVariants({ variant: opened ? "secondary" : "primary" })}>
           Otevřít {lab}<ArrowUpRight aria-hidden="true" className="size-[18px]" /><span className="sr-only"> (otevře se v nové kartě)</span>
         </a> : null}
         <button type="button" onClick={() => setView("analysis")} className={cn(buttonVariants({ variant: opened ? "primary" : "ghost" }), "mt-1")}>

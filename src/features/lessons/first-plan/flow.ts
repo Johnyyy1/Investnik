@@ -29,4 +29,18 @@ export const firstPlanSteps: Readonly<Record<string, readonly StepDefinition[]>>
     { title: "Zhodnoť svůj plán", blocks: ["reflection"] },
     { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
   ],
+  "first-plan-automation": [
+    { title: "Až trh spadne", blocks: ["opening", "prediction"] },
+    { title: "Závazek předem", blocks: ["commitment", "smart"] },
+    { title: "Jak to nastavit", blocks: ["setup", "worked"] },
+    { title: "Doplň den nákupu", blocks: ["faded"] },
+    { title: "Kolik vložíš", blocks: ["total"] },
+    { title: "Mise v Labu", blocks: ["mission-intro", "mission"] },
+    { title: "Pravidelnost není časování", blocks: ["timing", "misconceptions"] },
+    { title: "Trh klesl o 8 %", blocks: ["dip", "dip-decision"] },
+    { title: "Ověření · proč automat", kind: "mastery", blocks: ["recall-why"] },
+    { title: "Ověření · pravidelnost a ztráty", kind: "mastery", blocks: ["recall-losses"] },
+    { title: "Tvoje pravidlo", blocks: ["reflection"] },
+    { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
+  ],
 };
