@@ -1,3 +1,4 @@
+import { INVESTOR_BEHAVIOUR_MODULE_ID, investorBehaviourLessons } from "../lessons/investor-behaviour/manifest";
 import { BROKER_AND_ACCOUNT_MODULE_ID, brokerAndAccountLessons } from "../lessons/broker-and-account/manifest";
 import { CZECH_TAXES_MODULE_ID, czechTaxesLessons } from "../lessons/czech-taxes/manifest";
 import { COSTS_MODULE_ID, costsLessons } from "../lessons/costs/manifest";
@@ -34,6 +35,7 @@ export const storageModules = [
   { id: BROKER_AND_ACCOUNT_MODULE_ID, slug: "broker-and-account", title: "Broker a investiční účet", description: "Rozliš typy platforem, prověř, komu svěřuješ své peníze, a přečti ceník.", status: "available", lessons: brokerAndAccountLessons },
   // Last in storage order for the same reason: publishing 2.5.1 must not reorder an existing learner's next step.
   { id: FIRST_PLAN_MODULE_ID, slug: "first-plan", title: "První plán a první nákup", description: "Sepiš investiční plán dřív, než ho budeš potřebovat.", status: "available", lessons: firstPlanLessons },
+  { id: INVESTOR_BEHAVIOUR_MODULE_ID, slug: "investor-behaviour", title: "Investor v zrcadle", description: "Poznej vlastní rozhodování a nastav pojistky v investičním plánu.", status: "available", lessons: investorBehaviourLessons },
 ] as const;
 
 export type MilestoneId = "A" | "B" | "C" | "D";
@@ -118,6 +120,7 @@ export const skills = {
   "cost-drag": "Dopad celkových ročních nákladů za desítky let",
   "plan-costs": "Roční náklady plánu u dvou brokerů",
   "investment-policy": "Investiční plán (IPS): ověřitelná pravidla sepsaná předem",
+  "behaviour-gap": "Mezera výnosů investora a investice a její omezení",
   "automation": "Pravidelná investice nastavená předem místo časování trhu",
   "order-review": "Kontrola instrumentu, pokynu a celkových nákladů před nákupem",
   "tracking-difference": "TER, rozdíl a kolísání rozdílu vůči indexu",
@@ -213,6 +216,7 @@ export const lessonPlacements: readonly LessonPlacement[] = [
   place("diversification-correlation-risk", "3.3", 6, "required", ["correlation-what-is-correlation", "volatility-standard-deviation"], ["portfolio-risk"]),
   place("diversification-scenario", "3.3", 7, "required", ["diversification-concentration", "diversification-sectors-countries", "diversification-etf-look-through", "diversification-correlation-risk"], ["concentration", "sector-country-exposure", "etf-look-through", "portfolio-risk"]),
 
+  place("behaviour-behaviour-gap", "B.1", 1, "required", ["first-plan-ips"], ["behaviour-gap"]),
   place("correlation-not-causation", "B.1", 8, "required", [], ["correlation-vs-causation"]),
 
   place("returns-log-returns", "6.1", 1, "optional-track", ["returns-compounding"], ["log-returns"]),
@@ -260,6 +264,8 @@ export const skillItems: readonly SkillItem[] = [
   item("costs-broker-comparison", "mix-drag", "cost-drag"),
   item("first-plan-ips", "recall-sections", "investment-policy"),
   item("first-plan-ips", "recall-why", "investment-policy"),
+  item("behaviour-behaviour-gap", "recall", "behaviour-gap"),
+  item("behaviour-behaviour-gap", "recall-limits", "behaviour-gap"),
   item("first-plan-automation", "recall-why", "automation"),
   item("first-plan-automation", "recall-losses", "automation"),
   item("first-plan-first-purchase", "recall", "order-review"),

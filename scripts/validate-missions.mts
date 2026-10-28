@@ -9,6 +9,8 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import type { StepDefinition } from "../src/features/lessons/types";
 
+import { seedBehaviourReplays } from "./behaviour-gap-fixtures.mjs";
+
 const url = new URL(process.env.DATABASE_URL!);
 assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(url.hostname));
 assert.equal(url.pathname, "/investi_missions_qa");
@@ -180,6 +182,39 @@ try {
   assert.deepEqual(trainingAttempts[0].evidence, { context: "training", check: "training-contributions-v1", params: { months: 12 }, sessionId, ipsVersion: 1, contributionMinor: "250025", months: 12 });
   assert.deepEqual(await protectedRows(), trainingBefore, "training verification writes no portfolio or reward data");
   assert.equal((await sql`select count(*)::int as n from training_action where session_id=${sessionId}`)[0].n, 25, "verification never appends training actions");
+  // B.1.1: no trading or return target, only full historical windows and a subsequently saved complete IPS.
+  const behaviour = () => verifyMission(trainer, "behaviour-crises-v1", randomUUID());
+  assert.equal((await behaviour()).completed, false, "the model/contribution session cannot count as history");
+  const behaviourId = "behaviour-behaviour-gap";
+  await sql`insert into lesson_progress(user_id,lesson_id,status,last_position,updated_at) values(${trainer},${behaviourId},'in_progress',${getStepDefinitions(behaviourId).length - 1},now())`;
+  await assert.rejects(() => completeLesson(trainer, behaviourId), "a forged final cursor cannot bypass the historical mission");
+  await seedBehaviourReplays(sql, trainer, { sample: true });
+  assert.match((await behaviour()).message, /0 ze 3/);
+  await seedBehaviourReplays(sql, trainer, { scenarioIds: ["history-2008-v1", "history-2020-v1"] });
+  await seedBehaviourReplays(sql, trainer, { scenarioIds: ["history-2022-v1"], months: 23 });
+  assert.match((await behaviour()).message, /2 ze 3/);
+  await assert.rejects(() => verifyMission(trainer, "behaviour-crises-v1", randomUUID(), { completed: true, scenarios: 3 }));
+  await seedBehaviourReplays(sql, trainer, { scenarioIds: ["history-2022-v1"] });
+  assert.match((await behaviour()).message, /Po dokončení všech tří/);
+  assert.equal((await verifyMission(other, "behaviour-crises-v1", randomUUID())).completed, false, "another owner's history does not count");
+  await saveLearnerArtifact(trainer, { content: { kind: "investment_plan", payload: exampleIps }, sourceLessonId: null, consent: true, requestId: randomUUID() });
+  const replayBefore = await sql`select * from training_action order by session_id,sequence`;
+  const protectedBefore = await protectedRows();
+  const behaviourResults = await Promise.all(Array.from({ length: 4 }, behaviour));
+  assert.ok(behaviourResults.every((result) => result.completed));
+  const attempts = await sql`select * from mission_attempt where user_id=${trainer} and mission_id='behaviour-crises-v1'`;
+  assert.equal(attempts.length, 1);
+  assert.equal(attempts[0].evidence.sessions.length, 3);
+  assert.equal(attempts[0].evidence.ipsVersion, 2);
+  assert.deepEqual(await sql`select * from training_action order by session_id,sequence`, replayBefore);
+  assert.deepEqual(await protectedRows(), protectedBefore);
+  assert.ok((await behaviour()).completed, "retry preserves evidence without another exercise or award");
+  const completions = await Promise.all(Array.from({ length: 4 }, () => completeLesson(trainer, behaviourId)));
+  assert.equal(completions.filter((result) => result.xpAwarded > 0).length, 1);
+  const [receipt] = await sql`select xp,practice_capital_minor from lesson_award where user_id=${trainer} and lesson_id=${behaviourId}`;
+  assert.equal(receipt.xp, 60);
+  assert.equal(String(receipt.practice_capital_minor), "0");
+  console.log("PASS: B.1.1 historical completion, missing/partial/sample rejection, owner isolation, saved IPS after replay, forged evidence rejection, concurrent idempotence and no training/portfolio/reward writes.");
   const { buildAccountExport, readAccountExportRows } = await import("../src/features/account/export");
   assert.equal(buildAccountExport((await readAccountExportRows(db, owner))!).missionAttempts.length, 3);
   await sql`delete from "user" where id=${owner}`;

@@ -104,7 +104,7 @@ export async function readTrainingSessions(reader: Reader, userId: string) {
   const result = [];
   for (const session of sessions) {
     const rows = await reader.select().from(trainingAction).where(eq(trainingAction.sessionId, session.id)).orderBy(asc(trainingAction.sequence));
-    result.push({ session, state: replayTraining(trainingSetup(session), rows.map(actionFromRow)) });
+    result.push({ session, state: replayTraining(trainingSetup(session), rows.map(actionFromRow)), lastActionAt: rows.at(-1)?.createdAt ?? null });
   }
   return result;
 }

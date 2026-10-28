@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { evaluateScenario, lessonInstrumentIds } from "@/features/lessons/diversification/model";
 import { ipsSchema } from "@/features/ips/schema";
+import type { TrainingSeries } from "@/features/training/scenarios";
+import { trainingScenarios } from "@/features/training/scenarios";
 import type { TrainingState } from "@/features/training/domain";
 import { roundDivide } from "@/features/portfolio/decimal";
 
@@ -47,4 +49,17 @@ export function checkPlannedIpsPurchase(payload: unknown, planCreatedAt: Date, t
     if (targetMinor > 0n && trade.cashDeltaBaseMinor < 0n && difference >= -toleranceMinor && difference <= toleranceMinor) return { trade, targetMinor, toleranceMinor };
   }
   return undefined;
+}
+
+/** Only complete, non-sample historical windows count. Waiting is valid; trades and returns are never criteria. */
+export function completedHistoricalReplays<T extends { session: { scenarioId: string; series: TrainingSeries }; state: Pick<TrainingState, "finished"> }>(sessions: readonly T[], scenarioIds: readonly string[]) {
+  return scenarioIds.flatMap((id) => {
+    const scenario = trainingScenarios.find((entry) => entry.id === id);
+    const match = sessions.findLast(({ session, state }) => state.finished && session.scenarioId === id
+      && session.series.source.kind === "history" && !session.series.source.sample
+      && session.series.points.length === 25
+      && session.series.points[0].date.slice(0, 7) === scenario?.startMonth
+      && session.series.points.at(-1)!.date.slice(0, 7) === scenario?.endMonth);
+    return match ? [match] : [];
+  });
 }

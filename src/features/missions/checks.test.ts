@@ -1,3 +1,4 @@
+import { completedHistoricalReplays } from "./checks";
 import { describe, expect, it } from "vitest";
 import { checkIpsPurchase, checkPlannedIpsPurchase, checkScenario, contributionMonthsWithBuy, type ScenarioDecision } from "./checks";
 import { exampleIps } from "@/features/ips/test-fixtures";
@@ -80,5 +81,23 @@ describe("server mission criteria", () => {
     // 1.01 Kč × 50% = 0.505 Kč → 0.51 Kč; 1% of 51 haléřů → 1 haléř.
     expect(checkPlannedIpsPurchase(plan, at, [trade])).toMatchObject({ targetMinor: 51n, toleranceMinor: 1n });
     expect(checkPlannedIpsPurchase(plan, at, [{ ...trade, cashDeltaBaseMinor: -53n }])).toBeUndefined();
+  });
+});
+
+describe("historical behaviour replay requirements", () => {
+  const replay = (id: string, start: string, sample = false, finished = true) => {
+    const [year, month] = start.split("-").map(Number);
+    return { session: { scenarioId: id, series: { points: Array.from({ length: 25 }, (_, index) => ({ date: new Date(Date.UTC(year, month + index, 0)).toISOString().slice(0, 10), price: "100" })), source: { kind: "history" as const, sample, sourceName: "Synthetic unit fixture", symbol: "TEST", instrumentName: "Test", currency: "USD" as const, retrievedAt: "2026-10-28T12:00:00Z" } } }, state: { finished } };
+  };
+  it("requires every full historical window and rejects sample, partial and mislabeled windows", () => {
+    const expected = ["history-2008-v1", "history-2020-v1", "history-2022-v1"];
+    const first = replay(expected[0], "2007-12");
+    const second = replay(expected[1], "2019-12");
+    const third = replay(expected[2], "2021-12");
+    expect(completedHistoricalReplays([first, second, third], expected)).toHaveLength(3);
+    expect(completedHistoricalReplays([first, second, replay(expected[2], "2021-12", true)], expected)).toHaveLength(2);
+    expect(completedHistoricalReplays([first, second, replay(expected[2], "2021-12", false, false)], expected)).toHaveLength(2);
+    expect(completedHistoricalReplays([replay(expected[0], "2019-12"), second, third], expected)).toHaveLength(2);
+    expect(completedHistoricalReplays([first, first, second], expected)).toHaveLength(2);
   });
 });

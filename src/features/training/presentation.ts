@@ -1,3 +1,4 @@
+import { compareWithHold } from "./hold-comparison";
 import { priceToDecimal, quantityToDecimal } from "@/features/portfolio/decimal";
 import { evaluateTraining, maxBuyAmountMinor, type TrainingPlan, type TrainingSetup, type TrainingState } from "./domain";
 import { trainingScenarios, type TrainingSource } from "./scenarios";
@@ -17,6 +18,7 @@ export function presentTraining(session: { id: string; scenarioId: string; plan:
     sessionId: session.id,
     scenario: { id: session.scenarioId, title: scenario?.title ?? session.scenarioId, description: scenario?.description ?? "" },
     source: session.series.source,
+    headline: state.month === 0 ? "Začíná nácvik. Další vývoj zatím neznáš." : setup.prices[state.month] < setup.prices[state.month - 1] ? "Index v právě odhaleném měsíci klesá." : setup.prices[state.month] > setup.prices[state.month - 1] ? "Index v právě odhaleném měsíci roste." : "Index v právě odhaleném měsíci zůstává beze změny.",
     month: state.month, lastMonth: state.lastMonth, finished: state.finished, monthLabel: label(state.month),
     points: state.values.map((value, month) => ({ month, label: label(month), price: priceToDecimal(setup.prices[month]), valueMinor: value.toString() })),
     cashMinor: state.cashMinor.toString(), quantity: quantityToDecimal(state.quantityUnits), valueMinor: state.valueMinor.toString(),
@@ -27,7 +29,7 @@ export function presentTraining(session: { id: string; scenarioId: string; plan:
       quantity: quantityToDecimal(quantityUnits), grossMinor: grossMinor.toString(), feeMinor: feeMinor.toString() })),
     evaluation: evaluation && {
       endingMinor: evaluation.endingMinor.toString(), contributedMinor: evaluation.contributedMinor.toString(), gainMinor: evaluation.gainMinor.toString(),
-      twr: evaluation.twr, mwr: evaluation.mwr,
+      twr: evaluation.twr, mwr: evaluation.mwr, comparison: compareWithHold(setup, state),
       feesMinor: evaluation.feesMinor.toString(), grossTradedMinor: evaluation.grossTradedMinor.toString(), tradeCount: evaluation.tradeCount,
       turnoverBps: evaluation.turnoverBps?.toString() ?? null, sellsOutsidePlan: evaluation.sellsOutsidePlan,
       allocation: { ...evaluation.allocation, investedBps: evaluation.allocation.investedBps?.toString() ?? null },

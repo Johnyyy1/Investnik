@@ -20,10 +20,9 @@ import type { LessonFactNotice as FactNotice } from "@/features/facts/types";
 import { LessonFactNotice } from "./lesson-fact-notice";
 import { GuidedBlock } from "./guided-block";
 import { GuidedQuestion } from "./guided-question";
-import { preloadLessonBlocks } from "./lazy-blocks";
+import { preloadLessonBlocks, LessonFactChip } from "./lazy-blocks";
 import { LessonActionBar, LessonTopBar } from "./lesson-chrome";
 import { createLessonSaveQueue } from "./lesson-save-queue";
-import { FactStatusChip } from "./step-kinds/fact-notice";
 import { stepWidth } from "@/features/lessons/step-kinds";
 import type { FactKey } from "@/features/facts/registry";
 import { ArrowLeft, ArrowRight, CheckCircle2, CircleAlert, Leaf, RotateCcw } from "lucide-react";
@@ -177,7 +176,7 @@ export function GuidedLesson({ lesson, moduleTitle, steps, factKeys, initialStat
             {mastery ? <p className="flex w-fit items-center gap-1.5 rounded-full border border-border bg-surface-practice py-[5px] pr-2.5 pl-2 text-[13px] font-semibold text-primary"><Leaf aria-hidden="true" className="size-3.5" />Ověření znalostí · {masteryPosition} z {masterySteps.length}</p> : <p className="text-[11px] font-semibold tracking-[0.9px] text-primary uppercase md:text-xs md:tracking-[1px]">Krok {position + 1}</p>}
             <h2 ref={headingRef} id="step-title" tabIndex={-1} lang="cs" className="scroll-mt-8 text-[28px]/8 font-semibold tracking-[-0.9px] [overflow-wrap:normal] md:text-[38px]/[44px] md:tracking-[-1.3px]">{step.title}</h2>
             {mastery ? <p className="text-sm/5 text-muted">Bez časového limitu. Když odpověď nevyjde, ukážeme proč a zkusíš to znovu.</p> : null}
-            {position === 0 && factKeys.length ? <FactStatusChip factKeys={factKeys} /> : null}
+            {position === 0 && factKeys.length ? <LessonFactChip factKeys={factKeys} /> : null}
           </div>
           {step.blocks.filter((block) => !isQuestion(block)).map((block) => <GuidedBlock key={block.id} block={block} lessonId={lesson.id} guest={guest} onOutputReady={onOutputReady} history={history} riskHistory={riskHistory} />)}
           {question ? <div ref={questionRef} className="flex flex-col">

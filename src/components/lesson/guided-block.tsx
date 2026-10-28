@@ -11,8 +11,7 @@ import type { RiskHistoryEntry } from "@/features/lessons/real-history/risk-wind
 import { lessonLink } from "@/features/learning/catalog";
 import { metricLabLink } from "@/features/learning/metric-glossary";
 import { cn } from "@/lib/utils";
-import { LessonFigure, LessonFormula } from "./lazy-blocks";
-import { FactNotice } from "./step-kinds/fact-notice";
+import { LessonFigure, LessonFormula, LessonFacts } from "./lazy-blocks";
 import { LabMission } from "./step-kinds/lab-mission";
 import { PersonaDecision } from "./step-kinds/persona-decision";
 import { WrittenReflection } from "./step-kinds/written-reflection";
@@ -63,7 +62,7 @@ export function GuidedBlock({ block, history, riskHistory, lessonId, guest, onOu
     </section>;
     case "personaDecision": return <PersonaDecision block={block} />;
     case "labMission": return <LabMission block={block} lessonId={lessonId} onOutputReady={onOutputReady} />;
-    case "factNotice": return <FactNotice id={block.id} factKeys={block.factKeys} />;
+    case "factNotice": return <LessonFacts id={block.id} factKeys={block.factKeys} />;
     case "writtenReflection": return <WrittenReflection block={block} />;
     default: return null; // Questions own their Check → feedback → Continue interaction.
   }
