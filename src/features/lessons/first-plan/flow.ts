@@ -1,6 +1,20 @@
 import type { StepDefinition } from "../types";
 
 export const firstPlanSteps: Readonly<Record<string, readonly StepDefinition[]>> = {
+  "first-plan-first-purchase": [
+    { title: "Nejdřív ověř záměr", blocks: ["opening", "prediction"] },
+    { title: "Najdi správný instrument", blocks: ["prepare", "identity"] },
+    { title: "Přečti celý přehled", blocks: ["worked"] },
+    { title: "Doplň celkovou částku", blocks: ["faded"] },
+    { title: "Cena, nebo provedení", blocks: ["orders", "order-type"] },
+    { title: "Najdi chybu · třída", blocks: ["error-class-context", "error-class"] },
+    { title: "Najdi chybu · částka", blocks: ["error-amount-context", "error-amount"] },
+    { title: "Najdi chybu · směr", blocks: ["error-side-context", "error-side"] },
+    { title: "Ověření · před odesláním", kind: "mastery", blocks: ["recall"] },
+    { title: "Tvůj první cvičný nákup", blocks: ["lab-limits", "mission"] },
+    { title: "Po nákupu a tvoje pojistka", blocks: ["after", "reflection"] },
+    { title: "Co si odneseš", blocks: ["summary", "sources"] },
+  ],
   "first-plan-ips": [
     { title: "Kdy se rozhodnout?", blocks: ["opening", "prediction"] },
     { title: "Co je investiční plán", blocks: ["what", "why"] },

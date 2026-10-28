@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import postgres from "postgres";
+import { prepareFirstPurchase } from "./first-purchase-fixtures";
 const url = new URL(process.env.DATABASE_URL ?? "");
 assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(url.hostname));
 assert.equal(url.pathname, "/investi_6a3a_qa");
@@ -43,6 +44,12 @@ for (const lesson of mode === "first-return" ? lessons.slice(0, 1) : lessons) {
   // Lesson 2.5.2 completes only with verified training evidence; validate-missions covers how a real session earns it.
   if (lesson.id === "first-plan-automation") await sql`insert into mission_attempt (id, user_id, mission_id, request_id, evidence, completed) values (${randomUUID()}, ${id!}, 'training-contributions-v1', 'training', ${sql.json({ fixture: true })}, true)`;
   await sql`insert into lesson_progress (user_id, lesson_id, status, last_position, updated_at) values (${id!}, ${lesson.id}, 'in_progress', ${lessonSteps(lesson.id).length - 1}, now()) on conflict (user_id, lesson_id) do update set last_position = excluded.last_position`;
+  if (lesson.id === "first-plan-first-purchase") {
+    await prepareFirstPurchase(sql, id!);
+    await executeTrade(id!, { instrumentId: "SAMPLE-XNAS:CVETF", quantity: "1.03", side: "BUY", clientIdempotencyKey: randomUUID() });
+    const { verifyMission } = await import("../src/features/missions/repository");
+    assert.equal((await verifyMission(id!, "ips-etf-purchase-v2", randomUUID())).completed, true);
+  }
   await completeLesson(id!, lesson.id);
 }
 if (mode === "foundations") await executeTrade(id!, { instrumentId: "US-XNAS:AAPL", quantity: "0.1", side: "BUY", clientIdempotencyKey: "00000000-0000-4000-8000-000000000001" });

@@ -164,3 +164,7 @@ Holdings-history and flows endpoints have separate terms and are outside this in
 ### Optional live smoke check
 
 Run `npm run smoke:tickerinside` to fetch current SPY, VOO, IVV, QQQ and VTI fund snapshots. No environment variables or API key are required. It verifies one HTTP request per fund across all four methods and prints normalized availability, metric dates, coverage and attribution. A missing metric is allowed; required fund info/holdings failures make the check fail. This command is manual only; the standard test suite uses mocked HTTP responses and never calls TickerInside. FMP price/discovery checks still use `npm run smoke:fmp` and require the existing FMP key.
+
+## First-purchase rehearsal fixture
+
+Deterministic sample mode includes the fictional `SAMPLE-XNAS:CVETF` (Modelové ETF Nácvik), with a synthetic USD quote and ten invented daily closes. It makes an ETF purchase possible at the existing sample clock using the normal US execution calendar; the existing Xetra sample listing has no supported execution calendar. No existing identity, quote, FX rate, clock or market-session rule changes. This is not a real fund or a recommendation. Composition analytics are unavailable rather than copied from another fund.

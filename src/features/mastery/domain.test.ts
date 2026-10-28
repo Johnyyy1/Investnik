@@ -61,7 +61,7 @@ describe("item bank and mixed checkpoint", () => {
     }
   });
 
-  it("offers checkpoints for Foundations, the published costs lessons and the first-plan lessons", () => {
+  it("offers mixed checkpoints for modules with skills from multiple published lessons", () => {
     expect(checkpointModules.map((entry) => entry.code)).toEqual(["1.1", "2.2", "2.5"]);
   });
 

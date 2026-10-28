@@ -7,7 +7,7 @@ import { learnerArtifact, missionAttempt, portfolio, portfolioTrade, user } from
 import { readPracticeCapitalEntitlementMinor } from "@/features/rewards/repository";
 import { ipsSchema } from "@/features/ips/schema";
 import { readTrainingSessions } from "@/features/training/repository";
-import { checkIpsPurchase, checkScenario, contributionMonthsWithBuy } from "./checks";
+import { checkIpsPurchase, checkPlannedIpsPurchase, checkScenario, contributionMonthsWithBuy } from "./checks";
 import { getMission, isExerciseMission } from "./registry";
 
 type Reader = Pick<typeof db, "select">;
@@ -52,12 +52,14 @@ export async function verifyMission(userId: string, missionId: string, requestId
     if (!plan) return { completed: false, message: "Nejdřív ulož IPS s konkrétním ETF. Samotný název fondu v poznámce nestačí." };
     const target = ipsSchema.safeParse(plan.payload);
     if (!target.success || !target.data.allocation.lines.some((line) => "instrumentId" in line)) return { completed: false, message: "Nejdřív ulož IPS s konkrétními instrumenty. Samotná třída aktiv ani název fondu v poznámce nestačí." };
-    const trades = await tx.select({ id: portfolioTrade.id, instrumentId: portfolioTrade.instrumentId, instrumentAssetType: portfolioTrade.instrumentAssetType, side: portfolioTrade.side, executedAt: portfolioTrade.executedAt }).from(portfolioTrade).innerJoin(portfolio, eq(portfolio.id, portfolioTrade.portfolioId)).where(eq(portfolio.userId, userId)).orderBy(portfolioTrade.executedAt, portfolioTrade.id);
-    const trade = checkIpsPurchase(plan.payload, plan.createdAt, trades);
+    if (mission.check === "ips-etf-purchase-v2" && BigInt(target.data.contribution.amountMinor) === 0n) return { completed: false, message: "V IPS máš nulový příspěvek. Neobchoduj kvůli misi; vrať se k plánu a učení. Pokračuj, až bude cvičný nákup odpovídat tvému plánu a hotovosti." };
+    const trades = await tx.select({ id: portfolioTrade.id, instrumentId: portfolioTrade.instrumentId, instrumentAssetType: portfolioTrade.instrumentAssetType, side: portfolioTrade.side, executedAt: portfolioTrade.executedAt, cashDeltaBaseMinor: portfolioTrade.cashDeltaBaseMinor }).from(portfolioTrade).innerJoin(portfolio, eq(portfolio.id, portfolioTrade.portfolioId)).where(eq(portfolio.userId, userId)).orderBy(portfolioTrade.executedAt, portfolioTrade.id);
+    const planned = mission.check === "ips-etf-purchase-v2" ? checkPlannedIpsPurchase(plan.payload, plan.createdAt, trades) : undefined;
+    const trade = mission.check === "ips-etf-purchase-v2" ? planned?.trade : checkIpsPurchase(plan.payload, plan.createdAt, trades);
     if (trade) {
-      await tx.insert(missionAttempt).values({ id: randomUUID(), userId, missionId, requestId: "personal", completed: true, evidence: { context: mission.context, check: mission.check, params: mission.params, artifactId: plan.id, tradeId: trade.id } });
+      await tx.insert(missionAttempt).values({ id: randomUUID(), userId, missionId, requestId: "personal", completed: true, evidence: { context: mission.context, check: mission.check, params: mission.params, artifactId: plan.id, tradeId: trade.id, ...(planned ? { targetMinor: planned.targetMinor.toString(), toleranceMinor: planned.toleranceMinor.toString(), spentMinor: (-planned.trade.cashDeltaBaseMinor).toString() } : {}) } });
       return { completed: true, message: "Mise splněna. Server ověřil cvičný nákup ETF uvedeného v uloženém IPS." };
     }
-    return { completed: false, message: "Zatím chybí cvičný nákup ETF z konkrétního mixu IPS po jeho uložení. Prodej, výnos ani počet dalších obchodů se nehodnotí." };
+    return { completed: false, message: mission.check === "ips-etf-purchase-v2" ? "Zatím chybí nákup ETF po uložení IPS za jeho podíl měsíčního příspěvku. Celkový úbytek hotovosti včetně nákladů musí být v toleranci ±1 %. Ověř částku v přehledu; nenavyšuj riziko ani počet obchodů kvůli misi." : "Zatím chybí cvičný nákup ETF z konkrétního mixu IPS po jeho uložení. Prodej, výnos ani počet dalších obchodů se nehodnotí." };
   });
 }
