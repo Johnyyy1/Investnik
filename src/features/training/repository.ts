@@ -98,6 +98,17 @@ export async function appendTrainingAction(userId: string, input: { sessionId: s
   });
 }
 
+/** Every session of the learner with its replayed state, oldest first. */
+export async function readTrainingSessions(reader: Reader, userId: string) {
+  const sessions = await reader.select().from(trainingSession).where(eq(trainingSession.userId, userId)).orderBy(asc(trainingSession.startedAt), asc(trainingSession.id));
+  const result = [];
+  for (const session of sessions) {
+    const rows = await reader.select().from(trainingAction).where(eq(trainingAction.sessionId, session.id)).orderBy(asc(trainingAction.sequence));
+    result.push({ session, state: replayTraining(trainingSetup(session), rows.map(actionFromRow)) });
+  }
+  return result;
+}
+
 /** The learner's most recent session with its replayed state, or null. */
 export async function loadLatestTraining(userId: string) {
   const [session] = await db.select().from(trainingSession).where(eq(trainingSession.userId, userId)).orderBy(desc(trainingSession.startedAt)).limit(1);

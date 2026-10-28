@@ -63,6 +63,8 @@ describe("deterministic recommendations", () => {
     expect(recommendLearning({ progress: doneUpTo("investing-foundations", "returns", "volatility", "correlation", "diversification", "before-investing") })).toMatchObject({ nextLessonId: "costs-ter-tracking-difference", reasonCode: "COSTS_AFTER_FUNDS" });
     expect(recommendLearning({ progress: doneUpTo("investing-foundations", "returns", "volatility", "correlation", "diversification", "before-investing", "costs") })).toMatchObject({ nextLessonId: "broker-fee-schedule", reasonCode: "BROKER_FEES_AFTER_MARKETS" });
     expect(recommendLearning({ progress: doneUpTo("investing-foundations", "returns", "volatility", "correlation", "diversification", "before-investing", "costs", "broker-and-account") })).toMatchObject({ nextLessonId: "first-plan-ips", reasonCode: "PLAN_AFTER_COSTS" });
+    const ipsDone = [...doneUpTo("investing-foundations", "returns", "volatility", "correlation", "diversification", "before-investing", "costs", "broker-and-account"), { lessonId: "first-plan-ips", status: "completed" }];
+    expect(recommendLearning({ progress: ipsDone })).toMatchObject({ nextLessonId: "first-plan-automation", reasonCode: "AUTOMATION_AFTER_PLAN" });
     expect(recommendLearning({ progress: doneUpTo("investing-foundations", "returns", "volatility", "correlation", "diversification", "before-investing", "costs", "broker-and-account", "first-plan") })).toMatchObject({ nextLessonId: null, reasonCode: "CURRICULUM_COMPLETE" });
   });
   it("offers the new budget lesson without relocking or restarting completed content", () => {

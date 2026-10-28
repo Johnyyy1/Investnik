@@ -40,8 +40,8 @@ try {
 const { db } = await import("../src/db");
 const { seedCurriculum } = await import("../src/db/curriculum");
 await seedCurriculum(db);
-const ids = Array.from({ length: 4 }, () => `mission_qa_${randomUUID()}`);
-const [owner, other, personal, guest] = ids;
+const ids = Array.from({ length: 5 }, () => `mission_qa_${randomUUID()}`);
+const [owner, other, personal, guest, trainer] = ids;
 const { authoredLessons } = await import("../src/features/lessons/registry");
 const { getStepDefinitions } = await import("../src/features/lessons/steps");
 const { missionPreviewBlocks, missionPreviewSteps } = await import("../src/features/missions/test-fixtures");
@@ -125,12 +125,39 @@ try {
   assert.equal(claimedAttempt.user_id, personal);
   assert.match(claimedAttempt.request_id, /^claim:/);
   assert.equal((await sql`select * from mission_attempt where user_id=${personal} and mission_id='allocation-training-v1'`).length, 2);
+  // training-contributions-v1 (2.5.2): evidence is replayed from the append-only training log, never sent by the client.
+  const { startTrainingSession, appendTrainingAction } = await import("../src/features/training/repository");
+  const { modelSeries } = await import("../src/features/training/scenarios");
+  const training = () => verifyMission(trainer, "training-contributions-v1", randomUUID());
+  assert.match((await training()).message, /žádný krizový nácvik/);
+  await saveLearnerArtifact(trainer, { content: { kind: "investment_plan", payload: exampleIps }, sourceLessonId: null, consent: true, requestId: randomUUID() });
+  const { sessionId } = await startTrainingSession(trainer, { scenarioId: "model-crisis-v1", requestId: randomUUID(), series: modelSeries() });
+  let month = 0;
+  const act = async (action: { kind: "advance" } | { kind: "buy"; amountMinor: bigint }) => {
+    await appendTrainingAction(trainer, { sessionId, expectedMonth: month, clientIdempotencyKey: randomUUID(), action });
+    if (action.kind === "advance") month += 1;
+  };
+  // A lump sum in month 0 and contributions left as cash do not count.
+  await act({ kind: "buy", amountMinor: 5_000_000n });
+  for (let i = 0; i < 11; i++) { await act({ kind: "advance" }); await act({ kind: "buy", amountMinor: 250_025n }); }
+  await act({ kind: "advance" });
+  assert.match((await training()).message, /Zatím 11 z 12/);
+  await assert.rejects(() => verifyMission(trainer, "training-contributions-v1", randomUUID(), { months: 12 }), "the client cannot submit evidence");
+  const trainingBefore = await protectedRows();
+  await act({ kind: "buy", amountMinor: 250_025n });
+  const trainingResults = await Promise.all(Array.from({ length: 4 }, () => training()));
+  assert.ok(trainingResults.every((result) => result.completed));
+  const trainingAttempts = await sql`select * from mission_attempt where user_id=${trainer} and mission_id='training-contributions-v1'`;
+  assert.equal(trainingAttempts.length, 1, "concurrent verification stores one evidence row");
+  assert.deepEqual(trainingAttempts[0].evidence, { context: "training", check: "training-contributions-v1", params: { months: 12 }, sessionId, ipsVersion: 1, contributionMinor: "250025", months: 12 });
+  assert.deepEqual(await protectedRows(), trainingBefore, "training verification writes no portfolio or reward data");
+  assert.equal((await sql`select count(*)::int as n from training_action where session_id=${sessionId}`)[0].n, 25, "verification never appends training actions");
   const { buildAccountExport, readAccountExportRows } = await import("../src/features/account/export");
   assert.equal(buildAccountExport((await readAccountExportRows(db, owner))!).missionAttempts.length, 3);
   await sql`delete from "user" where id=${owner}`;
   assert.equal((await sql`select * from mission_attempt where user_id=${owner}`).length, 0);
   assert.equal(await hasCompletedMission(db, other, "allocation-training-v1"), true);
-  console.log("PASS: migrations twice; server criteria; forged cursor/flags; owner isolation; concurrent retry idempotence; lesson/reward compatibility; real fractional ETF purchase + IPS; reset preservation; export/cascade; concurrent guest claim with retry-key collision; scenario isolation.");
+  console.log("PASS: migrations twice; server criteria; training-contribution evidence from the replayed log (partial, forged, concurrent, isolated); forged cursor/flags; owner isolation; concurrent retry idempotence; lesson/reward compatibility; real fractional ETF purchase + IPS; reset preservation; export/cascade; concurrent guest claim with retry-key collision; scenario isolation.");
 } finally {
   lesson.blocks = originalBlocks; steps.splice(0, steps.length, ...originalSteps);
   await sql`delete from "user" where id in ${sql(ids)}`;

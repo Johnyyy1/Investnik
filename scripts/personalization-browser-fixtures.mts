@@ -40,6 +40,8 @@ for (const lesson of mode === "first-return" ? lessons.slice(0, 1) : lessons) {
   if (lesson.id === "first-plan-ips") await saveLearnerArtifact(id!, {
     content: { kind: "investment_plan", payload: exampleIps }, sourceLessonId: null, consent: true, requestId: randomUUID(),
   });
+  // Lesson 2.5.2 completes only with verified training evidence; validate-missions covers how a real session earns it.
+  if (lesson.id === "first-plan-automation") await sql`insert into mission_attempt (id, user_id, mission_id, request_id, evidence, completed) values (${randomUUID()}, ${id!}, 'training-contributions-v1', 'training', ${sql.json({ fixture: true })}, true)`;
   await sql`insert into lesson_progress (user_id, lesson_id, status, last_position, updated_at) values (${id!}, ${lesson.id}, 'in_progress', ${lessonSteps(lesson.id).length - 1}, now()) on conflict (user_id, lesson_id) do update set last_position = excluded.last_position`;
   await completeLesson(id!, lesson.id);
 }

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { evaluateScenario, lessonInstrumentIds } from "@/features/lessons/diversification/model";
 import { ipsSchema } from "@/features/ips/schema";
+import type { TrainingState } from "@/features/training/domain";
 
 const percent = z.number().int().min(0).max(100).multipleOf(10);
 export const scenarioDecisionSchema = z.strictObject({
@@ -15,6 +16,12 @@ export function checkScenario(input: unknown) {
   const decision = scenarioDecisionSchema.parse(input);
   const result = evaluateScenario(decision.allocation);
   return { decision, completed: result.passed, rules: result.rules.map(({ id, label, percent, maxPercent, pass }) => ({ id, label, percent, maxPercent, pass })) };
+}
+
+/** Months in which the IPS contribution arrived and the learner bought in that same month. Returns are not read. */
+export function contributionMonthsWithBuy(state: Pick<TrainingState, "contributions" | "trades">) {
+  const bought = new Set(state.trades.filter((trade) => trade.side === "BUY").map((trade) => trade.month));
+  return state.contributions.filter((contribution) => contribution.amountMinor > 0n && bought.has(contribution.month)).length;
 }
 
 export type PurchaseEvidence = { id: string; instrumentId: string; instrumentAssetType: string; side: string; executedAt: Date };

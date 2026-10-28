@@ -107,7 +107,7 @@ try {
       await page.getByRole("heading", { level: 2, name: step.title, exact: true }).waitFor();
       await idle();
       await audit(where, width);
-      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips"].includes(lesson.id)) {
+      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation"].includes(lesson.id)) {
         for (const size of [1440, 390]) {
           await page.setViewportSize({ width: size, height: 900 });
           await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; });
@@ -238,6 +238,46 @@ try {
           await check.getByText(/^Plán je uložený: verze 2 z /).waitFor();
           assert.equal(await button("Pokračovat").isEnabled(), true, "a saved complete plan enables continuation");
           await audit(`${where} after saving`, width);
+        }
+        if (block.type === "labMission" && block.missionId === "training-contributions-v1") {
+          const verify = button("Ověřit misi");
+          assert.equal(await button("Pokračovat").isDisabled(), true, "the mission step requires server evidence");
+          await verify.click();
+          await page.getByText(/^Zatím nemáš žádný krizový nácvik/).waitFor();
+          // Walked alone (LESSON_IDS), the learner has not saved the plan in 2.5.1; training needs one.
+          const [plan] = await sql`select 1 from learner_artifact where user_id = ${userId!} and kind = 'investment_plan'`;
+          if (!plan) await sql`insert into learner_artifact (id, user_id, kind, version, payload, source_lesson_id, request_id) values (${randomUUID()}, ${userId!}, 'investment_plan', 1, ${sql.json(exampleIps as never)}, null, ${randomUUID()})`;
+          // The learner practises in the Lab in another tab: twelve months of contribution, then a purchase.
+          const labContext = await browser.newContext({ storageState: await page.context().storageState(), viewport: { width: 1440, height: 900 } });
+          const lab = await labContext.newPage();
+          await lab.goto(`${baseURL}/lab/training`);
+          await lab.getByRole("button", { name: "Začít nácvik", exact: true }).click();
+          for (let month = 1; month <= 12; month++) {
+            if (month === 6) {
+              await lab.getByRole("button", { name: "Pokračovat na další měsíc", exact: true }).click();
+              await lab.getByRole("heading", { name: `(měsíc ${month} z`, exact: false }).waitFor();
+              await verify.click();
+              await page.getByText("Zatím 5 z 12 měsíců s příspěvkem a nákupem ve stejném měsíci. Pokračuj v nácviku; výnos se nehodnotí.", { exact: true }).waitFor();
+              assert.equal(await button("Pokračovat").isDisabled(), true, "a month without a purchase does not count");
+              continue;
+            }
+            await lab.getByRole("button", { name: "Pokračovat na další měsíc", exact: true }).click();
+            await lab.getByRole("heading", { name: `(měsíc ${month} z`, exact: false }).waitFor();
+            await lab.getByRole("button", { name: /^Investovat hotovost/ }).click();
+            await lab.getByRole("status").getByText(/^Nakoupeno za/).waitFor();
+          }
+          // Month 6 had no purchase, so a thirteenth month completes the twelve.
+          await lab.getByRole("button", { name: "Pokračovat na další měsíc", exact: true }).click();
+          await lab.getByRole("heading", { name: "(měsíc 13 z", exact: false }).waitFor();
+          await lab.getByRole("button", { name: /^Investovat hotovost/ }).click();
+          await lab.getByRole("status").getByText(/^Nakoupeno za/).waitFor();
+          await labContext.close();
+          await verify.click();
+          await page.getByText("Splněno · Mise splněna. Server ověřil 12 měsíců s příspěvkem z plánu a nákupem.", { exact: true }).waitFor();
+          assert.equal(await button("Pokračovat").isEnabled(), true, "verified training evidence enables continuation");
+          const [attempt]: { evidence: { months: number } }[] = await sql`select evidence from mission_attempt where user_id = ${userId!} and mission_id = 'training-contributions-v1' and completed`;
+          assert.equal(attempt.evidence.months, 12);
+          await audit(`${where} after verification`, width);
         }
         if (block.type === "interactiveFigure" && block.figure === "financial-checkup") {
           const checkup = page.getByRole("region", { name: "Finanční základ", exact: true });
@@ -375,7 +415,7 @@ try {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }
-    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips"].includes(lesson.id)) {
+    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "200000" }, `${lesson.id} earns the L2 Practice Capital once`);
     }
