@@ -20,7 +20,7 @@ export const DECISION_CARDS: Record<DecisionCardKind, { title: string; body: str
   turnover: {
     title: "Pět a více obchodů za posledních 7 dní",
     body: "Každý obchod stojí poplatek a konverzi a časté změny vzdalují portfolio od plánu. Zkontroluj, jestli tenhle obchod plán opravdu potřebuje.",
-    lessonId: "foundations-markets",
+    lessonId: "behaviour-overconfidence",
   },
   overfitting: {
     title: "Pět a více různých pokusů pro jeden cíl",

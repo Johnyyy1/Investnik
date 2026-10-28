@@ -18,7 +18,8 @@ import { authoredLessons } from "../src/features/lessons/registry";
  * longer ships as JS, so a new lesson adds only its manifest entry (+0.9 KB gzip for 50 test lessons); the headroom
  * covers the ~130 planned lessons. Raise it deliberately, with a measurement in docs/performance-baseline.md.
  */
-const INITIAL_JS_BUDGET_GZIP_BYTES = 340 * 1024;
+// Raised to 341 KB on 2026-10-28 (#287): the fact registry ships with FactNotice, see docs/performance-baseline.md.
+const INITIAL_JS_BUDGET_GZIP_BYTES = 341 * 1024;
 const MIN_TEXT_LENGTH = 30;
 
 const nextDir = path.resolve(process.argv[2] ?? ".next");

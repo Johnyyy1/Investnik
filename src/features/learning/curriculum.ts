@@ -8,6 +8,7 @@ import { VOLATILITY_MODULE_ID, volatilityLessons } from "../lessons/volatility/m
 import { CORRELATION_MODULE_ID, correlationLessons } from "../lessons/correlation/manifest";
 import { DIVERSIFICATION_MODULE_ID, diversificationLessons } from "../lessons/diversification/manifest";
 import { FIRST_PLAN_MODULE_ID, firstPlanLessons } from "../lessons/first-plan/manifest";
+import { INVESTOR_BEHAVIOUR_MODULE_ID, investorBehaviourLessons } from "../lessons/investor-behaviour/manifest";
 
 /**
  * Curriculum 2.0 registry. Typed code, no database.
@@ -34,6 +35,7 @@ export const storageModules = [
   { id: BROKER_AND_ACCOUNT_MODULE_ID, slug: "broker-and-account", title: "Broker a investiční účet", description: "Rozliš typy platforem, prověř, komu svěřuješ své peníze, a přečti ceník.", status: "available", lessons: brokerAndAccountLessons },
   // Last in storage order for the same reason: publishing 2.5.1 must not reorder an existing learner's next step.
   { id: FIRST_PLAN_MODULE_ID, slug: "first-plan", title: "První plán a první nákup", description: "Sepiš investiční plán dřív, než ho budeš potřebovat.", status: "available", lessons: firstPlanLessons },
+  { id: INVESTOR_BEHAVIOUR_MODULE_ID, slug: "investor-behaviour", title: "Investor v zrcadle", description: "Poznej vlastní rozhodování a nastav pojistky v investičním plánu.", status: "available", lessons: investorBehaviourLessons },
 ] as const;
 
 export type MilestoneId = "A" | "B" | "C" | "D";
@@ -119,6 +121,7 @@ export const skills = {
   "plan-costs": "Roční náklady plánu u dvou brokerů",
   "investment-policy": "Investiční plán (IPS): ověřitelná pravidla sepsaná předem",
   "automation": "Pravidelná investice nastavená předem místo časování trhu",
+  "turnover": "Obrat portfolia a cena častého obchodování",
   "order-review": "Kontrola instrumentu, pokynu a celkových nákladů před nákupem",
   "tracking-difference": "TER, rozdíl a kolísání rozdílu vůči indexu",
   "fee-schedule": "Ceník brokera: poplatek s minimem a maximem a skryté náklady",
@@ -213,6 +216,8 @@ export const lessonPlacements: readonly LessonPlacement[] = [
   place("diversification-correlation-risk", "3.3", 6, "required", ["correlation-what-is-correlation", "volatility-standard-deviation"], ["portfolio-risk"]),
   place("diversification-scenario", "3.3", 7, "required", ["diversification-concentration", "diversification-sectors-countries", "diversification-etf-look-through", "diversification-correlation-risk"], ["concentration", "sector-country-exposure", "etf-look-through", "portfolio-risk"]),
 
+  // shortcut: B.1.1 (behaviour-gap, #286) is not on main yet; add it as a prerequisite when it lands.
+  place("behaviour-overconfidence", "B.1", 2, "required", ["first-plan-ips", "costs-spread-and-fees"], ["turnover"]),
   place("correlation-not-causation", "B.1", 8, "required", [], ["correlation-vs-causation"]),
 
   place("returns-log-returns", "6.1", 1, "optional-track", ["returns-compounding"], ["log-returns"]),
@@ -263,6 +268,7 @@ export const skillItems: readonly SkillItem[] = [
   item("first-plan-automation", "recall-why", "automation"),
   item("first-plan-automation", "recall-losses", "automation"),
   item("first-plan-first-purchase", "recall", "order-review"),
+  item("behaviour-overconfidence", "recall", "turnover"),
   item("costs-ter-tracking-difference", "mastery-td", "tracking-difference"),
   item("costs-ter-tracking-difference", "mastery-ter", "tracking-difference"),
   item("broker-fee-schedule", "mastery-minimum", "fee-schedule"),
