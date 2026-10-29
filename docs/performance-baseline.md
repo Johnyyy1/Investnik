@@ -675,6 +675,8 @@ JS transferred by Chrome on a hard load (Playwright, fresh context, KB compresse
 
 `npm run check:lesson-bundle` runs in CI after `npm run build`. It fails when any client chunk of the build contains an authored lesson string (30+ characters, from every lesson's blocks, with `\uXXXX` escapes decoded), or when the lesson route's initial JS exceeds 340 KB gzip. A new lesson adds only its manifest entry, about 0.02 KB gzip per lesson in the experiment above, so the headroom covers the planned lessons. Raise the budget only together with a new measurement here. `LESSON_BUNDLE_REPORT=1` lists the chunks without failing on the budget.
 
+**2026-10-28 (#287): budget raised to 341 KB.** `origin/main` @ `1933e44` measured 339.5 KB (43 published lessons with this branch: 340.1 KB). The growth since 322.3 KB is not the manifest: `FactNotice` (`src/components/lesson/step-kinds/fact-notice.tsx`, a client component) imports `getFact` from `src/features/facts/registry.ts`, so the whole fact registry, with sources, notes and research limitations, ships in the lesson route's initial JS. Each lesson that registers research facts adds about 0.2–0.4 KB gzip; B.1.2's two Barber & Odean facts and its module entry add 0.6 KB. Follow-up: pass server-resolved facts to `FactNotice` and `FactStatusChip` as props, so the registry stays on the server, then lower the budget again.
+
 What remains in the initial 322 KB: `react-dom` 70 KB, Next runtime 44 KB, Motion 40 KB and a 31 KB chunk that contains zod; the rest is under 25 KB each. Not investigated here.
 
 ## Phase 9: function region (measured 2026-10-24, issue #401)

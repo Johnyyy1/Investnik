@@ -9,7 +9,7 @@ describe("DecisionCard", () => {
     expect(html).toContain('role="note" aria-labelledby="decision-card-turnover"');
     expect(html).toContain('id="decision-card-turnover" class="break-words font-bold">Pět a více obchodů za posledních 7 dní');
     expect(html).toContain("Pátý obchod: Počkám týden.");
-    expect(html).toContain('href="/learn/investing-foundations/how-markets-work"');
+    expect(html).toContain('href="/learn/investor-behaviour/overconfidence-and-trading"');
     expect(html).toContain("Tento typ karty už nezobrazovat");
     expect(renderToStaticMarkup(createElement(DecisionCard, { kind: "turnover", onDisable: () => {} }))).not.toContain("Tvoje pojistky");
   });
