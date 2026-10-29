@@ -15,7 +15,7 @@ export const DECISION_CARDS: Record<DecisionCardKind, { title: string; body: str
   disposition: {
     title: "Prodáváš pozici v zisku a ztrátové držíš",
     body: "Častý vzorec je prodávat vítěze a čekat, až se ztrátové pozice vrátí. Rozhoduj podle plánu a dnešního pohledu na každou pozici, ne podle nákupní ceny. Jeden prodej sám chybu neprokazuje.",
-    lessonId: "volatility-max-drawdown",
+    lessonId: "behaviour-disposition-effect",
   },
   turnover: {
     title: "Pět a více obchodů za posledních 7 dní",

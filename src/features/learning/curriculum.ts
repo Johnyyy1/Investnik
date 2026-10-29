@@ -122,6 +122,7 @@ export const skills = {
   "investment-policy": "Investiční plán (IPS): ověřitelná pravidla sepsaná předem",
   "automation": "Pravidelná investice nastavená předem místo časování trhu",
   "turnover": "Obrat portfolia a cena častého obchodování",
+  "disposition-effect": "Prodej podle plánu, ne podle nákupní ceny",
   "order-review": "Kontrola instrumentu, pokynu a celkových nákladů před nákupem",
   "tracking-difference": "TER, rozdíl a kolísání rozdílu vůči indexu",
   "fee-schedule": "Ceník brokera: poplatek s minimem a maximem a skryté náklady",
@@ -216,8 +217,9 @@ export const lessonPlacements: readonly LessonPlacement[] = [
   place("diversification-correlation-risk", "3.3", 6, "required", ["correlation-what-is-correlation", "volatility-standard-deviation"], ["portfolio-risk"]),
   place("diversification-scenario", "3.3", 7, "required", ["diversification-concentration", "diversification-sectors-countries", "diversification-etf-look-through", "diversification-correlation-risk"], ["concentration", "sector-country-exposure", "etf-look-through", "portfolio-risk"]),
 
-  // shortcut: B.1.1 (behaviour-gap, #286) is not on main yet; add it as a prerequisite when it lands.
+  // shortcut: B.1.1 (behaviour-gap, #286) is not on main yet; add it as a prerequisite of B.1.2 and B.1.3 when it lands.
   place("behaviour-overconfidence", "B.1", 2, "required", ["first-plan-ips", "costs-spread-and-fees"], ["turnover"]),
+  place("behaviour-disposition-effect", "B.1", 3, "required", ["first-plan-ips"], ["disposition-effect"]),
   place("correlation-not-causation", "B.1", 8, "required", [], ["correlation-vs-causation"]),
 
   place("returns-log-returns", "6.1", 1, "optional-track", ["returns-compounding"], ["log-returns"]),
@@ -269,6 +271,7 @@ export const skillItems: readonly SkillItem[] = [
   item("first-plan-automation", "recall-losses", "automation"),
   item("first-plan-first-purchase", "recall", "order-review"),
   item("behaviour-overconfidence", "recall", "turnover"),
+  item("behaviour-disposition-effect", "recall", "disposition-effect"),
   item("costs-ter-tracking-difference", "mastery-td", "tracking-difference"),
   item("costs-ter-tracking-difference", "mastery-ter", "tracking-difference"),
   item("broker-fee-schedule", "mastery-minimum", "fee-schedule"),
