@@ -1,4 +1,3 @@
-import { INVESTOR_BEHAVIOUR_MODULE_ID, investorBehaviourLessons } from "../lessons/investor-behaviour/manifest";
 import { BROKER_AND_ACCOUNT_MODULE_ID, brokerAndAccountLessons } from "../lessons/broker-and-account/manifest";
 import { CZECH_TAXES_MODULE_ID, czechTaxesLessons } from "../lessons/czech-taxes/manifest";
 import { COSTS_MODULE_ID, costsLessons } from "../lessons/costs/manifest";
@@ -9,6 +8,7 @@ import { VOLATILITY_MODULE_ID, volatilityLessons } from "../lessons/volatility/m
 import { CORRELATION_MODULE_ID, correlationLessons } from "../lessons/correlation/manifest";
 import { DIVERSIFICATION_MODULE_ID, diversificationLessons } from "../lessons/diversification/manifest";
 import { FIRST_PLAN_MODULE_ID, firstPlanLessons } from "../lessons/first-plan/manifest";
+import { INVESTOR_BEHAVIOUR_MODULE_ID, investorBehaviourLessons } from "../lessons/investor-behaviour/manifest";
 
 /**
  * Curriculum 2.0 registry. Typed code, no database.
@@ -122,6 +122,7 @@ export const skills = {
   "investment-policy": "Investiční plán (IPS): ověřitelná pravidla sepsaná předem",
   "behaviour-gap": "Mezera výnosů investora a investice a její omezení",
   "automation": "Pravidelná investice nastavená předem místo časování trhu",
+  "turnover": "Obrat portfolia a cena častého obchodování",
   "order-review": "Kontrola instrumentu, pokynu a celkových nákladů před nákupem",
   "tracking-difference": "TER, rozdíl a kolísání rozdílu vůči indexu",
   "fee-schedule": "Ceník brokera: poplatek s minimem a maximem a skryté náklady",
@@ -217,6 +218,7 @@ export const lessonPlacements: readonly LessonPlacement[] = [
   place("diversification-scenario", "3.3", 7, "required", ["diversification-concentration", "diversification-sectors-countries", "diversification-etf-look-through", "diversification-correlation-risk"], ["concentration", "sector-country-exposure", "etf-look-through", "portfolio-risk"]),
 
   place("behaviour-behaviour-gap", "B.1", 1, "required", ["first-plan-ips"], ["behaviour-gap"]),
+  place("behaviour-overconfidence", "B.1", 2, "required", ["first-plan-ips", "costs-spread-and-fees"], ["turnover"]),
   place("correlation-not-causation", "B.1", 8, "required", [], ["correlation-vs-causation"]),
 
   place("returns-log-returns", "6.1", 1, "optional-track", ["returns-compounding"], ["log-returns"]),
@@ -269,6 +271,7 @@ export const skillItems: readonly SkillItem[] = [
   item("first-plan-automation", "recall-why", "automation"),
   item("first-plan-automation", "recall-losses", "automation"),
   item("first-plan-first-purchase", "recall", "order-review"),
+  item("behaviour-overconfidence", "recall", "turnover"),
   item("costs-ter-tracking-difference", "mastery-td", "tracking-difference"),
   item("costs-ter-tracking-difference", "mastery-ter", "tracking-difference"),
   item("broker-fee-schedule", "mastery-minimum", "fee-schedule"),

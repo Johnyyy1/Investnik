@@ -21,6 +21,14 @@ const smart = {
   notes: "Účastníci se předem zavázali spořit část budoucích zvýšení mzdy. Nejde o výnos investic ani o účinek Investníku.",
   research: { sample: "Zaměstnanci jedné americké firmy, kteří program přijali (první ze tří implementací)", period: "40 měsíců od zavedení", limitations: "Jedna firma, penzijní spoření ze mzdy v USA. Ukazuje sílu závazku předem, ne výnos ani výsledek českého jednotlivce." },
 } satisfies Partial<FactVersion>;
+const barberOdean = {
+  version: "2026-10-28", jurisdiction: "US", validFrom: "2000-04-01", validTo: undefined, period: "Domácnosti u amerického diskontního brokera, 1991–1996",
+  legalBasis: "Výzkum Barber a Odean, Journal of Finance 2000, nikoli právní pravidlo",
+  sources: [{ title: "Barber a Odean: Trading Is Hazardous to Your Wealth", url: "https://faculty.haas.berkeley.edu/odean/Papers%20current%20versions/Individual_Investor_Performance_Final.pdf" }],
+  verificationStatus: "primary", checkedAt: "2026-10-28", verifiedAt: "2026-10-28", owner: "Redakce — výzkum", nextReviewAt: "2027-04-28",
+  notes: "Pětina domácností s nejvyšším obratem (měsíčně přes 8,8 %), čistý roční geometrický výnos po nákladech. Před náklady vydělávaly skupiny podle obratu téměř stejně.",
+  research: { sample: "66 465 domácností s účtem u jednoho amerického diskontního brokera", period: "1991–1996", limitations: "USA, jednotlivé akcie a jeden broker v rostoucím trhu. Ukazuje cenu obchodování, ne výsledek českého investora do ETF ani účinek Investníku." },
+} satisfies Partial<FactVersion>;
 const capitalIncome = { title: "Finanční správa: kapitálové příjmy", url: "https://financnisprava.gov.cz/cs/dane/dane/dan-z-prijmu/fyzicke-osoby/kapitalove-prijmy" };
 
 /** Defaults describe this edition's coverage, not the original commencement of every law.
@@ -71,6 +79,8 @@ export const factRegistry = [
   fact({ key: "morningstar.gap", validTo: "2026-10-27", label: "Morningstar — mezera mezi výnosem investorů a fondů", value: { amount: 1.2, unit: "p. b. ročně" }, jurisdiction: "US", period: "Deset let do konce roku 2024; Mind the Gap 2025", legalBasis: "Výzkum Morningstar, nikoli právní pravidlo", sources: [{ title: "Morningstar: Volatility Bedevils Fund Investors", url: "https://www.morningstar.com/financial-advisors/volatility-bedevils-fund-investors" }], owner: "Redakce — výzkum", notes: "Podklad uvádí primární ověření, ale zdroj nyní vrací 403. Záznam zůstává neověřený; nepoužívat jako potvrzenou diagnózu chování.", research: { sample: "Americké podílové fondy a ETF ve studii Morningstar (úplný vzorek k ověření)", period: "2015–2024", limitations: "Agregátní vztah peněžních toků a výnosů není kauzální účinek vzdělávání; nelze jej automaticky přenést na učební aplikaci ani jednotlivce." } }),
   fact({ ...smart, key: "smart.mira_pred", label: "Save More Tomorrow — průměrná míra úspor účastníků před programem", value: { amount: 3.5, unit: "%" } }),
   fact({ ...smart, key: "smart.mira_po", label: "Save More Tomorrow — průměrná míra úspor účastníků po 40 měsících", value: { amount: 13.6, unit: "%" } }),
+  fact({ ...barberOdean, key: "barber_odean.aktivni", label: "Barber a Odean — čistý roční výnos nejaktivnějších domácností", value: { amount: 11.4, unit: "%" } }),
+  fact({ ...barberOdean, key: "barber_odean.trh", label: "Barber a Odean — roční výnos trhu ve stejném období", value: { amount: 17.9, unit: "%" } }),
   ...research134Facts,
   ...behaviourGapFacts.map((entry) => fact(entry)),
 ] as const;

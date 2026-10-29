@@ -18,7 +18,7 @@ await mkdir(output, { recursive: true });
 const userIds = [];
 const errors = [];
 const lessons = await sql`select l.id,l.title,l.slug,m.slug as module_slug from lesson l join learning_module m on m.id=l.module_id where l.is_published=true order by m.position,l.position`;
-assert.equal(lessons.length, 43);
+assert.equal(lessons.length, 44);
 const foundation = lessons.filter((lesson) => lesson.module_slug === "investing-foundations");
 const returns = lessons.filter((lesson) => lesson.module_slug === "returns");
 const href = (lesson) => `/learn/${lesson.module_slug}/${lesson.slug}`;
@@ -39,8 +39,8 @@ async function learner(name) {
 /** Historical v3 fixtures deliberately retain module-based amounts; v4 never reprices these receipts. */
 async function complete(userId, items) {
   for (const item of items) {
-    const capital = ["investing-foundations", "before-investing"].includes(item.module_slug) ? 0 : 200000;
-    const policy = item.module_slug === "before-investing" ? 4 : 3;
+    const capital = ["investing-foundations", "before-investing", "investor-behaviour"].includes(item.module_slug) ? 0 : 200000;
+    const policy = ["before-investing", "investor-behaviour"].includes(item.module_slug) ? 4 : 3;
     await sql`insert into lesson_progress(user_id,lesson_id,status,last_position,completed_at,updated_at) values(${userId},${item.id},'completed',0,clock_timestamp(),clock_timestamp()) on conflict(user_id,lesson_id) do update set status='completed',completed_at=clock_timestamp(),updated_at=clock_timestamp()`;
     await sql`insert into lesson_award(user_id,lesson_id,xp,practice_capital_minor,reward_policy_version,learning_date,time_zone,awarded_at) values(${userId},${item.id},60,${capital},${policy},(now() at time zone 'Europe/Prague')::date,'Europe/Prague',clock_timestamp()) on conflict(user_id,lesson_id) do nothing`;
   }
@@ -178,12 +178,12 @@ try {
   assert.equal(await root().locator('[aria-current="step"]').getAttribute("href"), href(returns[0]));
 
   await complete(id, lessons);
-  root = await render(page, "complete", { state: "complete", xp: 2580, capital: 6500000, count: 43, action: "Prozkoumat Lab", actionHref: "/lab", lab: unlocked });
+  root = await render(page, "complete", { state: "complete", xp: 2640, capital: 6300000, count: 44, action: "Prozkoumat Lab", actionHref: "/lab", lab: unlocked });
   assert.equal(await root().locator('[aria-current="step"]').count(), 0);
   assert.equal(await root().getByRole("list", { name: "Za co je cvičný kapitál" }).getByRole("listitem").count(), 5, "newest five receipts");
-  assert.equal(await root().getByText("Starší odměny (26)", { exact: true }).count(), 1, "older receipts wait behind a disclosure");
+  assert.equal(await root().getByText("Starší odměny (25)", { exact: true }).count(), 1, "older receipts wait behind a disclosure");
   const entitlement = await sql`select (select coalesce(sum(practice_capital_minor),0) from lesson_award where user_id=${id}) + (select coalesce(sum(practice_capital_minor),0) from progression_unlock where user_id=${id}) as total`;
-  assert.equal(Number(entitlement[0].total), 6500000, "breakdown total equals the stored entitlement");
+  assert.equal(Number(entitlement[0].total), 6300000, "breakdown total equals the stored entitlement");
   assert.equal((await sql`select * from progression_unlock where user_id=${id}`).length, 1, "no duplicate unlock");
   await root().getByRole("link", { name: "Otevřít Portfolio Lab", exact: true }).click(); await page.waitForURL("**/lab/portfolio"); await page.getByTestId("portfolio-cash").waitFor();
 

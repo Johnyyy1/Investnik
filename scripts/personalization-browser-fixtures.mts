@@ -44,6 +44,11 @@ for (const lesson of mode === "first-return" ? lessons.slice(0, 1) : lessons) {
   // Lesson 2.5.2 completes only with verified training evidence; validate-missions covers how a real session earns it.
   if (lesson.id === "first-plan-automation") await sql`insert into mission_attempt (id, user_id, mission_id, request_id, evidence, completed) values (${randomUUID()}, ${id!}, 'training-contributions-v1', 'training', ${sql.json({ fixture: true })}, true)`;
   if (lesson.id === "behaviour-behaviour-gap") await sql`insert into mission_attempt (id, user_id, mission_id, request_id, evidence, completed) values (${randomUUID()}, ${id!}, 'behaviour-crises-v1', 'training', ${sql.json({ fixture: true })}, true)`;
+  // Lesson B.1.2 completes only with its saved pre-trade checklist; an empty selection is a valid output.
+  if (lesson.id === "behaviour-overconfidence") await saveLearnerArtifact(id!, {
+    content: { kind: "lesson_output", payload: { type: "checklist", blockId: "checklist", checkedItemIds: ["ips", "cost"] } },
+    sourceLessonId: lesson.id, consent: true, requestId: randomUUID(),
+  });
   await sql`insert into lesson_progress (user_id, lesson_id, status, last_position, updated_at) values (${id!}, ${lesson.id}, 'in_progress', ${lessonSteps(lesson.id).length - 1}, now()) on conflict (user_id, lesson_id) do update set last_position = excluded.last_position`;
   if (lesson.id === "first-plan-first-purchase") {
     await prepareFirstPurchase(sql, id!);

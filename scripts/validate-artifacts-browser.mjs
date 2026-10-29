@@ -66,6 +66,7 @@ export default function Editor() {
   await sql`insert into learning_profile(user_id,experience_level,goals,interests,daily_goal_minutes,time_zone,onboarding_completed_at) values(${user.id},'BEGINNER','{}','{}',10,'Europe/Prague',now())`;
   if (fixture) {
     await page.goto(`${baseURL}/${basename(fixture)}`);
+    await page.waitForLoadState('networkidle'); // hydrated: a key press before hydration never reaches React state
     const consent = page.getByRole('checkbox');
     const save = page.getByRole('button', { name: 'Uložit výstup', exact: true });
     assert.equal(await consent.isChecked(), false);
