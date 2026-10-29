@@ -9,7 +9,7 @@ import { ipsSchema } from "../src/features/ips/schema";
 /** Synthetic persistence fixtures, never production history. The explicit source name also labels any test UI capture. */
 export async function seedBehaviourReplays(sql: postgres.Sql, userId: string, { scenarioIds = [...BEHAVIOUR_CRISIS_IDS] as string[], sample = false, months = 24 } = {}) {
   const url = new URL(process.env.DATABASE_URL!);
-  assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) && /_qa$/.test(url.pathname));
+  assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) && (/_qa$/.test(url.pathname) || (process.env.CI === "true" && url.pathname === "/investi_ci")));
   const [plan] = await sql`select * from learner_artifact where user_id=${userId} and kind='investment_plan' order by version desc limit 1`;
   assert.ok(plan);
   for (const scenarioId of scenarioIds) {
