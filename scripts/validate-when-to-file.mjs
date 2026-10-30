@@ -59,6 +59,7 @@ try {
       await page.getByRole("button", { name: "Odeslat a porovnat", exact: true }).click();
     }
     if (step === 13) {
+      await page.getByRole("heading", { name: "Vzdělávací obsah, ne daňové poradenství", exact: true }).waitFor();
       assert.match(await page.locator("main").innerText(), /Vzdělávací obsah/);
       assert.match(await page.locator("main").innerText(), /Neověřeno/);
     }

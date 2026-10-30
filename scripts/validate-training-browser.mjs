@@ -75,14 +75,17 @@ try {
   for (let month = 8; month < 24; month++) { await next.click(); await page.getByRole('heading', { name: new RegExp(`Měsíc ${month} \\(`) }).waitFor(); await idle(page); }
   await page.getByRole('button', { name: 'Dokončit poslední měsíc' }).click();
   await page.getByRole('heading', { name: 'Vyhodnocení podle tvého plánu' }).waitFor();
-  const facts = await page.locator('dl').last().innerText();
+  const facts = await page.locator('section[aria-labelledby="training-result-heading"] dl').first().innerText();
   assert.match(facts, /Prodeje mimo pravidla plánu\s+1/);
   assert.match(facts, /Časově vážený výnos \(TWR\)\s+[+−-]/);
   assert.match(facts, /Peněžně vážený výnos \(MWR\)\s+[+−-]/);
   assert.match(facts, /Největší propad indexu\s+−30/);
+  const comparison = page.locator('section[aria-labelledby="training-result-heading"] dl').last();
+  assert.match(await comparison.innerText(), /TWR strategie držet a přispívat\s+[+−-]/);
+  assert.match(await comparison.innerText(), /Tvůj MWR − TWR držení\s+[+−-].*p\. b\. ročně/);
   await page.reload(); await page.getByRole('heading', { name: 'Vyhodnocení podle tvého plánu' }).waitFor();
-  assert.equal(await page.locator('dl').last().innerText(), facts, 'the evaluation replays identically after reload');
-  for (const width of [1440, 768, 390, 320]) { await page.setViewportSize({ width, height: 900 }); assert.equal(await overflow(page), false, `overflow at ${width}`); }
+  assert.equal(await page.locator('section[aria-labelledby="training-result-heading"] dl').first().innerText(), facts, 'the evaluation replays identically after reload');
+  for (const width of [1440, 768, 390, 320]) { await page.setViewportSize({ width, height: 900 }); assert.equal(await overflow(page), false, `overflow at ${width}`); if ([1440, 390].includes(width)) await page.screenshot({ path: `${output}/evaluation-${width}.png`, fullPage: true }); }
   await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
   assert.equal(await overflow(page), false, 'overflow at 320 px / 200 % text');
   await page.screenshot({ path: `${output}/evaluation-320-200.png`, fullPage: true });

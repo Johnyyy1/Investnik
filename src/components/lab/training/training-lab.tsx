@@ -105,6 +105,7 @@ function Session({ view, pending, onAction, onNew }: { view: TrainingView; pendi
     <section className={styles.section} aria-labelledby="training-month-heading">
       <h2 id="training-month-heading" className={styles.title}>{view.scenario.title} · {view.monthLabel} <span className={styles.progress}>(měsíc {view.month} z {view.lastMonth})</span></h2>
       <p className={styles.hint}>{sourceText(view)}</p>
+      <p><strong>Zpráva ze scénáře:</strong> {view.headline} <span className={styles.hint}>Vlastní neutrální text podle odhalené ceny, ne citace médií.</span></p>
       <p className={styles.hint}>Tvůj plán (verze {view.plan.ipsVersion}): {planText(view)}</p>
       <figure className={styles.chart}>
         <figcaption>Index scénáře: {indexText(current.price)} ({percent(change, { signed: true, digits: 1 })} od začátku)</figcaption>
@@ -186,6 +187,12 @@ function Evaluation({ view, onNew }: { view: TrainingView; onNew: () => void }) 
       <div><dt>Peněžně vážený výnos (MWR)</dt><dd>{metricText(result.mwr)}</dd></div>
       <div><dt>Konečná hodnota / vloženo</dt><dd>{money(result.endingMinor)} / {money(result.contributedMinor)} ({signedMoney(result.gainMinor)})</dd></div>
     </dl>
+    <h3 className={styles.title}>Srovnání s držením a příspěvky</h3>
+    <dl className={styles.facts}>
+      <div><dt>TWR strategie držet a přispívat</dt><dd>{metricText(result.comparison.holdTwr)}</dd></div>
+      <div><dt>Tvůj MWR − TWR držení</dt><dd>{result.comparison.differenceBasisPoints === null ? "Nedostupné" : `${percent(result.comparison.differenceBasisPoints, { signed: true, digits: 2 }).replace("%", "p. b.")} ${result.comparison.annualized ? "ročně" : "za období"}`}</dd></div>
+    </dl>
+    <p className={styles.hint}>Reference má stejné období, počáteční peníze, příspěvky a ceník. Na začátku investuje podíl podle IPS a stejný podíl každého příspěvku, nikdy neprodává. Poplatky se hradí z hotovosti; při nedostatku koupí jen dostupnou částku. Poslední příspěvek zůstává v hotovosti, stejně jako v tvém nácviku. Rozdíl zahrnuje načasování peněz, podíl hotovosti i náklady. Sám o sobě nedokazuje chybu v chování ani není hodnocením plánu.</p>
     <details className={styles.details}><summary>Jak vyhodnocujeme</summary>
       <p>Prodej je podle pravidel jen tehdy, když vrací převáženou pozici k cíli: {plan.rebalancing.mode === "band" ? `podíl v indexu byl před prodejem nad cílem o víc než ${percentText(plan.rebalancing.bandBps)} p. b.` : plan.rebalancing.mode === "calendar" ? `v měsíci rebalancingu (${monthLabel(plan.rebalancing.month)}) a nad cílem${view.source.kind === "model" ? "; modelový kalendář začíná lednem" : ""}` : "tvůj plán vyrovnává váhy novými příspěvky, takže každý prodej je mimo pravidla"}. TWR měří výnos indexu a tvých rozhodnutí bez vlivu načasování příspěvků, MWR zahrnuje i načasování peněz; rozdíl sám o sobě není důkaz chyby. Obrat je zobchodovaný objem vůči konečné hodnotě. Dividendy, daně a úroky z hotovosti nejsou zahrnuté.</p>
     </details>

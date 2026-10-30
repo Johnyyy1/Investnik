@@ -43,6 +43,7 @@ for (const lesson of mode === "first-return" ? lessons.slice(0, 1) : lessons) {
   });
   // Lesson 2.5.2 completes only with verified training evidence; validate-missions covers how a real session earns it.
   if (lesson.id === "first-plan-automation") await sql`insert into mission_attempt (id, user_id, mission_id, request_id, evidence, completed) values (${randomUUID()}, ${id!}, 'training-contributions-v1', 'training', ${sql.json({ fixture: true })}, true)`;
+  if (lesson.id === "behaviour-behaviour-gap") await sql`insert into mission_attempt (id, user_id, mission_id, request_id, evidence, completed) values (${randomUUID()}, ${id!}, 'behaviour-crises-v1', 'training', ${sql.json({ fixture: true })}, true)`;
   // Lesson B.1.2 completes only with its saved pre-trade checklist; an empty selection is a valid output.
   if (lesson.id === "behaviour-overconfidence") await saveLearnerArtifact(id!, {
     content: { kind: "lesson_output", payload: { type: "checklist", blockId: "checklist", checkedItemIds: ["ips", "cost"] } },

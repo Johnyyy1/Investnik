@@ -5,6 +5,7 @@ import { formatFactValue } from "@/features/facts/resolve";
 import { correctAnswers, wrongAnswers } from "@/features/lessons/answer-keys";
 import { timeTestSpecimens as spec } from "@/features/lessons/specimens/time-test";
 import type { LessonBlock } from "@/features/lessons/types";
+import { LessonFacts } from "../lazy-blocks";
 import { GuidedBlock } from "../guided-block";
 import { GuidedQuestion } from "../guided-question";
 import { FactStatusChip } from "./fact-notice";
@@ -68,7 +69,8 @@ describe("content step kinds", () => {
     expect(Object.keys(labMissionTargets).sort()).toEqual(["/lab/backtesting", "/lab/compare", "/lab/portfolio", "/lab/training"]);
   });
 
-  it("L: shows registry values and a calm pending state with the educational notice", () => {
+  it("L: shows registry values and a calm pending state with the educational notice", async () => {
+    await LessonFacts.preload();
     vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-10-22T12:00:00Z") });
     try {
       const html = render(spec.factNotice);
