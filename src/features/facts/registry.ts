@@ -29,6 +29,15 @@ const barberOdean = {
   notes: "Pětina domácností s nejvyšším obratem (měsíčně přes 8,8 %), čistý roční geometrický výnos po nákladech. Před náklady vydělávaly skupiny podle obratu téměř stejně.",
   research: { sample: "66 465 domácností s účtem u jednoho amerického diskontního brokera", period: "1991–1996", limitations: "USA, jednotlivé akcie a jeden broker v rostoucím trhu. Ukazuje cenu obchodování, ne výsledek českého investora do ETF ani účinek Investníku." },
 } satisfies Partial<FactVersion>;
+// Odean (1998), Table I, entire year (checked 2026-10-29 in the author's PDF).
+const odean = {
+  version: "2026-10-29", jurisdiction: "US", validFrom: "1998-10-01", validTo: undefined, period: "Účty u amerického diskontního brokera, 1987–1993",
+  legalBasis: "Výzkum Odean, Journal of Finance 1998, nikoli právní pravidlo",
+  sources: [{ title: "Odean: Are Investors Reluctant to Realize Their Losses?", url: "https://faculty.haas.berkeley.edu/odean/papers%20current%20versions/areinvestorsreluctant.pdf" }],
+  verificationStatus: "primary", checkedAt: "2026-10-29", verifiedAt: "2026-10-29", owner: "Redakce — výzkum", nextReviewAt: "2027-04-29",
+  notes: "Celý rok, podle počtu pozic ve dnech prodeje. Poměr PGR ÷ PLR je o něco víc než 1,5, ne dvojnásobek. V prosinci se poměr obrací kvůli daňovým prodejům.",
+  research: { sample: "10 000 účtů u jednoho amerického diskontního brokera", period: "1987–1993", limitations: "USA, jednotlivé akcie a americká daňová pravidla. Popisuje sklon k prodeji, ne výsledek českého investora do ETF ani účinek Investníku." },
+} satisfies Partial<FactVersion>;
 const capitalIncome = { title: "Finanční správa: kapitálové příjmy", url: "https://financnisprava.gov.cz/cs/dane/dane/dan-z-prijmu/fyzicke-osoby/kapitalove-prijmy" };
 
 /** Defaults describe this edition's coverage, not the original commencement of every law.
@@ -81,6 +90,8 @@ export const factRegistry = [
   fact({ ...smart, key: "smart.mira_po", label: "Save More Tomorrow — průměrná míra úspor účastníků po 40 měsících", value: { amount: 13.6, unit: "%" } }),
   fact({ ...barberOdean, key: "barber_odean.aktivni", label: "Barber a Odean — čistý roční výnos nejaktivnějších domácností", value: { amount: 11.4, unit: "%" } }),
   fact({ ...barberOdean, key: "barber_odean.trh", label: "Barber a Odean — roční výnos trhu ve stejném období", value: { amount: 17.9, unit: "%" } }),
+  fact({ ...odean, key: "odean.pgr", label: "Odean — podíl realizovaných zisků (PGR)", value: { amount: 14.8, unit: "%" } }),
+  fact({ ...odean, key: "odean.plr", label: "Odean — podíl realizovaných ztrát (PLR)", value: { amount: 9.8, unit: "%" } }),
   ...research134Facts,
   ...behaviourGapFacts.map((entry) => fact(entry)),
 ] as const;

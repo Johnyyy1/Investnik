@@ -123,6 +123,7 @@ export const skills = {
   "behaviour-gap": "Mezera výnosů investora a investice a její omezení",
   "automation": "Pravidelná investice nastavená předem místo časování trhu",
   "turnover": "Obrat portfolia a cena častého obchodování",
+  "disposition-effect": "Prodej podle plánu, ne podle nákupní ceny",
   "order-review": "Kontrola instrumentu, pokynu a celkových nákladů před nákupem",
   "tracking-difference": "TER, rozdíl a kolísání rozdílu vůči indexu",
   "fee-schedule": "Ceník brokera: poplatek s minimem a maximem a skryté náklady",
@@ -219,6 +220,7 @@ export const lessonPlacements: readonly LessonPlacement[] = [
 
   place("behaviour-behaviour-gap", "B.1", 1, "required", ["first-plan-ips"], ["behaviour-gap"]),
   place("behaviour-overconfidence", "B.1", 2, "required", ["first-plan-ips", "costs-spread-and-fees"], ["turnover"]),
+  place("behaviour-disposition-effect", "B.1", 3, "required", ["first-plan-ips"], ["disposition-effect"]),
   place("correlation-not-causation", "B.1", 8, "required", [], ["correlation-vs-causation"]),
 
   place("returns-log-returns", "6.1", 1, "optional-track", ["returns-compounding"], ["log-returns"]),
@@ -272,6 +274,7 @@ export const skillItems: readonly SkillItem[] = [
   item("first-plan-automation", "recall-losses", "automation"),
   item("first-plan-first-purchase", "recall", "order-review"),
   item("behaviour-overconfidence", "recall", "turnover"),
+  item("behaviour-disposition-effect", "recall", "disposition-effect"),
   item("costs-ter-tracking-difference", "mastery-td", "tracking-difference"),
   item("costs-ter-tracking-difference", "mastery-ter", "tracking-difference"),
   item("broker-fee-schedule", "mastery-minimum", "fee-schedule"),

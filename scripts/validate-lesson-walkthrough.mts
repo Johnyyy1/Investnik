@@ -109,7 +109,7 @@ try {
       await page.getByRole("heading", { level: 2, name: step.title, exact: true }).waitFor();
       await idle();
       await audit(where, width);
-      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "behaviour-behaviour-gap", "behaviour-overconfidence"].includes(lesson.id)) {
+      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect"].includes(lesson.id)) {
         for (const size of [1440, 390]) {
           await page.setViewportSize({ width: size, height: 900 });
           await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))); });
@@ -502,7 +502,7 @@ try {
     const progress: { status: string } | undefined = (await sql<{ status: string }[]>`select status from lesson_progress where user_id = ${userId} and lesson_id = ${lesson.id}`)[0];
     assert.equal(progress?.status, "completed", where);
     assert.equal((await sql<{ count: number }[]>`select count(*)::int as count from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`)[0].count, 1, `${where}: one receipt`);
-    if (["before-investing-debt", "foundations-funds", "foundations-active-vs-index", "behaviour-behaviour-gap", "behaviour-overconfidence"].includes(lesson.id)) {
+    if (["before-investing-debt", "foundations-funds", "foundations-active-vs-index", "behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }
