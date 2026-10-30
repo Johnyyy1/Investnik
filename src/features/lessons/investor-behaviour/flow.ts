@@ -40,4 +40,16 @@ export const investorBehaviourSteps: Readonly<Record<string, readonly StepDefini
     { title: "Tvoje pravidlo pro prodej", blocks: ["reflection"] },
     { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
   ],
+  "behaviour-loss-aversion": [
+    { title: "Den po dni", blocks: ["opening", "daily"] },
+    { title: "Rok po roce", blocks: ["annual-intro", "annual"] },
+    { title: "Proč ztráty vidíme častěji", blocks: ["loss-aversion", "myopia"] },
+    { title: "Stejná data, jiný dojem", blocks: ["worked", "interpretation"] },
+    { title: "Kdy uvidíš ztrátu", blocks: ["probability-context", "probability"] },
+    { title: "Výzkum · krátkozraká averze ke ztrátě", blocks: ["research", "misconceptions"] },
+    { title: "Ověření · krátkozraká averze ke ztrátě", kind: "mastery", blocks: ["recall"] },
+    { title: "Tvoje pojistka", blocks: ["safeguard", "builder"], requiredArtifact: { kind: "investment_plan", source: "any_lesson" } },
+    { title: "Jak často se budeš dívat", blocks: ["reflection"] },
+    { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
+  ],
 };
