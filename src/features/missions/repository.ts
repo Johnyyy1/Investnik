@@ -7,7 +7,7 @@ import { learnerArtifact, missionAttempt, portfolio, portfolioTrade, user } from
 import { readPracticeCapitalEntitlementMinor } from "@/features/rewards/repository";
 import { ipsSchema } from "@/features/ips/schema";
 import { readTrainingSessions } from "@/features/training/repository";
-import { checkIpsPurchase, checkPlannedIpsPurchase, checkScenario, contributionMonthsWithBuy } from "./checks";
+import { checkIpsPurchase, checkPlannedIpsPurchase, checkScenario, contributionMonthsWithBuy, completedHistoricalReplays } from "./checks";
 import { getMission, isExerciseMission } from "./registry";
 
 type Reader = Pick<typeof db, "select">;
@@ -34,6 +34,14 @@ export async function verifyMission(userId: string, missionId: string, requestId
     }
     if (input !== undefined) throw new Error("Personal evidence is server-owned.");
     if (await hasCompletedMission(tx, userId, missionId)) return { completed: true, message: "Mise už je ověřená. Další obchod není potřeba." };
+    if (mission.check === "behaviour-crises-v1") {
+      const replays = completedHistoricalReplays(await readTrainingSessions(tx, userId), mission.params.scenarios);
+      if (replays.length !== mission.params.scenarios.length) return { completed: false, message: `Dokončené historické krize: ${replays.length} ze ${mission.params.scenarios.length}. Potřebuješ období 2008, 2020 a 2022 se skutečnými historickými daty. Ukázková data ani modelová krize je nenahrazují. Pokud data nejsou dostupná, tato mise zůstává rozpracovaná.` };
+      const [plan] = await tx.select().from(learnerArtifact).where(and(eq(learnerArtifact.userId, userId), eq(learnerArtifact.kind, "investment_plan"))).orderBy(desc(learnerArtifact.version)).limit(1);
+      if (!plan || !ipsSchema.safeParse(plan.payload).success || replays.some(({ session, lastActionAt }) => plan.version <= session.plan.ipsVersion || !lastActionAt || plan.createdAt <= lastActionAt)) return { completed: false, message: "Po dokončení všech tří krizí ulož novou verzi IPS: potvrď nebo uprav pravidlo pro propad a měsíční příspěvek. Nemusíš měnit alokaci ani obchodovat." };
+      await tx.insert(missionAttempt).values({ id: randomUUID(), userId, missionId, requestId: "training", completed: true, evidence: { context: mission.context, check: mission.check, params: mission.params, artifactId: plan.id, ipsVersion: plan.version, sessions: replays.map(({ session }) => ({ id: session.id, scenarioId: session.scenarioId, source: session.series.source })) } });
+      return { completed: true, message: "Server ověřil tři dokončené historické krize a následně uloženou pojistku v IPS. Výnos ani počet obchodů se nehodnotí." };
+    }
     if (mission.check === "training-contributions-v1") {
       // Training sessions are isolated: only their append-only action log is read, nothing is written there.
       const sessions = await readTrainingSessions(tx, userId);

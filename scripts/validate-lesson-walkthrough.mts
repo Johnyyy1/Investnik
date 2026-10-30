@@ -1,3 +1,4 @@
+import { seedBehaviourReplays } from "./behaviour-gap-fixtures.mjs";
 /**
  * Generic walkthrough of every published lesson (#147): for each question a wrong answer, its feedback and a retry,
  * then the authored answer; continuation survives a reload; completion writes one receipt. Every step is checked for
@@ -75,7 +76,7 @@ try {
   const button = (name: string) => page.getByRole("button", { name, exact: true });
   const idle = () => page.locator('main[data-save-state="idle"]').waitFor();
   async function audit(label: string, width: number) {
-    for (const size of [1440, 390, 320]) {
+    for (const size of label.startsWith("behaviour-behaviour-gap") ? [1440, 1024, 768, 390, 375, 320] : [1440, 390, 320]) {
       await page.setViewportSize({ width: size, height: 900 });
       await page.evaluate(async () => { await document.fonts.ready; await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))); });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${label}: horizontal overflow at ${size}px`);
@@ -108,11 +109,11 @@ try {
       await page.getByRole("heading", { level: 2, name: step.title, exact: true }).waitFor();
       await idle();
       await audit(where, width);
-      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "behaviour-overconfidence", "behaviour-disposition-effect"].includes(lesson.id)) {
+      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect"].includes(lesson.id)) {
         for (const size of [1440, 390]) {
           await page.setViewportSize({ width: size, height: 900 });
           await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))); });
-          await page.screenshot({ path: `${screenshots}/${lesson.id}-${index + 1}-${size}.png`, fullPage: true });
+          await page.screenshot({ path: `${screenshots}/${lesson.id}-${index + 1}-${size}.png`, fullPage: lesson.id !== "behaviour-behaviour-gap", animations: "disabled" });
         }
         await page.setViewportSize({ width: 320, height: 900 });
         const enlarged = await page.addStyleTag({ content: "html { font-size: 200% !important; }" });
@@ -281,7 +282,7 @@ try {
           await largeText.evaluate((element) => element.parentNode?.removeChild(element));
           await page.setViewportSize({ width, height: 900 });
         }
-        if (block.type === "interactiveFigure" && block.figure === "ips-builder") {
+        if (block.type === "interactiveFigure" && block.figure === "ips-builder" && lesson.id !== "behaviour-behaviour-gap") {
           const check = page.getByRole("region", { name: "Stav investičního plánu", exact: true });
           await check.getByText("Zatím nemáš uložený investiční plán.", { exact: true }).waitFor();
           assert.equal(await button("Pokračovat").isDisabled(), true, "the IPS step requires a saved plan");
@@ -297,6 +298,37 @@ try {
           await check.getByText(/^Plán je uložený: verze 2 z /).waitFor();
           assert.equal(await button("Pokračovat").isEnabled(), true, "a saved complete plan enables continuation");
           await audit(`${where} after saving`, width);
+        }
+        if (block.type === "labMission" && block.missionId === "behaviour-crises-v1") {
+          const verify = button("Ověřit misi");
+          assert.equal(await button("Pokračovat").isDisabled(), true, "B.1.1 requires server evidence");
+          const savePlan = async () => {
+            const [{ version }] = await sql`select coalesce(max(version),0)+1 as version from learner_artifact where user_id=${userId!} and kind='investment_plan'`;
+            await sql`insert into learner_artifact(id,user_id,kind,version,payload,request_id,created_at) values(${randomUUID()},${userId!},'investment_plan',${version},${sql.json(exampleIps as never)},${randomUUID()},clock_timestamp())`;
+            await button("Zkontrolovat uložený plán").click();
+            await page.getByText(new RegExp(`^Plán je uložený: verze ${version} z `)).waitFor();
+          };
+          const [plan] = await sql`select 1 from learner_artifact where user_id=${userId!} and kind='investment_plan'`;
+          if (!plan) await savePlan();
+          // Synthetic QA rows exercise the server's provenance/completion gate without requesting live prices.
+          await seedBehaviourReplays(sql, userId!, { sample: true });
+          await verify.click();
+          await page.getByText(/^Dokončené historické krize: 0 ze 3/).waitFor();
+          assert.equal(await button("Pokračovat").isDisabled(), true);
+          await seedBehaviourReplays(sql, userId!, { scenarioIds: ["history-2008-v1", "history-2020-v1"] });
+          await seedBehaviourReplays(sql, userId!, { scenarioIds: ["history-2022-v1"], months: 23 });
+          await verify.click();
+          await page.getByText(/^Dokončené historické krize: 2 ze 3/).waitFor();
+          assert.equal(await button("Pokračovat").isDisabled(), true);
+          await seedBehaviourReplays(sql, userId!, { scenarioIds: ["history-2022-v1"] });
+          await verify.click();
+          await page.getByText(/^Po dokončení všech tří krizí ulož/).waitFor();
+          assert.equal(await button("Pokračovat").isDisabled(), true, "the pre-replay plan is not a saved safeguard");
+          await savePlan();
+          await verify.click();
+          await page.getByText(/^Splněno · Server ověřil tři dokončené historické krize/).waitFor();
+          await page.waitForFunction(() => Array.from(document.querySelectorAll("button")).some((button) => button.textContent === "Pokračovat" && !button.disabled));
+          await audit(`${where} after verification`, width);
         }
         if (block.type === "labMission" && block.missionId === "training-contributions-v1") {
           const verify = button("Ověřit misi");
@@ -470,7 +502,7 @@ try {
     const progress: { status: string } | undefined = (await sql<{ status: string }[]>`select status from lesson_progress where user_id = ${userId} and lesson_id = ${lesson.id}`)[0];
     assert.equal(progress?.status, "completed", where);
     assert.equal((await sql<{ count: number }[]>`select count(*)::int as count from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`)[0].count, 1, `${where}: one receipt`);
-    if (["before-investing-debt", "foundations-funds", "foundations-active-vs-index", "behaviour-overconfidence", "behaviour-disposition-effect"].includes(lesson.id)) {
+    if (["before-investing-debt", "foundations-funds", "foundations-active-vs-index", "behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }

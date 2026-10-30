@@ -35,6 +35,11 @@ function lazyComponent<M, P extends object>(load: () => Promise<M>, pick: (modul
   return Object.assign(LazyComponent, { preload });
 }
 
+// Dated fact data grows with the curriculum; load its UI only for lessons that show it.
+const facts = () => import("./step-kinds/fact-notice");
+export const LessonFacts = lazyComponent(facts, (module) => module.FactNotice);
+export const LessonFactChip = lazyComponent(facts, (module) => module.FactStatusChip);
+
 const foundations = () => import("./foundations-explorers");
 const volatility = () => import("./volatility-explorers");
 const correlation = () => import("./correlation-explorers");
