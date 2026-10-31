@@ -6,8 +6,8 @@ import { db } from "@/db";
 import { learnerArtifact, missionAttempt, portfolio, portfolioTrade, user } from "@/db/schema";
 import { readPracticeCapitalEntitlementMinor } from "@/features/rewards/repository";
 import { ipsSchema } from "@/features/ips/schema";
-import { readTrainingSessions } from "@/features/training/repository";
-import { checkIpsPurchase, checkPlannedIpsPurchase, checkScenario, contributionMonthsWithBuy, completedHistoricalReplays } from "./checks";
+import { readTrainingSessions, trainingSetup } from "@/features/training/repository";
+import { checkIpsPurchase, checkPlannedIpsPurchase, checkScenario, contributionMonthsWithBuy, completedHistoricalReplays, finishedModelDrill } from "./checks";
 import { getMission, isExerciseMission } from "./registry";
 
 type Reader = Pick<typeof db, "select">;
@@ -41,6 +41,14 @@ export async function verifyMission(userId: string, missionId: string, requestId
       if (!plan || !ipsSchema.safeParse(plan.payload).success || replays.some(({ session, lastActionAt }) => plan.version <= session.plan.ipsVersion || !lastActionAt || plan.createdAt <= lastActionAt)) return { completed: false, message: "Po dokončení všech tří krizí ulož novou verzi IPS: potvrď nebo uprav pravidlo pro propad a měsíční příspěvek. Nemusíš měnit alokaci ani obchodovat." };
       await tx.insert(missionAttempt).values({ id: randomUUID(), userId, missionId, requestId: "training", completed: true, evidence: { context: mission.context, check: mission.check, params: mission.params, artifactId: plan.id, ipsVersion: plan.version, sessions: replays.map(({ session }) => ({ id: session.id, scenarioId: session.scenarioId, source: session.series.source })) } });
       return { completed: true, message: "Server ověřil tři dokončené historické krize a následně uloženou pojistku v IPS. Výnos ani počet obchodů se nehodnotí." };
+    }
+    if (mission.check === "crisis-drill-finished-v1") {
+      // Reads the isolated training log only. Keeping the plan is recorded, not required: breaking it is a learning experience.
+      const sessions = await readTrainingSessions(tx, userId);
+      const drill = finishedModelDrill(sessions.map((entry) => ({ ...entry, setup: trainingSetup(entry.session) })), mission.params.scenarioId);
+      if (!drill) return { completed: false, message: sessions.some(({ session }) => session.scenarioId === mission.params.scenarioId) ? "Modelovou krizi ještě nemáš dokončenou. Pokračuj v Labu až do posledního měsíce; čekat podle plánu je platné rozhodnutí." : "Zatím nemáš žádnou Modelovou krizi. Spusť ji v Labu podle svého uloženého IPS a projdi všechny měsíce." };
+      await tx.insert(missionAttempt).values({ id: randomUUID(), userId, missionId, requestId: "training", completed: true, evidence: { context: mission.context, check: mission.check, params: mission.params, ...drill } });
+      return { completed: true, message: drill.planKept ? "Server ověřil dokončenou Modelovou krizi. Prodej mimo pravidla IPS: žádný. Výnos se nehodnotí." : `Server ověřil dokončenou Modelovou krizi. Prodeje mimo pravidla IPS: ${drill.sellsOutsidePlan}. Mise je i tak splněná; v rozboru lekce si projdi, co tě k prodeji vedlo.` };
     }
     if (mission.check === "training-contributions-v1") {
       // Training sessions are isolated: only their append-only action log is read, nothing is written there.

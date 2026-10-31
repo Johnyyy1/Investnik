@@ -109,7 +109,7 @@ try {
       await page.getByRole("heading", { level: 2, name: step.title, exact: true }).waitFor();
       await idle();
       await audit(where, width);
-      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect", "behaviour-loss-aversion"].includes(lesson.id)) {
+      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect", "behaviour-loss-aversion", "behaviour-crisis-drill"].includes(lesson.id)) {
         for (const size of [1440, 390]) {
           await page.setViewportSize({ width: size, height: 900 });
           await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))); });
@@ -184,7 +184,9 @@ try {
         if (block.type === "checklist") {
           const output = page.getByRole("region", { name: block.title, exact: true });
           await output.getByRole("checkbox", { name: block.items[0].label, exact: true }).waitFor();
-          assert.equal(await button("Pokračovat").isDisabled(), true, "a required checklist must be saved first");
+          // B.1.10 keeps its reflection checklist optional; the others require the saved output.
+          const required = step.requiredArtifact?.kind === "lesson_output" && step.requiredArtifact.blockId === block.id;
+          assert.equal(await button("Pokračovat").isDisabled(), required, required ? "a required checklist must be saved first" : "an optional checklist never blocks");
           await output.getByRole("checkbox", { name: block.items[0].label, exact: true }).check();
           await output.getByRole("checkbox", { name: /Souhlasím s uložením/ }).check();
           await output.getByRole("button", { name: "Uložit výstup", exact: true }).click();
@@ -283,7 +285,8 @@ try {
           await page.setViewportSize({ width, height: 900 });
         }
         // B.1.4 asks for the review frequency in an IPS the learner usually saved in 2.5.1; a plan saved earlier counts.
-        const [savedPlan] = lesson.id === "behaviour-loss-aversion" && block.type === "interactiveFigure" && block.figure === "ips-builder" ? await sql<{ version: number }[]>`select max(version)::int as version from learner_artifact where user_id=${userId!} and kind='investment_plan' having count(*) > 0` : [];
+        // B.1.10 offers an optional revision of the plan its drill already needed.
+        const [savedPlan] = ["behaviour-loss-aversion", "behaviour-crisis-drill"].includes(lesson.id) && block.type === "interactiveFigure" && block.figure === "ips-builder" ? await sql<{ version: number }[]>`select max(version)::int as version from learner_artifact where user_id=${userId!} and kind='investment_plan' having count(*) > 0` : [];
         if (savedPlan) {
           const check = page.getByRole("region", { name: "Stav investičního plánu", exact: true });
           await check.getByText(new RegExp(`^Plán je uložený: verze ${savedPlan.version} z `)).waitFor();
@@ -334,6 +337,50 @@ try {
           await verify.click();
           await page.getByText(/^Splněno · Server ověřil tři dokončené historické krize/).waitFor();
           await page.waitForFunction(() => Array.from(document.querySelectorAll("button")).some((button) => button.textContent === "Pokračovat" && !button.disabled));
+          await audit(`${where} after verification`, width);
+        }
+        if (block.type === "labMission" && block.missionId === "crisis-drill-model-v1") {
+          const verify = button("Ověřit misi");
+          assert.equal(await button("Pokračovat").isDisabled(), true, "B.1.10 requires a finished drill");
+          await verify.click();
+          await page.getByText(/^Zatím nemáš žádnou Modelovou krizi/).waitFor();
+          const [plan] = await sql`select 1 from learner_artifact where user_id = ${userId!} and kind = 'investment_plan'`;
+          if (!plan) await sql`insert into learner_artifact (id, user_id, kind, version, payload, source_lesson_id, request_id) values (${randomUUID()}, ${userId!}, 'investment_plan', 1, ${sql.json(exampleIps as never)}, null, ${randomUUID()})`;
+          const personalTrades = async () => (await sql<{ count: number }[]>`select count(*)::int as count from portfolio_trade t join portfolio p on p.id = t.portfolio_id where p.user_id = ${userId!}`)[0].count;
+          const tradesBefore = await personalTrades();
+          // The learner runs the model crisis in the Lab in another tab and breaks the plan once: a sell inside the band.
+          const labContext = await browser.newContext({ storageState: await page.context().storageState(), viewport: { width: 1440, height: 900 } });
+          const lab = await labContext.newPage();
+          await lab.goto(`${baseURL}/lab/training`);
+          const start = lab.getByRole("button", { name: "Začít nácvik", exact: true });
+          if (!await start.count()) await lab.getByRole("button", { name: "Začít jiný nácvik", exact: true }).click();
+          await lab.getByRole("radio", { name: /^Modelová krize/ }).check();
+          await lab.getByRole("button", { name: "Začít nácvik", exact: true }).click();
+          await lab.getByRole("heading", { name: "(měsíc 0 z 24)", exact: false }).waitFor();
+          await lab.getByRole("button", { name: /^Investovat hotovost/ }).click();
+          await lab.getByRole("status").getByText(/^Nakoupeno za/).waitFor();
+          for (let month = 1; month <= 6; month++) {
+            await lab.getByRole("button", { name: "Pokračovat na další měsíc", exact: true }).click();
+            await lab.getByRole("heading", { name: `(měsíc ${month} z 24)`, exact: false }).waitFor();
+          }
+          await verify.click();
+          await page.getByText(/^Modelovou krizi ještě nemáš dokončenou/).waitFor();
+          assert.equal(await button("Pokračovat").isDisabled(), true, "an unfinished drill is not evidence");
+          await lab.getByLabel(/^Prodat podíly/).fill("10");
+          await lab.getByRole("button", { name: "Prodat", exact: true }).click();
+          await lab.getByRole("status").getByText("Prodej zaznamenán.", { exact: true }).waitFor();
+          for (let month = 7; month <= 24; month++) {
+            await lab.getByRole("button", { name: month === 24 ? "Dokončit poslední měsíc" : "Pokračovat na další měsíc", exact: true }).click();
+            if (month < 24) await lab.getByRole("heading", { name: `(měsíc ${month} z 24)`, exact: false }).waitFor();
+          }
+          await lab.getByText("Prodeje mimo pravidla plánu", { exact: true }).waitFor();
+          await labContext.close();
+          assert.equal(await personalTrades(), tradesBefore, "the drill never trades in the personal portfolio");
+          await verify.click();
+          await page.getByText(/^Splněno · Server ověřil dokončenou Modelovou krizi\. Prodeje mimo pravidla IPS: 1\./).waitFor();
+          assert.equal(await button("Pokračovat").isEnabled(), true, "a finished drill completes the mission even when the plan was broken");
+          const [attempt]: { evidence: { sellsOutsidePlan: number; planKept: boolean; months: number } }[] = await sql`select evidence from mission_attempt where user_id = ${userId!} and mission_id = 'crisis-drill-model-v1' and completed`;
+          assert.deepEqual({ sells: attempt.evidence.sellsOutsidePlan, kept: attempt.evidence.planKept, months: attempt.evidence.months }, { sells: 1, kept: false, months: 24 });
           await audit(`${where} after verification`, width);
         }
         if (block.type === "labMission" && block.missionId === "training-contributions-v1") {
@@ -508,7 +555,7 @@ try {
     const progress: { status: string } | undefined = (await sql<{ status: string }[]>`select status from lesson_progress where user_id = ${userId} and lesson_id = ${lesson.id}`)[0];
     assert.equal(progress?.status, "completed", where);
     assert.equal((await sql<{ count: number }[]>`select count(*)::int as count from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`)[0].count, 1, `${where}: one receipt`);
-    if (["before-investing-debt", "foundations-funds", "foundations-active-vs-index", "behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect", "behaviour-loss-aversion"].includes(lesson.id)) {
+    if (["before-investing-debt", "foundations-funds", "foundations-active-vs-index", "behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect", "behaviour-loss-aversion", "behaviour-crisis-drill"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }

@@ -5,6 +5,7 @@ export type MissionDefinition = { id: string; lessonId: string; title: string } 
   | { context: "scenario" | "training"; check: "diversification-rules-v1"; params: { model: "diversification-v1" } }
   | { context: "training"; check: "training-contributions-v1"; params: { months: 12 } }
   | { context: "training"; check: "behaviour-crises-v1"; params: { scenarios: readonly string[] } }
+  | { context: "training"; check: "crisis-drill-finished-v1"; params: { scenarioId: "model-crisis-v1" } }
 );
 
 export const BEHAVIOUR_CRISIS_IDS = ["history-2008-v1", "history-2020-v1", "history-2022-v1"] as const;
@@ -17,6 +18,8 @@ export const missions: readonly MissionDefinition[] = [
   { id: "diversification-rules-v1", lessonId: "diversification-scenario", title: "Rozlož scénářové portfolio", context: "scenario", check: "diversification-rules-v1", params: { model: "diversification-v1" } },
   { id: "allocation-training-v1", lessonId: "foundations-portfolio", title: "Procvič rozložení portfolia", context: "training", check: "diversification-rules-v1", params: { model: "diversification-v1" } },
   { id: "training-contributions-v1", lessonId: "first-plan-automation", title: "Pravidelné příspěvky v krizovém nácviku", context: "training", check: "training-contributions-v1", params: { months: 12 } },
+  // B10: a finished model crisis completes the mission whether or not the plan was kept; adherence is recorded as evidence.
+  { id: "crisis-drill-model-v1", lessonId: "behaviour-crisis-drill", title: "Krizový nácvik −30 % s vlastním plánem", context: "training", check: "crisis-drill-finished-v1", params: { scenarioId: "model-crisis-v1" } },
 ];
 
 /** The diversification exercise takes a learner decision; every other check reads server-owned evidence only. */

@@ -25,7 +25,7 @@ describe("Curriculum map presentation", () => {
     expect(moduleOf(levels, "3.3").lessons.map((lesson) => lesson.moduleSlug)).toEqual(["correlation", "correlation", ...Array(5).fill("diversification")]);
     expect(moduleOf(levels, "6.1").lessons[0].id).toBe("returns-log-returns");
     expect(moduleOf(levels, "6.2").lessons[0].id).toBe("correlation-real-data");
-    expect(moduleOf(levels, "B.1").lessons.map((lesson) => lesson.id)).toEqual(["behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect", "behaviour-loss-aversion", "correlation-not-causation"]);
+    expect(moduleOf(levels, "B.1").lessons.map((lesson) => lesson.id)).toEqual(["behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect", "behaviour-loss-aversion", "correlation-not-causation", "behaviour-crisis-drill"]);
   });
 
   it("expands only the persisted continuation level, even in an optional track", () => {

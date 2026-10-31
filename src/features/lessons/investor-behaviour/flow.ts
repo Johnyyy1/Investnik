@@ -52,4 +52,17 @@ export const investorBehaviourSteps: Readonly<Record<string, readonly StepDefini
     { title: "Jak často se budeš dívat", blocks: ["reflection"] },
     { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
   ],
+  "behaviour-crisis-drill": [
+    { title: "Příprava na nácvik", blocks: ["opening", "criteria", "predict"] },
+    { title: "Tlak v pátém měsíci", blocks: ["pressure"] },
+    { title: "Krizový nácvik", blocks: ["drill"] },
+    { title: "Jak se nácvik vyhodnocuje", blocks: ["evaluation", "worked"] },
+    { title: "Doplň odchylku", blocks: ["faded"] },
+    { title: "Postup, nebo výsledek", blocks: ["interpretation"] },
+    { title: "Ověření · prodej podle pravidel", kind: "mastery", blocks: ["recall"] },
+    { title: "Revize tvého IPS", blocks: ["revision", "builder"], requiredArtifact: { kind: "investment_plan", source: "any_lesson" } },
+    { title: "Co si z nácviku beru", blocks: ["lessons"] },
+    { title: "Tvoje reflexe", blocks: ["reflection"] },
+    { title: "Co si odneseš", blocks: ["summary", "sources"] },
+  ],
 };
