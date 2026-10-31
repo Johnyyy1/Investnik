@@ -52,4 +52,17 @@ export const investorBehaviourSteps: Readonly<Record<string, readonly StepDefini
     { title: "Jak často se budeš dívat", blocks: ["reflection"] },
     { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
   ],
+  "behaviour-debiasing-tools": [
+    { title: "Pojistka místo pevné vůle", blocks: ["opening", "why-safeguards"] },
+    { title: "Mapa chyba → pojistka", blocks: ["map"] },
+    { title: "Přiřaď pojistku · obchod mimo plán", blocks: ["match-trading-context", "match-trading"] },
+    { title: "Přiřaď pojistku · FOMO", blocks: ["match-fomo-context", "match-fomo"] },
+    { title: "Přiřaď pojistku · přesvědčivý příběh", blocks: ["match-story-context", "match-story"] },
+    { title: "Ověření · dispoziční efekt", kind: "mastery", blocks: ["recall"] },
+    { title: "Pre-mortem", blocks: ["premortem", "premortem-example"] },
+    { title: "Tvůj pre-mortem", blocks: ["premortem-output"] },
+    { title: "Tvoje sada pojistek", blocks: ["set-intro", "safeguard-set"], requiredArtifact: { kind: "lesson_output", source: "current_lesson", blockId: "safeguard-set" } },
+    { title: "Úpravy v IPS", blocks: ["ips-update", "builder"], requiredArtifact: { kind: "investment_plan", source: "any_lesson" } },
+    { title: "Co si odneseš", blocks: ["lab-bridge", "summary", "sources"] },
+  ],
 };
