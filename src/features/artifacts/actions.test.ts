@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
-const mocks = vi.hoisted(() => ({ user: vi.fn(), save: vi.fn(), list: vi.fn(), remove: vi.fn() }));
+const mocks = vi.hoisted(() => ({ user: vi.fn(), save: vi.fn(), list: vi.fn(), remove: vi.fn(), submit: vi.fn() }));
 vi.mock("@/lib/session", () => ({ getCurrentUser: mocks.user }));
 vi.mock("./repository", () => ({ saveLearnerArtifact: mocks.save, listLearnerArtifacts: mocks.list, deleteLearnerArtifact: mocks.remove }));
+vi.mock("@/features/milestones/repository", () => ({ submitCapstone: mocks.submit }));
 import { deleteArtifact, listArtifacts, saveArtifact } from "./actions";
 import { artifactExamples } from "./test-fixtures";
 const id = "2febc313-313b-40ba-af9a-a93534e3cabf";
@@ -33,6 +34,25 @@ describe("artifact server action boundaries", () => {
     expect(await deleteArtifact({ id: "bad" })).toMatchObject({ ok: false });
     expect(await deleteArtifact({ id, userId: "victim" })).toMatchObject({ ok: false });
     expect(mocks.save).not.toHaveBeenCalled(); expect(mocks.list).not.toHaveBeenCalled(); expect(mocks.remove).not.toHaveBeenCalled();
+  });
+  it("submits the Capstone A self-assessment before saving its output, under the same retry ID", async () => {
+    const ratings = [{ criterionId: "ips-alignment", level: 3 }, { criterionId: "costs", level: 4 }, { criterionId: "diversification", level: 3 }, { criterionId: "crisis", level: 2 }];
+    const capstone = { ...input, sourceLessonId: "first-plan-capstone-a", content: { kind: "lesson_output", payload: { type: "rubricSelfAssessment", blockId: "self-assessment", text: "Plán jsem dodržel.", ratings } } };
+    const order: string[] = [];
+    mocks.submit.mockImplementation(async () => { order.push("capstone"); });
+    mocks.save.mockImplementation(async () => { order.push("output"); return { id, version: 1 }; });
+    expect(await saveArtifact(capstone)).toMatchObject({ ok: true });
+    expect(mocks.submit).toHaveBeenCalledWith("owner", { capstoneId: "capstone-a-v1", requestId: id, selfAssessment: { ratings, reflection: "Plán jsem dodržel." } });
+    expect(order).toEqual(["capstone", "output"]);
+    // A failed submission saves no output, so the step cannot continue without one; the learner retries both.
+    mocks.submit.mockRejectedValue(new Error("private evidence")); mocks.save.mockClear();
+    const failed = await saveArtifact(capstone);
+    expect(failed).toMatchObject({ ok: false }); expect(JSON.stringify(failed)).not.toContain("private");
+    expect(mocks.save).not.toHaveBeenCalled();
+    // Other outputs, other lessons and other blocks never submit a capstone.
+    mocks.submit.mockClear();
+    for (const other of [input, { ...capstone, sourceLessonId: "behaviour-debiasing-tools" }, { ...capstone, content: { ...capstone.content, payload: { ...capstone.content.payload, blockId: "other" } } }]) await saveArtifact(other);
+    expect(mocks.submit).not.toHaveBeenCalled();
   });
   it("returns recoverable errors without private database details", async () => {
     mocks.save.mockRejectedValue(new Error("private payload connection secret")); mocks.list.mockRejectedValue(new Error("private")); mocks.remove.mockRejectedValue(new Error("private"));

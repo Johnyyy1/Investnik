@@ -32,12 +32,12 @@ async function layouts(state, capture = true) {
     const map = learn().getByTestId("journey-modules");
     assert.equal(await map.locator("[data-level]").count(), 9, "all levels including optional tracks");
     assert.equal(await map.locator("[data-display-module]").count(), 25, "registry display modules");
-    assert.equal(await map.locator("ol a").count(), 49, "every published lesson appears once");
+    assert.equal(await map.locator("ol a").count(), 50, "every published lesson appears once");
     assert.equal(await map.locator("[data-level][open]").count(), state === "complete" ? 0 : 1, "only continuation level starts expanded at every viewport");
-    // Derived milestones (#126): no capstone lesson is published, so none is achievable, whatever was completed.
+    // Derived milestones (#126): the 2.4 draft and capstones B–D are unpublished, so none is achievable, whatever was completed.
     assert.deepEqual(await map.locator("[data-milestone]").evaluateAll((items) => items.map((item) => [item.dataset.milestone, item.dataset.status])),
       [["A", "unavailable"], ["B", "unavailable"], ["C", "unavailable"], ["D", "unavailable"]], "milestones are derived and never claimed early");
-    assert.match(await map.getByRole("list", { name: "Požadavky milníku A" }).innerText(), /Lekce: připravujeme[\s\S]*Dovednosti na úrovni Zvládnuté: \d+ z \d+[\s\S]*Závěrečný projekt A: plán, nákup a krizový nácvik: připravujeme/);
+    assert.match(await map.getByRole("list", { name: "Požadavky milníku A" }).innerText(), /Lekce: připravujeme[\s\S]*Dovednosti na úrovni Zvládnuté: \d+ z \d+[\s\S]*Závěrečný projekt A: plán, nákup a krizový nácvik: zatím ne/);
     assert.equal(await page.locator("h1:visible").count(), 1);
     assert.equal(await page.locator("#main-content").count(), 1);
     assert.ok(await page.locator("main img").evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0)), "illustration loads");

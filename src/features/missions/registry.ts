@@ -20,6 +20,8 @@ export const missions: readonly MissionDefinition[] = [
   { id: "training-contributions-v1", lessonId: "first-plan-automation", title: "Pravidelné příspěvky v krizovém nácviku", context: "training", check: "training-contributions-v1", params: { months: 12 } },
   // B10: a finished model crisis completes the mission whether or not the plan was kept; adherence is recorded as evidence.
   { id: "crisis-drill-model-v1", lessonId: "behaviour-crisis-drill", title: "Krizový nácvik −30 % s vlastním plánem", context: "training", check: "crisis-drill-finished-v1", params: { scenarioId: "model-crisis-v1" } },
+  // Capstone A (#198) reuses the B10 check: a drill finished in B.1.10 verifies at once. Its rubric judges the latest drill.
+  { id: "capstone-a-crisis-v1", lessonId: "first-plan-capstone-a", title: "Dokončená Modelová krize pro závěrečný projekt A", context: "training", check: "crisis-drill-finished-v1", params: { scenarioId: "model-crisis-v1" } },
 ];
 
 /** The diversification exercise takes a learner decision; every other check reads server-owned evidence only. */

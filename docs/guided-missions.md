@@ -28,6 +28,8 @@ Criteria are versioned by the mission/check ID. Do not repurpose an ID or change
 
 - `crisis-drill-finished-v1` (training, lesson B.1.10 `behaviour-crisis-drill`, mission `crisis-drill-model-v1`): server-owned; the client sends no decision. The server replays the learner's Krizový nácvik sessions and takes the latest finished `model-crisis-v1` session whose frozen series equals the deterministic model series. Finishing completes the mission whether or not the IPS was kept; the evidence records the session ID, IPS version, months, sells outside the plan, the end allocation status vs the band and the contribution months, for measuring plan adherence. Verification reads training data only and writes nothing there or to the portfolio.
 
+- `capstone-a-crisis-v1` (training, lesson 2.5.4 `first-plan-capstone-a`, #198): reuses `crisis-drill-finished-v1` unchanged. A model crisis already finished in B.1.10 verifies at once, so the capstone asks for no second drill. The mission only gates the step on a finished drill; Capstone A's `crisis-plan-kept-v1` rubric check still reads the learner's latest drill when the project is submitted.
+
 Other tasks in #142, such as rebalancing by contribution and releasing cash in a crisis, need their own authored scenario, immutable source evidence and deterministic check before registration. Do not map them to the diversification check or pretend their outputs exist.
 
 ## Persistence and authority
