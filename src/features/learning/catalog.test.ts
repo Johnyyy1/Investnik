@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getModuleBySlug, getModulePath, lessonLink, moduleCatalog } from "./catalog";
-import { foundationsLessons } from "../lessons/foundations/manifest";
+import { brokerAndAccountLessons } from "../lessons/broker-and-account/manifest";
 import { returnsLessons } from "../lessons/returns/manifest";
 
 describe("module catalog", () => {
@@ -19,7 +19,8 @@ describe("module catalog", () => {
   it("builds Lab lesson links from the curriculum and never links an unpublished lesson", () => {
     expect(lessonLink("diversification-sectors-countries")).toEqual({ href: "/learn/diversification/sectors-and-countries", label: "Lekce: Sektory a země" });
     expect(lessonLink("diversification-correlation-risk")?.href).toBe("/learn/diversification/correlation-and-portfolio-risk");
-    expect(lessonLink("foundations-checkpoint")).toBeNull();
+    expect(lessonLink("foundations-checkpoint")?.href).toBe("/learn/investing-foundations/foundations-checkpoint");
+    expect(lessonLink("broker-platform-types")).toBeNull();
     expect(lessonLink("unknown")).toBeNull();
   });
 });
@@ -33,9 +34,9 @@ describe("persisted Returns path", () => {
     expect(items.map((item) => item.state)).toEqual(["completed", "available", "active", "available", "available", "available"]);
   });
   it("never unlocks an unimplemented lesson from a stray progress row", () => {
-    const planned = foundationsLessons.filter((lesson) => lesson.status === "planned");
+    const planned = brokerAndAccountLessons.filter((lesson) => lesson.status === "planned");
     expect(planned.length).toBeGreaterThan(0);
-    const path = getModulePath("investing-foundations", planned.map((lesson) => ({ lessonId: lesson.id, status: "completed" })));
+    const path = getModulePath("broker-and-account", planned.map((lesson) => ({ lessonId: lesson.id, status: "completed" })));
     expect(path.filter((item) => planned.some((lesson) => lesson.id === item.id)).map((item) => item.state)).toEqual(["locked"]);
   });
 });

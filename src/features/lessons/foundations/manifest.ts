@@ -10,5 +10,5 @@ export const foundationsLessons = [
   { id: "foundations-portfolio", slug: "your-first-portfolio", title: "Portfolio, váhy a diverzifikace", summary: "Spoj hotovost a pozice, spočítej váhy a odhal koncentraci.", estimatedMinutes: 10, status: "available" },
   { id: "foundations-funds", slug: "funds", title: "Podílové fondy, ETF a jejich náklady", summary: "Rozliš podílový fond a ETF, aktivní a pasivní správu a spočítej, co stojí náklady.", estimatedMinutes: 12, status: "available" },
   { id: "foundations-active-vs-index", slug: "active-vs-index", title: "Kdo vyhrává: aktivní správa vs. index", summary: "Přečti data SPIVA, spočítej, co berou náklady, a zjisti, proč je levný indexový fond rozumné výchozí jádro.", estimatedMinutes: 11, status: "available" },
-  { id: "foundations-checkpoint", slug: "foundations-checkpoint", title: "Kontrola 1: ověření investičních základů", summary: "Propoj investiční principy v otázkách Big Three a smíšených úlohách.", estimatedMinutes: 10, status: "planned" },
+  { id: "foundations-checkpoint", slug: "foundations-checkpoint", title: "Kontrola 1: ověření investičních základů", summary: "Propoj investiční principy v otázkách Big Three a smíšených úlohách.", estimatedMinutes: 10, status: "available" },
 ] as const;

@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { foundationsContent, foundationsSteps } from "./content";
+import { foundationsCheckpointLesson } from "./checkpoint";
 import { foundationsLessons } from "./manifest";
 import { getGuidedSteps } from "../steps";
 import { validateCompletion, validateMove } from "@/features/progress/transition";
 
 describe("Foundations learning experience integrity", () => {
   it("keeps the stable published lesson IDs and the target sequence", () => {
-    expect(foundationsContent.map((lesson) => lesson.id)).toEqual(foundationsLessons.filter((lesson) => lesson.status === "available").map((lesson) => lesson.id));
+    expect([...foundationsContent, foundationsCheckpointLesson].map((lesson) => lesson.id)).toEqual(foundationsLessons.filter((lesson) => lesson.status === "available").map((lesson) => lesson.id));
     expect(foundationsContent.map((lesson) => lesson.title)).toEqual([
       "Spoření vs. investování",
       "Akcie a vlastnictví firmy",

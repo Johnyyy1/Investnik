@@ -121,6 +121,30 @@ try {
   assert.equal(review.xpAwarded, 0);
   assert.equal(review.practiceCapitalAwardedMinor, 0n);
   assert.deepEqual({ progress: await progressOf(stocksCompleted), awards: await awardsOf(stocksCompleted) }, completedBefore, "stocks v2 preserves original completion, cursor, dates and legacy receipt on review");
+  // Publication of the reserved checkpoint keeps the standard retry/reward contract (#164).
+  const checkpointOwner = await owner(), checkpointId = "foundations-checkpoint";
+  const checkpointSteps = lessonSteps(checkpointId);
+  await markLessonInProgress(checkpointOwner, checkpointId);
+  await assert.rejects(() => completeLesson(checkpointOwner, checkpointId));
+  for (let position = 0; position < checkpointSteps.length - 1; position++) {
+    const question = checkpointSteps[position].blocks.find(isQuestion);
+    if (question) {
+      await assert.rejects(() => saveLessonProgress(checkpointOwner, { lessonId: checkpointId, status: "in_progress", lastPosition: position + 1 }));
+      if (question.id.startsWith("big-three-")) await assert.rejects(() => saveLessonProgress(checkpointOwner, { lessonId: checkpointId, status: "in_progress", lastPosition: position + 1 }, { answer: "unknown" }));
+    }
+    await saveLessonProgress(checkpointOwner, { lessonId: checkpointId, status: "in_progress", lastPosition: position + 1 }, question ? correctAnswers(question) : undefined);
+  }
+  const checkpointRewards = await Promise.all([completeLesson(checkpointOwner, checkpointId), completeLesson(checkpointOwner, checkpointId)]);
+  assert.equal(checkpointRewards.reduce((sum, reward) => sum + reward.xpAwarded, 0), 60);
+  assert.ok(checkpointRewards.every((reward) => reward.practiceCapitalAwardedMinor === 0n));
+  assert.equal((await awardsOf(checkpointOwner)).length, 1);
+  assert.equal((await loadPortfolioLabUnlock(checkpointOwner)).unlocked, false, "checkpoint alone does not unlock Lab");
+  const checkpointBefore = { progress: await progressOf(checkpointOwner), awards: await awardsOf(checkpointOwner) };
+  await markLessonInProgress(checkpointOwner, checkpointId);
+  await saveLessonProgress(checkpointOwner, { lessonId: checkpointId, status: "in_progress", lastPosition: 0 });
+  assert.equal((await completeLesson(checkpointOwner, checkpointId)).xpAwarded, 0);
+  assert.deepEqual({ progress: await progressOf(checkpointOwner), awards: await awardsOf(checkpointOwner) }, checkpointBefore, "checkpoint review preserves completion time, cursor and receipt");
+  console.log("PASS: checkpoint publication rejects missing/unknown answers, concurrent completion grants 60 XP and zero capital once, review preserves completion and receipt, Lab stays locked.");
   console.log("PASS: curriculum growth and stocks v2 preserve identity, cursors, completion/checkpoints and v1/v2/v3/v4 receipts; old stocks summary requires the FX answer; original and recorded unlocks survive, with one concurrent grant.");
 } finally {
   steps.splice(0, steps.length, ...originalSteps);

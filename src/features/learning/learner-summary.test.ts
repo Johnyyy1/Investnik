@@ -46,11 +46,10 @@ describe("real learner summary", () => {
     expect(summary.recent).toHaveLength(availableLessons.length);
   });
   it("ignores unknown/planned progress and never unlocks upcoming lessons", () => {
-    const states = [row("foundations-checkpoint", "completed"), row("unknown", "in_progress")];
+    const states = [row("broker-platform-types", "completed"), row("unknown", "in_progress")];
     expect(getLearnerSummary(states).completed).toEqual([]);
     expect(getLearnerSummary(states).next.id).toBe("foundations-why-invest");
-    const path = getModulePath("investing-foundations", states);
-    expect(path).toHaveLength(10);
-    expect(path.slice(9).every((item) => item.state === "locked")).toBe(true);
+    const path = getModulePath("broker-and-account", states);
+    expect(path.find((item) => item.id === "broker-platform-types")?.state).toBe("locked");
   });
 });

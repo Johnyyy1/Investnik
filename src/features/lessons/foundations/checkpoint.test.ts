@@ -14,14 +14,16 @@ import { progressionUnlocks } from "@/features/progression/unlocks";
 const steps = getGuidedSteps(lesson);
 
 describe("Foundations checkpoint 1.1.10 (#164)", () => {
-  it("reserves identity and placement without publishing ahead of #163/#130 and review", () => {
-    expect(curriculumLessons.find((entry) => entry.id === lesson.id)).toMatchObject({ id: "foundations-checkpoint", moduleId: "module-investing-foundations", moduleSlug: "investing-foundations", slug: "foundations-checkpoint", status: "planned" });
-    expect(draftLessons).toContain(lesson);
-    expect(authoredLessons).not.toContain(lesson);
-    expect(availableLessons.some((entry) => entry.id === lesson.id)).toBe(false);
-    expect(getAuthoredLesson(lesson.moduleSlug, lesson.slug)).toBeUndefined();
+  it("publishes the stable identity without changing rewards or Lab prerequisites", () => {
+    expect(curriculumLessons.find((entry) => entry.id === lesson.id)).toMatchObject({ id: "foundations-checkpoint", moduleId: "module-investing-foundations", moduleSlug: "investing-foundations", slug: "foundations-checkpoint", status: "available" });
+    expect(draftLessons).not.toContain(lesson);
+    expect(authoredLessons).toContain(lesson);
+    expect(availableLessons.some((entry) => entry.id === lesson.id)).toBe(true);
+    expect(getAuthoredLesson(lesson.moduleSlug, lesson.slug)).toBe(lesson);
     expect(getLessonPlacement(lesson.id)).toMatchObject({ displayCode: "1.1.10", required: "required" });
-    expect(() => validateMove(lesson.id, 0, 1)).toThrow(/unavailable/);
+    expect(getLessonPlacement(lesson.id)?.prerequisites).toContain("foundations-active-vs-index");
+    expect(block(lesson, "report-interpretation", "multipleChoiceQuestion").reviewHref).toBe("/learn/investing-foundations/active-vs-index");
+    expect(() => validateMove(lesson.id, 0, 1)).not.toThrow();
     expect(lessonReward(lesson.id)).toEqual({ practiceCapitalMinor: 0n, rewardPolicyVersion: 4 });
     expect(progressionUnlocks.PORTFOLIO_LAB.prerequisiteLessonIds).not.toContain(lesson.id);
     expect(progressionUnlocks.PORTFOLIO_LAB.prerequisiteLessonIds).toHaveLength(7);

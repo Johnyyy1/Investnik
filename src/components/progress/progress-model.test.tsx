@@ -73,7 +73,7 @@ describe("Progress presentation model", () => {
         expect(idea.title).not.toMatch(/^Shrnutí/);
       }
     }
-    expect(model.chapters[0].lessons.map((lesson) => lesson.status)).toEqual(["done", "done", "done", "todo", "active", "todo", "todo", "todo", "todo"]);
+    expect(model.chapters[0].lessons.map((lesson) => lesson.status)).toEqual(["done", "done", "done", "todo", "active", "todo", "todo", "todo", "todo", "todo"]);
     expect(model.chapters[0].status).toBe("started");
     expect(model.milestone).toBeUndefined();
     const html = render(states);
@@ -103,7 +103,7 @@ describe("Progress presentation model", () => {
     const model = progressModel(learner(states));
     expect(model.milestone?.chapter.slug).toBe("investing-foundations");
     expect(model.milestone?.nextChapter.slug).toBe("returns");
-    expect(model.milestone?.completedAt).toEqual(day(9));
+    expect(model.milestone?.completedAt).toEqual(day(foundations.length));
     const html = render(states, { portfolio: ledger });
     expect(html).toContain("Kapitola 01 hotová");
     expect(html).toContain("Základy investování máš za sebou.");
@@ -111,8 +111,8 @@ describe("Progress presentation model", () => {
     expect(html).toContain("jak poznat, jestli se investici daří?");
     expect(html).toContain('href="/learn/returns/what-is-a-return"');
     expect(html).toContain("Začít lekcí Co je výnos?");
-    expect(html).toContain(`data-testid="available-progress">9 / ${availableLessons.length}<`);
-    expect(html).toContain("540 XP");
+    expect(html).toContain(`data-testid="available-progress">${foundations.length} / ${availableLessons.length}<`);
+    expect(html).toContain(`${foundations.length * 60} XP`);
     expect(html).not.toContain("ročním nákladům fondu");
     // Starting the next chapter ends the milestone.
     expect(progressModel(learner([...states, started(returns[0].id, 1)])).milestone).toBeUndefined();

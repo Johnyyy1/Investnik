@@ -181,12 +181,12 @@ try {
   await heading("Opakování dokončeno");
   assert.equal(await page.getByLabel("Získáno 60 XP", { exact: true }).count(), 0);
   assert.deepEqual(await snapshot(), completed, "full replay preserves all receipts and persisted progress");
-  await page.goto(`${baseURL}/learn/investing-foundations/foundations-checkpoint`);
+  await page.goto(`${baseURL}/learn/broker-and-account/platform-types`);
   // Next streams notFound with HTTP 200 after headers have been sent.
   await heading("Tahle lekce zatím není k dispozici");
   assert.ok(await page.locator('meta[name="robots"][content="noindex"]').count() >= 1);
   assert.equal(await page.locator("#step-title").count(), 0);
-  assert.equal((await sql`select * from lesson_progress where user_id = ${userId} and lesson_id = 'foundations-checkpoint'`).length, 0);
+  assert.equal((await sql`select * from lesson_progress where user_id = ${userId} and lesson_id = 'broker-platform-types'`).length, 0);
   const actionable = errors.filter((message) => !message.startsWith("You have Reduced Motion enabled on your device.") && !message.includes("404 (Not Found)"));
   assert.deepEqual(actionable, []);
   console.log(`PASS: L4→L5 path, all eight steps at six widths, formulas, keyboard/retry/focus, resume/Previous, 200% text, reduced motion, 60 XP once, full review preservation, Lab navigation and planned not-found. Screenshots: ${screenshotDir}`);
