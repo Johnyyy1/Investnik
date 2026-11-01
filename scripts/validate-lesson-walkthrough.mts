@@ -109,7 +109,7 @@ try {
       await page.getByRole("heading", { level: 2, name: step.title, exact: true }).waitFor();
       await idle();
       await audit(where, width);
-      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect", "behaviour-loss-aversion", "behaviour-debiasing-tools", "behaviour-crisis-drill", "etfs-selection-checklist"].includes(lesson.id)) {
+      if (["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "first-plan-capstone-a", "behaviour-behaviour-gap", "behaviour-overconfidence", "behaviour-disposition-effect", "behaviour-loss-aversion", "behaviour-debiasing-tools", "behaviour-crisis-drill", "etfs-selection-checklist"].includes(lesson.id)) {
         for (const size of [1440, 390]) {
           await page.setViewportSize({ width: size, height: 900 });
           await page.evaluate(async () => { window.scrollTo(0, 0); await document.fonts.ready; await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))); });
@@ -192,6 +192,14 @@ try {
           await output.getByRole("button", { name: "Uložit výstup", exact: true }).click();
           await output.getByText(/^Výstup je uložený\. Verze \d+\.$/).waitFor();
           assert.equal(await button("Pokračovat").isEnabled(), true, "the saved rubric output enables continuation");
+          if (lesson.id === "first-plan-capstone-a") {
+            // Saving the self-assessment submits Capstone A with server-computed evidence; level 1 submits but does not pass.
+            const submissions: { capstone_id: string; version: number; self_assessment: { ratings: { level: number }[] }; auto_criteria: Record<string, { status: string }> }[] = await sql`select capstone_id, version, self_assessment, auto_criteria from capstone_submission where user_id = ${userId!}`;
+            assert.deepEqual(submissions.map((row) => [row.capstone_id, row.version]), [["capstone-a-v1", 1]], "one capstone submission per saved output");
+            assert.ok(submissions[0].self_assessment.ratings.every((rating) => rating.level === 1));
+            assert.deepEqual(Object.keys(submissions[0].auto_criteria).sort(), ["crisis", "diversification", "ips-alignment"]);
+            assert.equal(submissions[0].auto_criteria.crisis.status, "fail", "the walked drill broke the plan once");
+          }
           await audit(`${where} after saving`, width);
         }
         if (block.type === "checklist") {
@@ -299,7 +307,7 @@ try {
         }
         // B.1.4 and B.1.9 ask for changes in an IPS the learner usually saved in 2.5.1; a plan saved earlier counts.
         // B.1.10 offers an optional revision of the plan its drill already needed.
-        const [savedPlan] = ["behaviour-loss-aversion", "behaviour-debiasing-tools", "behaviour-crisis-drill"].includes(lesson.id) && block.type === "interactiveFigure" && block.figure === "ips-builder" ? await sql<{ version: number }[]>`select max(version)::int as version from learner_artifact where user_id=${userId!} and kind='investment_plan' having count(*) > 0` : [];
+        const [savedPlan] = ["behaviour-loss-aversion", "behaviour-debiasing-tools", "behaviour-crisis-drill", "first-plan-capstone-a"].includes(lesson.id) && block.type === "interactiveFigure" && block.figure === "ips-builder" ? await sql<{ version: number }[]>`select max(version)::int as version from learner_artifact where user_id=${userId!} and kind='investment_plan' having count(*) > 0` : [];
         if (savedPlan) {
           const check = page.getByRole("region", { name: "Stav investičního plánu", exact: true });
           await check.getByText(new RegExp(`^Plán je uložený: verze ${savedPlan.version} z `)).waitFor();
@@ -352,9 +360,18 @@ try {
           await page.waitForFunction(() => Array.from(document.querySelectorAll("button")).some((button) => button.textContent === "Pokračovat" && !button.disabled));
           await audit(`${where} after verification`, width);
         }
-        if (block.type === "labMission" && block.missionId === "crisis-drill-model-v1") {
+        // B.1.10 and Capstone A (2.5.4) share the finished-model-drill check; walked in catalog order, 2.5.4 comes first.
+        const drillMissions = ["crisis-drill-model-v1", "capstone-a-crisis-v1"];
+        const finishedDrill = block.type === "labMission" && drillMissions.includes(block.missionId ?? "")
+          && (await sql`select 1 from mission_attempt where user_id = ${userId!} and mission_id in ${sql(drillMissions.filter((id) => id !== block.missionId))} and completed`).length > 0;
+        if (block.type === "labMission" && finishedDrill) {
+          // A drill finished for the other lesson verifies at once: neither lesson asks for a second drill.
+          await button("Ověřit misi").click();
+          await page.getByText(/^Splněno · Server ověřil dokončenou Modelovou krizi/).waitFor();
+          assert.equal(await button("Pokračovat").isEnabled(), true);
+        } else if (block.type === "labMission" && drillMissions.includes(block.missionId ?? "")) {
           const verify = button("Ověřit misi");
-          assert.equal(await button("Pokračovat").isDisabled(), true, "B.1.10 requires a finished drill");
+          assert.equal(await button("Pokračovat").isDisabled(), true, `${block.missionId} requires a finished drill`);
           await verify.click();
           // Walked after 2.5.2, the learner already has an unfinished model crisis from its mission; walked alone, none.
           const [earlier] = await sql`select 1 from training_session where user_id = ${userId!} and scenario_id = 'model-crisis-v1'`;
@@ -397,7 +414,7 @@ try {
           await verify.click();
           await page.getByText(/^Splněno · Server ověřil dokončenou Modelovou krizi\. Prodeje mimo pravidla IPS: 1\./).waitFor();
           assert.equal(await button("Pokračovat").isEnabled(), true, "a finished drill completes the mission even when the plan was broken");
-          const [attempt]: { evidence: { sellsOutsidePlan: number; planKept: boolean; months: number } }[] = await sql`select evidence from mission_attempt where user_id = ${userId!} and mission_id = 'crisis-drill-model-v1' and completed`;
+          const [attempt]: { evidence: { sellsOutsidePlan: number; planKept: boolean; months: number } }[] = await sql`select evidence from mission_attempt where user_id = ${userId!} and mission_id = ${block.missionId!} and completed`;
           assert.deepEqual({ sells: attempt.evidence.sellsOutsidePlan, kept: attempt.evidence.planKept, months: attempt.evidence.months }, { sells: 1, kept: false, months: 24 });
           await audit(`${where} after verification`, width);
         }
@@ -577,7 +594,7 @@ try {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "0" }, `${lesson.id} uses the existing XP-only policy`);
     }
-    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "etfs-selection-checklist"].includes(lesson.id)) {
+    if (["costs-ter-tracking-difference", "costs-spread-and-fees", "broker-fee-schedule", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "etfs-selection-checklist", "first-plan-capstone-a"].includes(lesson.id)) {
       const [receipt]: { xp: number; practice_capital_minor: string }[] = await sql`select xp, practice_capital_minor::text from lesson_award where user_id = ${userId} and lesson_id = ${lesson.id}`;
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "200000" }, `${lesson.id} earns the L2 Practice Capital once`);
     }

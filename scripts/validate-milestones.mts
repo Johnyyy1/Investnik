@@ -5,10 +5,11 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { eq, inArray } from "drizzle-orm";
 import { db } from "../src/db";
-import { capstoneSubmission, portfolio, portfolioTrade, progressionUnlock, user } from "../src/db/schema";
+import { capstoneSubmission, learnerArtifact, portfolio, portfolioTrade, progressionUnlock, user } from "../src/db/schema";
 import { PORTFOLIO_LAB_UNLOCK_ID } from "../src/features/progression/unlocks";
 import { buildAccountExport, readAccountExportRows, serializeAccountExport } from "../src/features/account/export";
-import { deleteLearnerArtifact, saveLearnerArtifact } from "../src/features/artifacts/repository";
+import { deleteLearnerArtifact, hasValidArtifact, saveLearnerArtifact } from "../src/features/artifacts/repository";
+import { saveOwnedArtifact } from "../src/features/artifacts/save";
 import { loadMilestones, submitCapstone } from "../src/features/milestones/repository";
 import { getCapstone } from "../src/features/milestones/registry";
 
@@ -80,7 +81,33 @@ try {
   assert.deepEqual(frozen.autoCriteria, c.autoCriteria);
   console.log("PASS: automatic criteria and artifact references are frozen in the submission.");
 
-  // Milestones stay unavailable while capstone lessons are unpublished, even with a passing submission.
+  // Lesson 2.5.4 (#198): saving its self-assessment output submits capstone A first, under the output's retry ID.
+  const learner = await identity("account");
+  const output = (level: number, requestId = randomUUID()) => ({ consent: true as const, requestId, sourceLessonId: "first-plan-capstone-a", content: { kind: "lesson_output" as const, payload: {
+    type: "rubricSelfAssessment" as const, blockId: "self-assessment", text: "Prodej mimo plán v nácviku nenastal. Do IPS doplním pravidlo pro zprávy od známých.",
+    ratings: getCapstone("capstone-a-v1")!.criteria.map((criterion) => ({ criterionId: criterion.id, level })) } } });
+  const first = output(3);
+  const saved = await Promise.all(Array.from({ length: 4 }, () => saveOwnedArtifact(learner, first)));
+  assert.equal(new Set(saved.map((artifact) => artifact.id)).size, 1);
+  const submitted = await rows(learner);
+  assert.deepEqual(submitted.map((row) => [row.capstoneId, row.version, row.requestId]), [["capstone-a-v1", 1, first.requestId]]);
+  assert.deepEqual(submitted[0].selfAssessment, { ratings: first.content.payload.ratings, reflection: first.content.payload.text });
+  assert.equal(await hasValidArtifact(db, learner, "lesson_output", "first-plan-capstone-a", "self-assessment"), true);
+  // Any level submits; a new save appends a version of both rows.
+  await saveOwnedArtifact(learner, output(1));
+  assert.deepEqual((await rows(learner)).map((row) => row.version), [1, 2]);
+  assert.equal((await db.select().from(learnerArtifact).where(eq(learnerArtifact.userId, learner))).length, 2);
+  // A refused submission saves no output, so the step stays blocked.
+  const guestLearner = await identity("guest");
+  await assert.rejects(() => saveOwnedArtifact(guestLearner, output(3)), /saved account/);
+  assert.equal((await db.select().from(learnerArtifact).where(eq(learnerArtifact.userId, guestLearner))).length, 0);
+  assert.equal((await rows(guestLearner)).length, 0);
+  // The lesson is published, so capstone A's requirement is open; a locked Lab leaves it unpassed.
+  const learnerA = (await loadMilestones(learner))[0];
+  assert.deepEqual(learnerA.requirements.find((item) => item.kind === "capstone")?.status, "open");
+  console.log("PASS: capstone A lesson output submits once per retry ID, appends versions and saves nothing when refused.");
+
+  // Milestones stay unavailable while in-scope content is unpublished, even with a passing submission.
   const states = await loadMilestones(owner);
   assert.deepEqual(states.map((state) => [state.id, state.status]), [["A", "unavailable"], ["B", "unavailable"], ["C", "unavailable"], ["D", "unavailable"]]);
   assert.equal((await loadMilestones(undefined)).length, 4);

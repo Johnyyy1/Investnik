@@ -33,8 +33,10 @@ describe("derived milestone state", () => {
     const states = milestoneStates(none);
     expect(states.map((state) => [state.id, state.status, state.achievedAt])).toEqual([["A", "unavailable", null], ["B", "unavailable", null], ["C", "unavailable", null], ["D", "unavailable", null]]);
     const a = states[0];
-    expect(a.requirements.find((item) => item.kind === "capstone")).toMatchObject({ status: "unavailable", label: capstoneA.title });
+    // Capstone A is published (#198), so its requirement is open; A stays unavailable while in-scope modules lack lessons.
+    expect(a.requirements.find((item) => item.kind === "capstone")).toMatchObject({ status: "open", label: capstoneA.title });
     expect(a.requirements.find((item) => item.kind === "lessons")?.status).toBe("unavailable");
+    expect(states[1].requirements.find((item) => item.kind === "capstone")?.status).toBe("unavailable");
     // Completed lessons still count, even though the milestone cannot be reached yet.
     const done = milestoneStates({ ...none, completions: [{ lessonId: "foundations-why-invest", completedAt: day(1) }] })[0];
     expect(done.requirements.find((item) => item.kind === "lessons")?.done).toBe(1);

@@ -186,6 +186,8 @@ export const lessonPlacements: readonly LessonPlacement[] = [
   place("first-plan-ips", "2.5", 1, "required", ["before-investing-goals", "costs-broker-comparison"], ["investment-policy"]),
   place("first-plan-automation", "2.5", 2, "required", ["first-plan-ips"], ["automation"]),
   place("first-plan-first-purchase", "2.5", 3, "required", ["first-plan-ips", "costs-spread-and-fees", "costs-currency-conversion", "foundations-markets"], ["order-review"]),
+  // Capstone A (#198). B.1.10 (#295) is stored later and cannot be a prerequisite here; the lesson's verified mission needs its finished drill instead.
+  place("first-plan-capstone-a", "2.5", 4, "required", ["first-plan-automation", "first-plan-first-purchase"], ["investment-policy", "plan-costs", "concentration", "crisis-plan-adherence"]),
   // Reserve/pension remain unpublished; recommendation prerequisites include only available lessons.
   place("before-investing-checkup", "0.1", 7, "recommended", ["before-investing-budget", "before-investing-debt", "before-investing-goals"], ["savings-rate", "debt-priorities", "inflation", "goals-and-horizon", "fraud-prevention"]),
   place("before-investing-scams", "0.1", 6, "recommended", [], ["scam-prevention"]),

@@ -3,7 +3,8 @@
 import { getCurrentUser } from "@/lib/session";
 import { logUnexpectedError } from "@/lib/server-errors";
 import { isGuestIdentity } from "@/features/guest/identity";
-import { deleteLearnerArtifact, listLearnerArtifacts, saveLearnerArtifact } from "./repository";
+import { deleteLearnerArtifact, listLearnerArtifacts } from "./repository";
+import { saveOwnedArtifact } from "./save";
 import { deleteArtifactSchema, listArtifactsSchema, saveArtifactSchema } from "./schemas";
 
 const unavailable = { ok: false as const, message: "Pro uložení výstupů si nejdřív vytvoř účet nebo se přihlas." };
@@ -21,7 +22,7 @@ export async function saveArtifact(input: unknown) {
     if (!owner || isGuestIdentity(owner)) return unavailable;
     const parsed = saveArtifactSchema.safeParse(input);
     if (!parsed.success) return { ok: false as const, message: "Zkontroluj výstup a potvrď souhlas s uložením." };
-    const artifact = await saveLearnerArtifact(owner.id, parsed.data);
+    const artifact = await saveOwnedArtifact(owner.id, parsed.data);
     return { ok: true as const, artifact };
   } catch (error) { return failed("save", error); }
 }
