@@ -125,6 +125,7 @@ export const skills = {
   "turnover": "Obrat portfolia a cena častého obchodování",
   "disposition-effect": "Prodej podle plánu, ne podle nákupní ceny",
   "myopic-loss-aversion": "Krátkozraká averze ke ztrátě a frekvence kontroly portfolia",
+  "debiasing-safeguards": "Pojistky proti vlastním chybám a pre-mortem investičního plánu",
   "order-review": "Kontrola instrumentu, pokynu a celkových nákladů před nákupem",
   "tracking-difference": "TER, rozdíl a kolísání rozdílu vůči indexu",
   "fee-schedule": "Ceník brokera: poplatek s minimem a maximem a skryté náklady",
@@ -224,6 +225,7 @@ export const lessonPlacements: readonly LessonPlacement[] = [
   place("behaviour-disposition-effect", "B.1", 3, "required", ["first-plan-ips"], ["disposition-effect"]),
   place("behaviour-loss-aversion", "B.1", 4, "required", ["behaviour-behaviour-gap"], ["myopic-loss-aversion"]),
   place("correlation-not-causation", "B.1", 8, "required", [], ["correlation-vs-causation"]),
+  place("behaviour-debiasing-tools", "B.1", 9, "required", ["behaviour-overconfidence", "behaviour-disposition-effect", "behaviour-loss-aversion"], ["debiasing-safeguards"]),
 
   place("returns-log-returns", "6.1", 1, "optional-track", ["returns-compounding"], ["log-returns"]),
   place("correlation-real-data", "6.2", 5, "optional-track", ["correlation-what-is-correlation"], ["correlation", "correlation-vs-causation", "correlation-regimes"]),
@@ -278,6 +280,7 @@ export const skillItems: readonly SkillItem[] = [
   item("behaviour-overconfidence", "recall", "turnover"),
   item("behaviour-disposition-effect", "recall", "disposition-effect"),
   item("behaviour-loss-aversion", "recall", "myopic-loss-aversion"),
+  item("behaviour-debiasing-tools", "recall", "debiasing-safeguards"),
   item("costs-ter-tracking-difference", "mastery-td", "tracking-difference"),
   item("costs-ter-tracking-difference", "mastery-ter", "tracking-difference"),
   item("broker-fee-schedule", "mastery-minimum", "fee-schedule"),

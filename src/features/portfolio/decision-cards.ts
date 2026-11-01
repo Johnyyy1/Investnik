@@ -1,5 +1,6 @@
 import { OVERFITTING_NOTICE_AT } from "@/features/backtesting/attempts";
 import { ipsSchema } from "@/features/ips/schema";
+import { SAFEGUARD_SET_BLOCK_ID, SAFEGUARD_SET_LESSON_ID, safeguardSet } from "@/features/lessons/investor-behaviour/safeguard-set";
 import type { TradeSide } from "./domain";
 
 /** Decision-time cards: deterministic rules over a planned action. A card informs and never blocks it. */
@@ -65,8 +66,27 @@ export function backtestDecisionCards(attemptsForGoal: number): DecisionCardKind
   return attemptsForGoal >= OVERFITTING_NOTICE_AT ? ["overfitting"] : [];
 }
 
-/** A learner-written rule from the saved safeguards output (#127). */
-export interface Safeguard { trigger: string; action: string }
+/** A learner-written rule from the saved safeguards output (#127). `cards` limits a lesson rule to the cards it belongs to. */
+export interface Safeguard { trigger: string; action: string; cards?: DecisionCardKind[] }
+
+/**
+ * Rules for the cards: the learner's own safeguards document, then the B.1.9 set they checked and saved.
+ * Unknown IDs (a malformed or legacy row) are skipped rather than failing the trade review.
+ */
+export function savedSafeguards(rules: readonly { trigger: string; action: string }[], lessonOutputs: readonly unknown[]): Safeguard[] {
+  const set = lessonOutputs.find((output): output is { sourceLessonId: string; payload: { type: "checklist"; blockId: string; checkedItemIds: string[] } } => {
+    const candidate = output as { kind?: string; sourceLessonId?: string; payload?: { type?: string; blockId?: string; checkedItemIds?: unknown } };
+    return candidate.kind === "lesson_output" && candidate.sourceLessonId === SAFEGUARD_SET_LESSON_ID && candidate.payload?.type === "checklist"
+      && candidate.payload.blockId === SAFEGUARD_SET_BLOCK_ID && Array.isArray(candidate.payload.checkedItemIds);
+  });
+  const checked = set ? safeguardSet.filter(({ id }) => set.payload.checkedItemIds.includes(id)) : [];
+  return [...rules.map(({ trigger, action }) => ({ trigger, action })), ...checked.map(({ trigger, action, cards }) => ({ trigger, action, cards: [...cards] }))];
+}
+
+/** The rules shown on one card: every own rule, and lesson rules that belong to this kind. */
+export function safeguardsForCard(kind: DecisionCardKind, safeguards: readonly Safeguard[]): Safeguard[] {
+  return safeguards.filter((rule) => !rule.cards || rule.cards.includes(kind));
+}
 
 export interface DecisionCardPreferences { disabled: DecisionCardKind[]; shownAt: Partial<Record<DecisionCardKind, number>> }
 export const DECISION_CARD_PREFERENCES_KEY = "investi:decision-cards:v1";

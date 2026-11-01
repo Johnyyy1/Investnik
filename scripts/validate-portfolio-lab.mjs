@@ -445,11 +445,15 @@ try {
   await etfOrder.getByRole("heading", { name: "Zvol množství", exact: true }).waitFor();
   await etfOrder.getByLabel("Množství", { exact: true }).fill("0.2");
   await sql`insert into learner_artifact (id,user_id,kind,version,payload,request_id) values (${randomUUID()},${userId},'safeguards',1,${sql.json({ rules: [{ trigger: "Nákup mimo plán", action: "Zapíšu si důvod a počkám do dalšího dne." }] })},${randomUUID()})`;
+  // The B.1.9 safeguard set (#294): checked rules join the card they belong to, and only that card.
+  await sql`insert into learner_artifact (id,user_id,kind,version,payload,source_lesson_id,request_id) values (${randomUUID()},${userId},'lesson_output',1,${sql.json({ type: "checklist", blockId: "safeguard-set", checkedItemIds: ["plan", "rebalance"] })},'behaviour-debiasing-tools',${randomUUID()})`;
   await etfOrder.getByRole("button", { name: "Zkontrolovat pokyn", exact: true }).click();
   // Decision-time card: the plan names only AAPL. The card informs, links a published lesson and never blocks.
   const planCard = etfOrder.getByRole("note", { name: "Tento nákup není ve tvém plánu" });
   await planCard.waitFor();
   assert.match(clean(await planCard.innerText()), /Nákup mimo plán: Zapíšu si důvod/, "the card shows the learner's saved safeguards");
+  assert.match(clean(await planCard.innerText()), /Propad trhu nebo chuť změnit plán: Držím se IPS/, "the card shows the matching rule of the saved B.1.9 set");
+  assert.doesNotMatch(clean(await planCard.innerText()), /Prodávám podle cílové alokace/, "a sell rule stays off the buy card");
   assert.equal(await planCard.getByRole("link", { name: "Lekce: Cíle a investiční horizont" }).getAttribute("href"), "/learn/before-investing/goals-and-horizon");
   assert.equal(await etfOrder.getByRole("note").count(), 1, "at most one card per action");
   await page.setViewportSize({ width: 320, height: 900 });

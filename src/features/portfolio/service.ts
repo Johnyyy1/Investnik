@@ -24,7 +24,7 @@ import {
   type ValuationUnavailableReason,
 } from "./market-data";
 import { getOrCreateActivePortfolio, loadLatestAllocation, loadLedgerRows, loadPortfolioRows, readBrokerFeeProfile, type AllocationLineRow } from "./repository";
-import { tradeDecisionCards } from "./decision-cards";
+import { savedSafeguards, tradeDecisionCards } from "./decision-cards";
 
 /** Sector or country split of the whole portfolio; "unvalued" while any quote or FX is missing. */
 export type PortfolioExposureView =
@@ -345,8 +345,8 @@ export async function loadAllocationQuotes(instrumentIds: readonly string[]): Pr
 
 /** Server-evaluated decision cards for a reviewed trade, with the learner's saved safeguards. */
 export async function loadTradeDecisionCards(userId: string, input: { instrumentId: string; side: TradeSide }) {
-  const [rows, plans, safeguards] = await Promise.all([
-    loadPortfolioRows(userId), listLearnerArtifacts(userId, "investment_plan"), listLearnerArtifacts(userId, "safeguards"),
+  const [rows, plans, safeguards, outputs] = await Promise.all([
+    loadPortfolioRows(userId), listLearnerArtifacts(userId, "investment_plan"), listLearnerArtifacts(userId, "safeguards"), listLearnerArtifacts(userId, "lesson_output"),
   ]);
   const baseCurrency = rows.portfolio.baseCurrency as Currency;
   const folded = foldTrades(rows.earnedPracticeCapitalMinor, rows.trades);
@@ -358,6 +358,6 @@ export async function loadTradeDecisionCards(userId: string, input: { instrument
       ...input, now: rows.readAt, trades: rows.trades, ips: plans[0]?.payload,
       holdings: valuePortfolio(rows.earnedPracticeCapitalMinor, folded, valuations).holdings,
     }),
-    safeguards: rules.map(({ trigger, action }) => ({ trigger, action })),
+    safeguards: savedSafeguards(rules, outputs),
   };
 }
