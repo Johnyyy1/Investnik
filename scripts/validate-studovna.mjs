@@ -37,7 +37,7 @@ async function layouts(state, capture = true) {
     // Derived milestones (#126): the 2.4 draft and capstones B–D are unpublished, so none is achievable, whatever was completed.
     assert.deepEqual(await map.locator("[data-milestone]").evaluateAll((items) => items.map((item) => [item.dataset.milestone, item.dataset.status])),
       [["A", "unavailable"], ["B", "unavailable"], ["C", "unavailable"], ["D", "unavailable"]], "milestones are derived and never claimed early");
-    assert.match(await map.getByRole("list", { name: "Požadavky milníku A" }).innerText(), /Lekce: připravujeme[\s\S]*Dovednosti na úrovni Zvládnuté: \d+ z \d+[\s\S]*Závěrečný projekt A: plán, nákup a krizový nácvik: připravujeme/);
+    assert.match(await map.getByRole("list", { name: "Požadavky milníku A" }).innerText(), /Lekce: připravujeme[\s\S]*Dovednosti na úrovni Zvládnuté: \d+ z \d+[\s\S]*Závěrečný projekt A: plán, nákup a krizový nácvik: zatím ne/);
     assert.equal(await page.locator("h1:visible").count(), 1);
     assert.equal(await page.locator("#main-content").count(), 1);
     assert.ok(await page.locator("main img").evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0)), "illustration loads");
