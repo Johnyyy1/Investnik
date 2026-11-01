@@ -50,6 +50,17 @@ for (const lesson of mode === "first-return" ? lessons.slice(0, 1) : lessons) {
     content: { kind: "lesson_output", payload: { type: "checklist", blockId: "checklist", checkedItemIds: lesson.id === "behaviour-overconfidence" ? ["ips", "cost"] : ["target"] } },
     sourceLessonId: lesson.id, consent: true, requestId: randomUUID(),
   });
+  // Lesson B.1.9 completes only with its saved pre-mortem (any self-rating counts) and safeguard set.
+  if (lesson.id === "behaviour-debiasing-tools") {
+    await saveLearnerArtifact(id!, {
+      content: { kind: "lesson_output", payload: { type: "rubricSelfAssessment", blockId: "premortem-output", text: "Při propadu prodám. Úprava: pravidlo pro propad v IPS.", ratings: ["reasons", "adjustments", "control"].map((criterionId) => ({ criterionId, level: 1 })) } },
+      sourceLessonId: lesson.id, consent: true, requestId: randomUUID(),
+    });
+    await saveLearnerArtifact(id!, {
+      content: { kind: "lesson_output", payload: { type: "checklist", blockId: "safeguard-set", checkedItemIds: ["plan", "rebalance"] } },
+      sourceLessonId: lesson.id, consent: true, requestId: randomUUID(),
+    });
+  }
   await sql`insert into lesson_progress (user_id, lesson_id, status, last_position, updated_at) values (${id!}, ${lesson.id}, 'in_progress', ${lessonSteps(lesson.id).length - 1}, now()) on conflict (user_id, lesson_id) do update set last_position = excluded.last_position`;
   if (lesson.id === "first-plan-first-purchase") {
     await prepareFirstPurchase(sql, id!);

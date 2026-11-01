@@ -5,7 +5,7 @@ Issue: [#295](https://github.com/Johnyyy1/Investnik/issues/295). Editorial/conte
 | Brief | Implementation |
 | --- | --- |
 | Identity | `behaviour-crisis-drill`, storage module `module-investor-behaviour` (slug `investor-behaviour`), `/learn/investor-behaviour/crisis-drill` (as proposed in the brief) |
-| Placement | Level B, module B.1, code B.1.10 (already listed in milestone A), required; prerequisite `first-plan-ips` (2.5.1, #195); new skill `crisis-plan-adherence` |
+| Placement | Level B, module B.1, code B.1.10 (already listed in milestone A), required; prerequisites `first-plan-ips` (2.5.1, #195) and `behaviour-debiasing-tools` (B.1.9, #294); new skill `crisis-plan-adherence` |
 | Outcome | Go through a −30 % crisis with the learner's own IPS, compare the decisions with its rules, revise the IPS from the experience |
 | Inputs | The existing isolated Krizový nácvik (#139), scenario `model-crisis-v1`: 24 simulated months, −30 % in six months, back to the start after ten more, slow rise. The session freezes the latest saved IPS (contribution, invested target, rebalancing, drawdown rule) |
 | Assessment | Prediction question (process vs outcome), persona decision under pressure (friend's message, month 5), verified Lab mission, worked + faded example of the allocation deviation, interpretation question, one mastery item on the band rule, optional IPS revision, optional reflection checklist, written reflection |
@@ -24,7 +24,6 @@ The server reads only the learner's append-only training log. The mission comple
 - **News and "a friend's voice" live in the lesson, not in the Lab.** The Lab shows its existing neutral monthly headline; the pressure is a `personaDecision` in month 5 with a fictional friend's message. Adding pressure messages to the Lab is a separate Lab change.
 - **Reflection (PLATFORM-04) as MVP.** Prepared reflections are an optional `checklist` (saved with consent, never blocking); the free text is the existing unsaved `writtenReflection`. A stored, required reflection would need `rubricSelfAssessment`, which guests cannot save; left as a follow-up.
 - **IPS revision is optional.** The step requires a saved IPS (always present after the drill) and lets the learner confirm or save a new version; it does not force a new revision.
-- **Prerequisite #294 (B.1.9) is not wired yet.** That lesson is in open PR #452 and not on `main`; add `behaviour-debiasing…` (its final ID) as a prerequisite once it merges.
 
 ## Sources checked
 

@@ -13,4 +13,10 @@ describe("DecisionCard", () => {
     expect(html).toContain("Tento typ karty už nezobrazovat");
     expect(renderToStaticMarkup(createElement(DecisionCard, { kind: "turnover", onDisable: () => {} }))).not.toContain("Tvoje pojistky");
   });
+
+  it("shows a lesson safeguard (B.1.9) only on the cards it belongs to", () => {
+    const safeguards = [{ trigger: "Prodej", action: "Prodávám podle cílové alokace.", cards: ["disposition" as const] }];
+    expect(renderToStaticMarkup(createElement(DecisionCard, { kind: "disposition", safeguards, onDisable: () => {} }))).toContain("Prodej: Prodávám podle cílové alokace.");
+    expect(renderToStaticMarkup(createElement(DecisionCard, { kind: "turnover", safeguards, onDisable: () => {} }))).not.toContain("Tvoje pojistky");
+  });
 });

@@ -24,7 +24,7 @@ describe("Krizový nácvik −30 % s vlastním plánem · B.1.10 (#295)", () => 
   it("publishes its stable identity as B.1.10 of milestone A, without expanding the Lab prerequisites or rewards", () => {
     expect(availableLessons.find((entry) => entry.id === lesson.id)).toMatchObject({ id: "behaviour-crisis-drill", moduleId: "module-investor-behaviour", moduleSlug: "investor-behaviour", slug: "crisis-drill" });
     expect(lessonLink(lesson.id)?.href).toBe("/learn/investor-behaviour/crisis-drill");
-    expect(getLessonPlacement(lesson.id)).toMatchObject({ displayCode: "B.1.10", required: "required", prerequisites: ["first-plan-ips"] });
+    expect(getLessonPlacement(lesson.id)).toMatchObject({ displayCode: "B.1.10", required: "required", prerequisites: ["first-plan-ips", "behaviour-debiasing-tools"] });
     expect(milestoneRules.find((milestone) => milestone.id === "A")!.lessonCodes).toContain("B.1.10");
     expect(progressionUnlocks.PORTFOLIO_LAB.prerequisiteLessonIds).not.toContain(lesson.id);
     expect(skillItems.filter((item) => item.lessonId === lesson.id).map((item) => item.blockId)).toEqual(["recall"]);
