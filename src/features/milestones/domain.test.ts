@@ -44,9 +44,9 @@ describe("derived milestone state", () => {
   it("leaves drafts and modules with only drafts out of the scope", () => {
     const a = milestoneStates(none)[0];
     const ids = a.lessons.map((lesson) => lesson.id);
-    // 1.1.10 and 2.1.1 sit beside published lessons; 2.4 holds nothing else.
-    for (const draft of ["foundations-checkpoint", "broker-platform-types", "taxes-filing-obligation"]) expect(ids).not.toContain(draft);
-    expect(ids).toEqual(expect.arrayContaining(["foundations-why-invest", "broker-fee-schedule", "first-plan-capstone-a", "behaviour-crisis-drill"]));
+    // 2.1.1 sits beside published lessons; 2.4 holds nothing else.
+    for (const draft of ["broker-platform-types", "taxes-filing-obligation"]) expect(ids).not.toContain(draft);
+    expect(ids).toEqual(expect.arrayContaining(["foundations-why-invest", "foundations-checkpoint", "broker-fee-schedule", "first-plan-capstone-a", "behaviour-crisis-drill"]));
     expect(new Set(ids).size).toBe(ids.length);
     expect(a.lessons.every((lesson) => availableLessons.some((available) => available.id === lesson.id))).toBe(true);
 
