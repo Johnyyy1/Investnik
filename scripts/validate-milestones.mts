@@ -1,17 +1,24 @@
-// Capstone submissions (#126) on a disposable local database: append-only versions, request idempotency under
-// concurrency, server-owned and frozen automatic criteria, the locked-Lab guard, guests, export and cascade.
+// Capstone submissions (#126) and first milestone achievements (#456) on a disposable local database: append-only
+// versions, request idempotency under concurrency, server-owned and frozen automatic criteria, the locked-Lab guard,
+// guests, export and cascade.
 import "dotenv/config";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../src/db";
-import { capstoneSubmission, learnerArtifact, portfolio, portfolioTrade, progressionUnlock, user } from "../src/db/schema";
+import { capstoneSubmission, learnerArtifact, lessonAward, lessonProgress, milestoneAchievement, portfolio, portfolioTrade, progressionUnlock, skillAttempt, user } from "../src/db/schema";
 import { PORTFOLIO_LAB_UNLOCK_ID } from "../src/features/progression/unlocks";
 import { buildAccountExport, readAccountExportRows, serializeAccountExport } from "../src/features/account/export";
 import { deleteLearnerArtifact, hasValidArtifact, saveLearnerArtifact } from "../src/features/artifacts/repository";
 import { saveOwnedArtifact } from "../src/features/artifacts/save";
 import { loadMilestones, submitCapstone } from "../src/features/milestones/repository";
 import { getCapstone } from "../src/features/milestones/registry";
+import { crisisPlanCheck, diversifiedCoreCheck, ipsAlignmentCheck } from "../src/features/milestones/criteria";
+import { getSkillItem, moduleSkills } from "../src/features/mastery/domain";
+import { recordSkillAttempt } from "../src/features/mastery/repository";
+import { skillItems } from "../src/features/learning/curriculum";
+import { lessonSteps } from "../src/features/progress/transition";
+import { completeLesson } from "../src/features/progress/repository";
 
 assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(new URL(process.env.DATABASE_URL!).hostname), "Requires a disposable local DB.");
 assert.equal(process.env.MILESTONES_QA_DISPOSABLE, "1");
@@ -107,11 +114,92 @@ try {
   assert.deepEqual(learnerA.requirements.find((item) => item.kind === "capstone")?.status, "open");
   console.log("PASS: capstone A lesson output submits once per retry ID, appends versions and saves nothing when refused.");
 
-  // Milestones stay unavailable while in-scope content is unpublished, even with a passing submission.
+  // A counts published lessons (#456); the others stay unavailable while their capstone lesson is unpublished, even with a passing submission.
   const states = await loadMilestones(owner);
-  assert.deepEqual(states.map((state) => [state.id, state.status]), [["A", "unavailable"], ["B", "unavailable"], ["C", "unavailable"], ["D", "unavailable"]]);
+  assert.deepEqual(states.map((state) => [state.id, state.status]), [["A", "open"], ["B", "unavailable"], ["C", "unavailable"], ["D", "unavailable"]]);
   assert.equal((await loadMilestones(undefined)).length, 4);
   console.log("PASS: derived milestone states load and never claim unpublished milestones.");
+
+  // First achievement (#456). Evidence is written directly except the final step each case exercises.
+  const reachedA = (await loadMilestones(undefined))[0];
+  const skillsA = [...new Set(skillItems.map((item) => item.skillId))];
+  const achievements = (userId: string) => db.select().from(milestoneAchievement).where(eq(milestoneAchievement.userId, userId));
+  const firstDay = new Date(Date.UTC(2026, 9, 1, 10));
+  async function seed(userId: string, { skipLesson, skipSkill }: { skipLesson?: string; skipSkill?: string } = {}) {
+    await db.insert(lessonProgress).values(reachedA.lessons.filter((lesson) => lesson.id !== skipLesson).map((lesson) => ({ userId, lessonId: lesson.id, status: "completed" as const, lastPosition: 0, completedAt: firstDay, updatedAt: firstDay })));
+    await db.insert(skillAttempt).values(skillsA.filter((skillId) => skillId !== skipSkill).map((skillId) => ({ userId, requestId: randomUUID(), skillId, itemId: skillItems.find((item) => item.skillId === skillId)!.id, correct: true, context: "checkpoint" as const, attemptedAt: firstDay })));
+    await db.insert(capstoneSubmission).values({ id: randomUUID(), userId, capstoneId: "capstone-a-v1", version: 1, requestId: randomUUID(), artifactRefs: {}, submittedAt: firstDay, selfAssessment: rated("capstone-a-v1"), autoCriteria: {
+      "ips-alignment": ipsAlignmentCheck({ value: "100", threshold: null, status: "information", lines: [] }),
+      diversification: diversifiedCoreCheck({ valuationComplete: true, holdings: [{ assetType: "etf", portfolioWeightBasisPoints: "9000" }] }),
+      crisis: crisisPlanCheck({ finished: true, sellsOutsidePlan: 0 }) } });
+  }
+
+  // The checkpoint answer that completes A records it once, also when it races other answers and page reads.
+  const bySkill = await identity("account");
+  const lastSkill = moduleSkills("1.1")[0];
+  await seed(bySkill, { skipSkill: lastSkill });
+  assert.deepEqual((await loadMilestones(bySkill))[0].status, "open");
+  assert.equal((await achievements(bySkill)).length, 0, "an open milestone has no record");
+  const lastItem = getSkillItem(skillItems.find((item) => item.skillId === lastSkill)!.id)!;
+  await recordSkillAttempt(bySkill, { requestId: randomUUID(), item: lastItem, correct: false, mode: "checkpoint" });
+  assert.equal((await achievements(bySkill)).length, 0, "a wrong answer records nothing");
+  const answeredAt = new Date(Date.UTC(2026, 9, 5, 10));
+  await Promise.all([
+    ...Array.from({ length: 5 }, () => recordSkillAttempt(bySkill, { requestId: randomUUID(), item: lastItem, correct: true, mode: "checkpoint", now: answeredAt })),
+    ...Array.from({ length: 5 }, () => loadMilestones(bySkill)),
+  ]);
+  const [recorded, ...extraRows] = await achievements(bySkill);
+  assert.equal(extraRows.length, 0);
+  assert.deepEqual([recorded.milestoneId, recorded.scopeVersion, recorded.achievedAt.getTime()], ["A", reachedA.scopeVersion, answeredAt.getTime()]);
+  console.log("PASS: racing checkpoint answers and page reads store one record, dated by the evidence, with the scope version.");
+
+  // A record grants nothing; reopening keeps it. Dropping a completion stands in for a newly published required lesson.
+  assert.equal((await db.select().from(lessonAward).where(eq(lessonAward.userId, bySkill))).length, 0);
+  assert.equal((await db.select().from(progressionUnlock).where(eq(progressionUnlock.userId, bySkill))).length, 0);
+  assert.equal((await db.select().from(portfolio).where(eq(portfolio.userId, bySkill))).length, 0);
+  await db.delete(lessonProgress).where(and(eq(lessonProgress.userId, bySkill), eq(lessonProgress.lessonId, reachedA.lessons[0].id)));
+  assert.equal((await loadMilestones(bySkill))[0].status, "open");
+  assert.deepEqual(await achievements(bySkill), [recorded]);
+  // Reaching it again never moves the first record.
+  await db.insert(lessonProgress).values({ userId: bySkill, lessonId: reachedA.lessons[0].id, status: "completed", lastPosition: 0, completedAt: new Date(), updatedAt: new Date() });
+  assert.equal((await loadMilestones(bySkill))[0].status, "achieved");
+  assert.deepEqual(await achievements(bySkill), [recorded]);
+  console.log("PASS: a record grants nothing, survives reopening and never moves when the milestone is reached again.");
+
+  // Evidence that predates the table is recorded on the next page read, once.
+  const byRead = await identity("account");
+  await seed(byRead);
+  assert.equal((await achievements(byRead)).length, 0);
+  await Promise.all(Array.from({ length: 6 }, () => loadMilestones(byRead)));
+  assert.deepEqual((await achievements(byRead)).map((row) => [row.milestoneId, row.achievedAt.getTime()]), [["A", firstDay.getTime()]]);
+  console.log("PASS: concurrent page reads backfill one record.");
+
+  // A first lesson completion records in its own transaction; a repeated completion changes nothing.
+  const byLesson = await identity("account");
+  const lastLesson = "foundations-why-invest";
+  await seed(byLesson, { skipLesson: lastLesson });
+  await db.insert(lessonProgress).values({ userId: byLesson, lessonId: lastLesson, status: "in_progress", lastPosition: lessonSteps(lastLesson).length - 1, updatedAt: firstDay });
+  await Promise.all(Array.from({ length: 3 }, () => completeLesson(byLesson, lastLesson)));
+  const [viaLesson] = await achievements(byLesson);
+  assert.equal(viaLesson.milestoneId, "A");
+  assert.equal(viaLesson.achievedAt.getTime(), (await db.select().from(lessonProgress).where(and(eq(lessonProgress.userId, byLesson), eq(lessonProgress.lessonId, lastLesson))))[0].completedAt!.getTime());
+  assert.equal((await db.select().from(lessonAward).where(eq(lessonAward.userId, byLesson))).length, 1, "the milestone adds no reward receipt");
+  console.log("PASS: the completing lesson records milestone A within its transaction.");
+
+  // A capstone that does not pass records nothing, even with every other requirement met.
+  const byCapstone = await identity("account");
+  await seed(byCapstone);
+  await db.delete(capstoneSubmission).where(eq(capstoneSubmission.userId, byCapstone));
+  await submitCapstone(byCapstone, { capstoneId: "capstone-a-v1", requestId: randomUUID(), selfAssessment: rated("capstone-a-v1", 4) });
+  assert.equal((await achievements(byCapstone)).length, 0);
+  console.log("PASS: a capstone that does not pass records nothing.");
+
+  const achievementExport = JSON.parse(serializeAccountExport(buildAccountExport((await readAccountExportRows(db, bySkill))!)));
+  assert.deepEqual(achievementExport.milestoneAchievements, [{ milestoneId: "A", scopeVersion: recorded.scopeVersion, achievedAt: recorded.achievedAt.toISOString() }]);
+  await db.delete(user).where(eq(user.id, bySkill));
+  assert.equal((await achievements(bySkill)).length, 0);
+  assert.equal((await achievements(byRead)).length, 1);
+  console.log("PASS: the record is exported and cascades with its account only.");
 
   const guest = await identity("guest");
   await assert.rejects(() => submitCapstone(guest, { capstoneId: "capstone-d-v1", requestId: randomUUID(), selfAssessment: rated("capstone-d-v1") }), /saved account/);

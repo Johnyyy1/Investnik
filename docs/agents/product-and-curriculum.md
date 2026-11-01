@@ -53,7 +53,7 @@ Milestones:
 - C — "Samostatný analytik akcií": B + levels 4–5 and a documented analysis/valuation/thesis capstone.
 - D — "Kvantitativní investor": B + level 6. C is not a prerequisite for D.
 
-Do not mark milestone A complete before its practical and crisis outcomes exist, even if foundational content ships in an earlier phase.
+Milestones count published content only (founder decision 2026-11-01, #456): drafts in scope do not block, and tax and regulatory lessons extend milestone A when they are published after expert review. Do not mark milestone A complete before its practical and crisis outcomes exist: its capstone stays required. See [docs/milestones.md](../milestones.md).
 
 Curriculum continuity
 

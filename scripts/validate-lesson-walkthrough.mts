@@ -25,6 +25,9 @@ import { defaultFeeProfileDraft, feeProfileFromDraft } from "../src/features/les
 import { artifactExamples } from "../src/features/artifacts/test-fixtures";
 import { prepareFirstPurchase } from "./first-purchase-fixtures";
 import { exampleIps } from "../src/features/ips/test-fixtures";
+import { skillItems } from "../src/features/learning/curriculum";
+import { crisisPlanCheck, diversifiedCoreCheck, ipsAlignmentCheck } from "../src/features/milestones/criteria";
+import { getCapstone } from "../src/features/milestones/registry";
 
 const baseURL = process.env.WALKTHROUGH_TEST_URL ?? "http://localhost:3187";
 const screenshots = process.env.WALKTHROUGH_SCREENSHOT_DIR ?? "test-results/lesson-walkthrough";
@@ -599,6 +602,35 @@ try {
       assert.deepEqual({ ...receipt }, { xp: 60, practice_capital_minor: "200000" }, `${lesson.id} earns the L2 Practice Capital once`);
     }
     console.log(`✓ ${lesson.id} (${lesson.steps.length} steps at ${width}px)`);
+  }
+  if (!requested) {
+    // Milestone A from published content (#456). The lessons above were really walked; the walked drill broke the plan
+    // and the capstone was rated at level 1, so the passing capstone and checkpoint evidence are seeded here.
+    where = "milestone A";
+    const milestoneA = page.locator('[data-milestone="A"]');
+    await page.goto(`${baseURL}/learn`);
+    assert.equal(await milestoneA.getAttribute("data-status"), "open");
+    const lessonsText = await milestoneA.getByRole("list", { name: "Požadavky milníku A" }).innerText();
+    const [, doneLessons, totalLessons] = lessonsText.match(/Lekce: (\d+) z (\d+)/)!;
+    assert.equal(doneLessons, totalLessons, "every published lesson in scope was completed by the walk");
+    assert.equal((await sql`select 1 from milestone_achievement where user_id = ${userId!}`).length, 0, "not achieved before skills and a passing capstone");
+    for (const { skillId, id } of skillItems) await sql`insert into skill_attempt (user_id, request_id, skill_id, item_id, correct, context, attempted_at) values (${userId!}, ${randomUUID()}, ${skillId}, ${id}, true, 'checkpoint', now()) on conflict do nothing`;
+    const capstone = getCapstone("capstone-a-v1")!;
+    await sql`insert into capstone_submission (id, user_id, capstone_id, version, request_id, artifact_refs, auto_criteria, self_assessment) values (${randomUUID()}, ${userId!}, ${capstone.id}, 99, ${randomUUID()}, ${"{}"}::jsonb, ${JSON.stringify({
+      "ips-alignment": ipsAlignmentCheck({ value: "100", threshold: null, status: "information", lines: [] }),
+      diversification: diversifiedCoreCheck({ valuationComplete: true, holdings: [{ assetType: "etf", portfolioWeightBasisPoints: "9000" }] }),
+      crisis: crisisPlanCheck({ finished: true, sellsOutsidePlan: 0 }),
+    })}::jsonb, ${JSON.stringify({ ratings: capstone.criteria.map((criterion) => ({ criterionId: criterion.id, level: 3 })), reflection: "Držel/a jsem se plánu." })}::jsonb)`;
+    const awardsBefore: unknown = await sql`select * from lesson_award where user_id = ${userId!} order by lesson_id`;
+    await page.reload();
+    assert.equal(await milestoneA.getAttribute("data-status"), "achieved");
+    const [row]: { scope_version: string }[] = await sql`select scope_version from milestone_achievement where user_id = ${userId!} and milestone_id = 'A'`;
+    assert.match(row.scope_version, /^[0-9a-f]{16}$/);
+    assert.deepEqual(await sql`select * from lesson_award where user_id = ${userId!} order by lesson_id`, awardsBefore, "the milestone grants nothing");
+    await page.goto(`${baseURL}/progress`);
+    assert.equal(await milestoneA.getAttribute("data-status"), "achieved");
+    await audit(where, 1440);
+    console.log("✓ milestone A achieved from published lessons and recorded once");
   }
   assert.deepEqual(errors, [], "no browser or hydration errors");
   console.log(`Lesson walkthrough: ${lessons.length} published lessons answered wrong then right, resumed, completed with one receipt; no overflow at 1440/390/320 px and no serious axe findings.`);

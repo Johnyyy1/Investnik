@@ -60,7 +60,7 @@ export function PenLanding() {
           <p className={styles.eyebrow}>LEARN INVESTING BY DOING</p>
           <h1 id="hero-title" data-hero-title>Nejdřív plán.<br/><span>Pak investice.</span></h1>
           <div className={styles.heroIntro} data-hero-intro>
-            <p data-hero-sub>Připrav se na první investici a vydrž u svého plánu. Projdeš rozpočet a rezervu, výběr brokera, náklady a daně a sestavíš vlastní investiční plán, který si vyzkoušíš v modelové krizi. Bez skutečných peněz.</p>
+            <p data-hero-sub>Připrav se na první investici a vydrž u svého plánu. Projdeš rozpočet, drahý dluh a náklady investování a sestavíš vlastní investiční plán, který si vyzkoušíš v modelové krizi. Bez skutečných peněz.</p>
             <div className={styles.heroActions} data-hero-actions>
               <Link className={`${styles.primaryButton} ${styles.shimmerHost}`} href="/onboarding" prefetch={false} data-lift data-press {...magneticProps}>Začít vstupním testem <ArrowRight aria-hidden="true" size={19}/><span className={styles.shimmer} data-shimmer aria-hidden="true"/></Link>
               <a className={styles.textAction} href="#jak-to-funguje">Jak to funguje</a>
@@ -96,7 +96,7 @@ export function PenLanding() {
                   <small data-row-status>{status}</small>
                 </li>)}
               </ul>
-              <p>Milník „Připraven/a začít“ půjde splnit, až vyjdou zbývající praktické lekce úrovně 2.</p>
+              <p>Milník „Připraven/a začít“ se počítá z lekcí, které už vyšly. Daně ani výběr brokera zatím nezahrnuje.</p>
             </div>
           </div>
           <div className={styles.threeSteps} data-steps><span className={styles.stepsLine} data-steps-line aria-hidden="true"/>{[["01","Rozhodni se","Modelová situace s dluhem, rezervou nebo poplatkem. Nejdřív zvolíš ty."],["02","Pochop důsledek","Vysvětlení ukáže proč, ne jen co je správně."],["03","Odnes si výstup","Check-up, mapu cílů nebo plán, ke kterému se vrátíš."]].map(([num,title,description])=><div key={num} data-step><span data-step-num>{num}</span><h3>{title}</h3><p>{description}</p></div>)}</div>

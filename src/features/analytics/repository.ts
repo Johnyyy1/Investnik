@@ -3,7 +3,7 @@ import { acquisitionSource } from "./acquisition";
 import { sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
-  analyticsAcquisitionDay, analyticsEarlyReturn, analyticsLandingViewDay, learnerArtifact, learningProfile, lessonAward, lessonProgress, portfolio, portfolioTrade, user,
+  analyticsAcquisitionDay, analyticsEarlyReturn, analyticsLandingViewDay, learnerArtifact, learningProfile, lessonAward, lessonProgress, milestoneAchievement, portfolio, portfolioTrade, user,
 } from "@/db/schema";
 import { analyticsDate, isEarlyReturnDay, type LearnerFacts, type LessonProgressFact } from "./funnel";
 
@@ -48,17 +48,19 @@ const toDate = (value: Date | string | null) => value === null ? null : new Date
  */
 export async function loadFunnelFacts(database: Database) {
   const [learners, progress, visits, acquisition] = await Promise.all([
-    database.execute<{ key: string; guest: boolean; started_at: string; diagnostic_at: string | null; first_lesson_at: string | null; first_artifact_at: string | null; first_lab_trade_at: string | null; returned_at: string | null }>(sql`
+    database.execute<{ key: string; guest: boolean; started_at: string; diagnostic_at: string | null; first_lesson_at: string | null; first_artifact_at: string | null; first_lab_trade_at: string | null; returned_at: string | null; milestone_a_at: string | null; milestone_a_scope: string | null }>(sql`
       select ${user.id} as key, ${user.isAnonymous} as guest, ${user.createdAt} as started_at,
         case when ${learningProfile.diagnosticResult} is not null then ${learningProfile.personalizedOnboardingCompletedAt} end as diagnostic_at,
         (select min(${lessonAward.awardedAt}) from ${lessonAward} where ${lessonAward.userId} = ${user.id}) as first_lesson_at,
         (select min(${learnerArtifact.createdAt}) from ${learnerArtifact} where ${learnerArtifact.userId} = ${user.id}) as first_artifact_at,
         (select min(${portfolioTrade.executedAt}) from ${portfolioTrade} join ${portfolio} on ${portfolio.id} = ${portfolioTrade.portfolioId}
           where ${portfolio.userId} = ${user.id}) as first_lab_trade_at,
-        ${analyticsEarlyReturn.returnedAt} as returned_at
+        ${analyticsEarlyReturn.returnedAt} as returned_at,
+        ${milestoneAchievement.achievedAt} as milestone_a_at, ${milestoneAchievement.scopeVersion} as milestone_a_scope
       from ${user}
       left join ${learningProfile} on ${learningProfile.userId} = ${user.id}
       left join ${analyticsEarlyReturn} on ${analyticsEarlyReturn.userId} = ${user.id}
+      left join ${milestoneAchievement} on ${milestoneAchievement.userId} = ${user.id} and ${milestoneAchievement.milestoneId} = 'A'
       where ${isLearner}`),
     database.execute<{ key: string; lesson_id: string; completed_at: string | null; updated_at: string }>(sql`
       select ${lessonProgress.userId} as key, ${lessonProgress.lessonId} as lesson_id, ${lessonProgress.completedAt} as completed_at, ${lessonProgress.updatedAt} as updated_at
@@ -77,6 +79,8 @@ export async function loadFunnelFacts(database: Database) {
       firstArtifactAt: toDate(row.first_artifact_at),
       firstLabTradeAt: toDate(row.first_lab_trade_at),
       returnedAt: toDate(row.returned_at),
+      milestoneAAt: toDate(row.milestone_a_at),
+      milestoneAScopeVersion: row.milestone_a_scope,
     })),
     progress: [...progress].map((row): LessonProgressFact => ({ key: row.key, lessonId: row.lesson_id, completedAt: toDate(row.completed_at), updatedAt: new Date(row.updated_at) })),
     acquisition: [...acquisition].map((row) => ({ day: row.day, source: row.source, views: Number(row.views) })),

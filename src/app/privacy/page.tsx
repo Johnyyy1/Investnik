@@ -21,7 +21,7 @@ const sections: readonly LegalSection[] = [
     <div><dt>Výstupy z lekcí</dt><dd>Jen s tvým potvrzením ukládáme mapu cílů, shrnutí finančního check-upu, profil poplatků, checklisty, investiční plán, pojistky, mapu byznysu, tezi a deník včetně předchozích verzí. Check-up ukládá kategorie a další krok, bez částek příjmů a dluhů. Host bez účtu tyto výstupy neukládá. Jen když výslovně potvrdíš náhled sdílení IPS, zpřístupníme zvolené strukturované shrnutí konkrétní verze veřejným odkazem a obrázkem. Bez jména, částek a textových poznámek. Odkaz můžeš zrušit v Nastavení → Moje data; smazání výstupu či účtu zruší také jeho odkazy. Stažené kopie obrázku už nelze vzít zpět.</dd></div>
     <div><dt>Portfolio Lab</dt><dd>Cvičná portfolia, provedené cvičné obchody a uložené mixy. Jde o cvičný kapitál, ne o skutečné investice.</dd></div>
     <div><dt>Ochrana proti zneužití</dt><dd>Počítadla požadavků, která brání hádání hesel a přetěžování služby. Místo IP adresy nebo e-mailu v nich ukládáme jen jednosměrný otisk.</dd></div>
-    <div><dt>Měření produktu</dt><dd>U účtu a hosta okamžik prvního návratu do aplikace v prvních 7 dnech po založení (jen jeden záznam, později už nic). Zobrazení veřejných vstupních stránek jen sčítáme po dnech: bez cookies, IP adresy a jakéhokoli identifikátoru, takže počet o nikom nic neříká.</dd></div>
+    <div><dt>Měření produktu</dt><dd>U účtu a hosta okamžik prvního návratu do aplikace v prvních 7 dnech po založení (jen jeden záznam, později už nic) a okamžik prvního splnění každého milníku. Zobrazení veřejných vstupních stránek jen sčítáme po dnech: bez cookies, IP adresy a jakéhokoli identifikátoru, takže počet o nikom nic neříká.</dd></div>
     <div><dt>Host a demo</dt><dd>Když se učíš bez účtu, vytvoříme anonymní profil bez e-mailu. Ukládáme k němu stejná data o učení a relacích jako k účtu.</dd></div>
   </dl> },
   { id: "neukladame", title: "Co nezpracováváme", body: <ul>
@@ -48,7 +48,7 @@ const sections: readonly LegalSection[] = [
     <li><strong>Relace</strong> s IP adresou a identifikací prohlížeče: 30 dní po vypršení, pak je automaticky smaže denní úloha.</li>
     <li><strong>Profil hosta a demo</strong>: automaticky ho smažeme den poté, co vyprší jeho poslední relace.</li>
     <li><strong>Počítadla požadavků</strong>: jen po dobu svého časového okna, nejdéle 24 hodin.</li>
-    <li><strong>Záznam o návratu do 7 dní</strong>: do smazání účtu. Denní počty zobrazení veřejných vstupních stránek nejsou osobní údaje.</li>
+    <li><strong>Záznam o návratu do 7 dní a o prvním splnění milníku</strong>: do smazání účtu. Denní počty zobrazení veřejných vstupních stránek nejsou osobní údaje.</li>
     <li>Smazané údaje mohou krátce přetrvat v zálohách databáze, dokud se v běžném cyklu nepřepíší.</li>
   </ul> },
   { id: "cookies", title: "Cookies a úložiště v prohlížeči", body: <>
@@ -73,6 +73,6 @@ const sections: readonly LegalSection[] = [
 ];
 
 export default function PrivacyPage() {
-  return <LegalPage title="Zásady ochrany osobních údajů" sections={sections} updatedAt="22. října 2026"
+  return <LegalPage title="Zásady ochrany osobních údajů" sections={sections} updatedAt="1. listopadu 2026"
     intro={<p>Investník je vzdělávací služba, ve které se učíš investovat s cvičným kapitálem. Ukládáme jen to, co k tomu potřebujeme, a všechno si můžeš kdykoli stáhnout nebo smazat.</p>} />;
 }

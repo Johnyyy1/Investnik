@@ -11,7 +11,7 @@ Issue #355 adds the minimal measurement the S1 stage gate needs: how many people
 | Diagnostic | `learning_profile.personalized_onboarding_completed_at` where a diagnostic result exists | no |
 | First completed lesson | earliest `lesson_award.awarded_at` (the append-only completion receipt) | no |
 | First lesson output | earliest `learner_artifact.created_at` | no |
-| Milestone A | none yet: reported as **unavailable** until #126 records milestone completion | — |
+| Milestone A | `milestone_achievement`: the first time a learner reached it, kept when new content later reopens it (#456) | yes, one row per learner and milestone |
 | First Lab mission | none yet: reported as **unavailable** until guided missions (#142) exist | — |
 | Return within 7 days | `analytics_early_return`: the first app visit on calendar days 1–7 after the start | yes, one row per learner |
 
@@ -30,6 +30,8 @@ The first Lab trade (`portfolio_trade.executed_at`) is printed as separate conte
 
 - **Landing views.** `LandingViewBeacon` on the marketing page sends one bodyless `navigator.sendBeacon` to `POST /api/analytics/visit` per page load. No cookie or browser storage is used. Browsers sending Global Privacy Control or Do Not Track are not counted. The route ignores cross-site requests and limits counting to 30 per IP per hour (an HMAC'd rate-limit bucket, `LANDING_VIEW_IP_RULE`). It always returns an empty `204`, and failures are logged without details. Bots that do not run JavaScript are not counted, but bots that do run it can be. Treat views as an approximation.
 - **Early returns.** The authenticated app layout calls `recordEarlyReturn` through `after()` for accounts and guests, only on Prague calendar days 1–7 after `user.created_at`. The insert is `on conflict do nothing`, so the first return wins and the table holds at most one row per learner. The row cascades with the user, is part of the account export (`productMeasurement.earlyReturnAt`) and is described in the privacy policy.
+
+- **Milestone A.** Recorded in the transaction that wrote the completing evidence; see [milestones](milestones.md#first-achievement-record). The report adds the S1 gate: registered accounts (no guests or demos), how many reached milestone A at least once, their share, and a split by scope version. Scope versions are opaque fingerprints; a version with fewer lessons is an easier milestone, so compare shares across versions with care.
 
 Migration `0018_product_funnel` only adds the two tables. It changes no existing rows, rewards, progress or Lab state.
 

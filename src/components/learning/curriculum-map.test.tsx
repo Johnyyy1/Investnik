@@ -64,10 +64,12 @@ describe("Curriculum map presentation", () => {
     const html = renderToStaticMarkup(createElement(CurriculumMap, { levels, milestones: noEvidence }));
     expect(html).toContain("Prohloubení");
     expect(html).toContain("Milník C není podmínkou.");
-    // The 2.4 draft and capstones B–D are not published yet, so no milestone can be achieved.
-    expect(html.match(/Zatím nejde splnit: část obsahu připravujeme\./g)).toHaveLength(4);
-    expect(html).not.toContain("Splněno 2");
-    // Capstone A is published (#198): its requirement is open, not "připravujeme".
+    // Capstones B–D are not published yet; milestone A counts only published lessons, so it is open (#456).
+    expect(html.match(/Zatím nejde splnit: část obsahu připravujeme\./g)).toHaveLength(3);
+    expect(html).toContain("Splněno 0 z 3 požadavků.");
+    expect(html).toMatch(/Lekce: 0 z \d+/);
+    expect(html).toContain("1.1.1 Spoření vs. investování");
+    expect(html).not.toContain("Povinnost podat přiznání");
     expect(html).not.toContain("Závěrečný projekt A: plán, nákup a krizový nácvik: připravujeme");
     expect(html).toContain("Závěrečný projekt B: moje portfolio na 10 let: připravujeme");
     expect(html).toContain("Závěrečný projekt A: plán, nákup a krizový nácvik: zatím ne");

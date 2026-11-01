@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { lessonPlacements } from "../learning/curriculum";
 import {
-  buildFunnel, buildLessonDropOff, buildWeeklyCohorts, curriculumLessonOrder, funnelSteps, isEarlyReturnDay, startedWithin, weekStart,
+  buildFunnel, buildLessonDropOff, buildMilestoneAGate, buildWeeklyCohorts, curriculumLessonOrder, funnelSteps, isEarlyReturnDay, startedWithin, weekStart,
   type LearnerFacts, type LessonProgressFact,
 } from "./funnel";
 
@@ -10,7 +10,7 @@ const now = new Date("2026-10-22T10:00:00.000Z");
 const at = (iso: string) => new Date(iso);
 
 function learner(key: string, startedAt: string, facts: Partial<Omit<LearnerFacts, "key" | "startedAt">> = {}): LearnerFacts {
-  return { key, kind: "account", startedAt: at(startedAt), diagnosticAt: null, firstLessonAt: null, firstArtifactAt: null, firstLabTradeAt: null, returnedAt: null, ...facts };
+  return { key, kind: "account", startedAt: at(startedAt), diagnosticAt: null, firstLessonAt: null, firstArtifactAt: null, firstLabTradeAt: null, returnedAt: null, milestoneAAt: null, milestoneAScopeVersion: null, ...facts };
 }
 
 describe("isEarlyReturnDay", () => {
@@ -69,17 +69,34 @@ describe("buildFunnel", () => {
     const funnel = buildFunnel(learners, visits, 30, now);
     expect(funnel).toMatchObject({ days: 30, from: "2026-09-23", to: "2026-10-22", learners: { total: 4, accounts: 3, guests: 1 }, firstLabTrade: 1 });
     expect(Object.fromEntries(funnel.steps.map((step) => [step.id, step.count]))).toEqual({
-      visit: 540, start: 4, diagnostic: 2, "first-lesson": 3, "first-artifact": 1, "milestone-a": null, "first-lab-mission": null, "return-7d": 2,
+      visit: 540, start: 4, diagnostic: 2, "first-lesson": 3, "first-artifact": 1, "milestone-a": 0, "first-lab-mission": null, "return-7d": 2,
     });
   });
 
   it("reports steps without a data source as unavailable, never as zero, and skips them as a base", () => {
     const steps = buildFunnel(learners, visits, 30, now).steps;
-    for (const id of ["milestone-a", "first-lab-mission"]) {
-      const step = steps.find((row) => row.id === id)!;
-      expect(step).toMatchObject({ count: null, fromPrevious: null, fromStart: null });
-      expect(step.note).toMatch(/#1(26|42)/);
-    }
+    const step = steps.find((row) => row.id === "first-lab-mission")!;
+    expect(step).toMatchObject({ count: null, fromPrevious: null, fromStart: null });
+    expect(step.note).toMatch(/#142/);
+  });
+
+  it("measures the S1 gate from registered accounts that ever reached milestone A, by scope version", () => {
+    const reached = (key: string, kind: "account" | "guest", scope: string, iso: string) => learner(key, "2026-10-01T10:00:00.000Z", { kind, milestoneAAt: at(iso), milestoneAScopeVersion: scope });
+    const gate = buildMilestoneAGate([
+      learner("a", "2026-10-01T10:00:00.000Z"), learner("b", "2026-10-01T10:00:00.000Z"), learner("guest", "2026-10-01T10:00:00.000Z", { kind: "guest" }),
+      reached("c", "account", "new", "2026-10-20T10:00:00.000Z"),
+      reached("d", "account", "old", "2026-10-10T10:00:00.000Z"),
+      reached("e", "account", "old", "2026-10-05T10:00:00.000Z"),
+      reached("g", "guest", "old", "2026-10-02T10:00:00.000Z"),
+    ]);
+    expect(gate).toMatchObject({ registered: 5, achieved: 3, share: 3 / 5 });
+    expect(gate.byScopeVersion).toEqual([
+      { scopeVersion: "old", learners: 2, firstAchievedAt: at("2026-10-05T10:00:00.000Z") },
+      { scopeVersion: "new", learners: 1, firstAchievedAt: at("2026-10-20T10:00:00.000Z") },
+    ]);
+    expect(buildMilestoneAGate([])).toEqual({ registered: 0, achieved: 0, share: null, byScopeVersion: [] });
+    const cohort = buildWeeklyCohorts([reached("c", "account", "new", "2026-10-20T10:00:00.000Z")], 4, now).find((row) => row.learners === 1);
+    expect(cohort?.milestoneA).toBe(1);
   });
 
   it("derives conversions from learners at the previous available step and from the start", () => {
@@ -130,9 +147,9 @@ describe("weekly cohorts", () => {
       learner("c", "2026-10-11T21:30:00.000Z"), // 23:30 Sunday 11 October in Prague: still the week of 5 October
     ], 4, now);
     expect(cohorts.map((cohort) => cohort.week)).toEqual(["2026-10-19", "2026-10-12", "2026-10-05", "2026-09-28"]);
-    expect(cohorts[0]).toEqual({ week: "2026-10-19", learners: 1, diagnostic: 1, firstLesson: 0, firstArtifact: 0, returned: 0, returnPending: 1 });
+    expect(cohorts[0]).toEqual({ week: "2026-10-19", learners: 1, diagnostic: 1, firstLesson: 0, firstArtifact: 0, milestoneA: 0, returned: 0, returnPending: 1 });
     expect(cohorts[1].learners).toBe(0);
-    expect(cohorts[2]).toEqual({ week: "2026-10-05", learners: 2, diagnostic: 0, firstLesson: 1, firstArtifact: 1, returned: 1, returnPending: 0 });
+    expect(cohorts[2]).toEqual({ week: "2026-10-05", learners: 2, diagnostic: 0, firstLesson: 1, firstArtifact: 1, milestoneA: 0, returned: 1, returnPending: 0 });
   });
 });
 

@@ -4,7 +4,7 @@ import { buildFunnelReport, formatFunnelReport } from "./report";
 
 const now = new Date("2026-10-22T10:00:00.000Z");
 const learner = (key: string, startedAt: string, facts: Partial<LearnerFacts> = {}): LearnerFacts => ({
-  key, kind: "account", startedAt: new Date(startedAt), diagnosticAt: null, firstLessonAt: null, firstArtifactAt: null, firstLabTradeAt: null, returnedAt: null, ...facts,
+  key, kind: "account", startedAt: new Date(startedAt), diagnosticAt: null, firstLessonAt: null, firstArtifactAt: null, firstLabTradeAt: null, returnedAt: null, milestoneAAt: null, milestoneAScopeVersion: null, ...facts,
 });
 const facts = {
   learners: [
@@ -33,7 +33,8 @@ describe("funnel report", () => {
   it("prints unavailable steps as such, with Czech percentages", () => {
     const text = formatFunnelReport(report);
     expect(text).toContain("## Posledních 7 dní (16. 10. 2026 – 22. 10. 2026) · začali: 1 (účty: 1, hosté: 0)");
-    expect(text).toMatch(/Milník A\s+nedostupné/);
+    expect(text).toMatch(/Milník A\s+0\s/);
+    expect(text).toContain("Registrované účty: 1 · splnili: 0 · podíl: 0");
     expect(text).toMatch(/První mise v Labu\s+nedostupné/);
     expect(text).toMatch(/Diagnostika\s+1\s+100\s%\s+100\s%/);
     expect(text).toContain("## Odchody po lekcích");

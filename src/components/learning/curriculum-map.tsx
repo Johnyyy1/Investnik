@@ -30,7 +30,7 @@ function Level({ level }: { level: CurriculumMapModel[number] }) {
 }
 
 const scope: Record<MilestoneState["id"], string> = {
-  A: "Úrovně 1–2, behaviorální jádro, investiční plán, cvičný nákup a krizový nácvik. Úroveň 0 je doporučená, ne povinná.",
+  A: "Vydané lekce úrovní 1–2, behaviorální jádro, investiční plán, cvičný nákup a krizový nácvik. Úroveň 0 je doporučená, ne povinná.",
   B: "Milník A, úroveň 3, celá behaviorální linie a údržba portfolia.",
   C: "Volitelná analytická dráha: milník B, úrovně 4–5 a vlastní analýza s investiční tezí.",
   D: "Volitelná kvantitativní dráha: milník B a úroveň 6. Milník C není podmínkou.",
@@ -47,6 +47,10 @@ function Milestone({ state, timeZone }: { state: MilestoneState; timeZone: strin
       const Marker = item.status === "done" ? CircleCheck : Circle;
       return <li key={`${item.kind}-${item.label}`} data-status={item.status}><Marker size={16} aria-hidden="true" />{item.label}: {requirementState(item)}</li>;
     })}</ul>
+    {state.lessons.length > 0 && <details className={styles.scopeLessons}>
+      <summary>Lekce v milníku teď: {state.lessons.length}</summary>
+      <ul aria-label={`Lekce milníku ${state.id}`}>{state.lessons.map((lesson) => <li key={lesson.id}>{lesson.done ? <CircleCheck size={16} aria-hidden="true" /> : <Circle size={16} aria-hidden="true" />}<span>{lesson.displayCode} {lesson.title}{lesson.done && " · Hotovo"}</span></li>)}</ul>
+    </details>}
   </dd></div>;
 }
 
@@ -57,7 +61,7 @@ export function CurriculumMap({ levels, milestones: states, timeZone = "Europe/P
     <section className={styles.deepening} aria-labelledby="deepening-title"><h3 id="deepening-title">Prohloubení</h3><p>Volitelné dráhy pro analýzu akcií a kvantitativní metody. Pro pasivní investování je nepotřebuješ. Kvantitativní dráha nevyžaduje analytickou.</p>
       {levels.filter((level) => level.optional).map((level) => <Level key={level.id} level={level} />)}
     </section>
-    <section className={styles.milestones} aria-labelledby="map-milestones-title"><h3 id="map-milestones-title">Milníky tvé cesty</h3><p>Milník je uznání, nic neodemyká. Počítá se z dokončených lekcí, dovedností na úrovni Zvládnuté a závěrečného projektu hodnoceného rubrikou. Procenta výše měří jen dostupné lekce.</p>
+    <section className={styles.milestones} aria-labelledby="map-milestones-title"><h3 id="map-milestones-title">Milníky tvé cesty</h3><p>Milník je uznání, nic neodemyká. Počítá se z dokončených lekcí, dovedností na úrovni Zvládnuté a závěrečného projektu hodnoceného rubrikou. Započítávají se jen lekce, které už vyšly; připravované ho neblokují. Procenta výše měří jen dostupné lekce.</p>
       <dl>{states.map((state) => <Milestone key={state.id} state={state} timeZone={timeZone} />)}</dl>
     </section>
   </div>;
