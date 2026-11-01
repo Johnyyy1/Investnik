@@ -1,6 +1,8 @@
-# Checkpoint 1 — redakční náhled (#164)
+# Checkpoint 1 — publikovaná lekce (#164)
 
-Snímky po správné odpovědi (úvod a shrnutí bez otázky), 390/1440 px, development runtime. Náhled má redakční záhlaví a navigaci `LessonDraftPreview`; karty otázek, zpětná vazba a reflexe používají stávající renderery. Porovnáno se vzory G (výběr a zpětná vazba), M (reflexe) a sdíleným číselným vstupem. Všechny kroky prošly kontrolou bez horizontálního přetečení i při 320 px a 200% textu. Publikační překážky: [autorský brief](../../../education/foundations-checkpoint.md).
+Snímky všech 14 kroků při 390/1440 px z čistého produkčního runtime, 1. 11. 2026. Zachycují standardní přehrávač před odpovědí (včetně závěru bez otázky). Obsah a renderery odpovídají původnímu redakčnímu náhledu: sdílené vzory C/G (číselné otázky a výběr) a M (reflexe), bez nových stylů či komponent.
+
+`LESSON_IDS=foundations-checkpoint npm run test:lesson-walkthrough` ověřil u každé otázky chybu → vysvětlení → opravu, uložené pokračování po obnovení, dokončení a právě jednu účtenku (60 XP, nula kapitálu). Každý krok prošel axe a kontrolou přetečení při 320/390/1440 px i při 200% textu. [Rozsah publikace a odložené měření](../../../education/foundations-checkpoint.md).
 
 | Krok | 390 px | 1440 px |
 | --- | --- | --- |

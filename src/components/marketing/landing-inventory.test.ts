@@ -11,9 +11,9 @@ describe("landing page inventory", () => {
     expect(placed("2.").filter((id) => published.has(id))).toEqual(["broker-fee-schedule", "costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "costs-ter-tracking-difference", "etfs-selection-checklist", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "first-plan-capstone-a"]);
   });
 
-  it("still lists the reserve, pension, scams and foundations checkpoint lessons as drafts", () => {
+  it("still lists the reserve, pension and scams lessons as drafts", () => {
     const drafts = new Set<string>(draftLessons.map((lesson) => lesson.id));
-    for (const id of ["before-investing-emergency-fund", "before-investing-retirement-products", "before-investing-scams", "foundations-checkpoint"]) {
+    for (const id of ["before-investing-emergency-fund", "before-investing-retirement-products", "before-investing-scams"]) {
       expect(drafts.has(id)).toBe(true);
       expect(published.has(id)).toBe(false);
     }

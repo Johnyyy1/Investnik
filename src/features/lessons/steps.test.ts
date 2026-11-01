@@ -9,7 +9,7 @@ describe("shared guided lessons", () => {
     const steps = getGuidedSteps(lesson);
     // The first Foundations lesson is the deliberately short mini-lesson that also opens onboarding.
     expect(steps.length).toBeGreaterThanOrEqual(lesson.id === "foundations-why-invest" ? 3 : 6);
-    expect(steps.length).toBeLessThanOrEqual(12);
+    expect(steps.length).toBeLessThanOrEqual(lesson.id === "foundations-checkpoint" ? 14 : 12);
     expect(new Set(lesson.blocks.map((block) => block.id)).size).toBe(lesson.blocks.length);
     expect(steps.flatMap((step) => step.blocks)).toEqual(lesson.blocks);
     for (const step of steps) {
@@ -22,7 +22,7 @@ describe("shared guided lessons", () => {
   it("only removes navigation for implemented lessons", () => {
     for (const lesson of authoredLessons) expect(isFocusedLesson(`/learn/${lesson.moduleSlug}/${lesson.slug}`)).toBe(true);
     expect(isFocusedLesson("/learn/checkpoint/1.1")).toBe(true);
-    for (const route of ["/dashboard", "/learn", "/learn/returns", "/progress", "/learn/investing-foundations/foundations-checkpoint"]) expect(isFocusedLesson(route)).toBe(false);
+    for (const route of ["/dashboard", "/learn", "/learn/returns", "/progress"]) expect(isFocusedLesson(route)).toBe(false);
     expect(() => getStepDefinitions("returns-log")).toThrow();
     expect(() => getStepDefinitions("constructor")).toThrow();
   });

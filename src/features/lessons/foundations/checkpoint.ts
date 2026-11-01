@@ -34,7 +34,7 @@ export const bigThreeQuestions = [
   },
 ] satisfies LessonBlock[];
 
-/** Draft until #163, measurement capture (#130) and editorial review are ready. No public progress/rewards. */
+/** Published without first-answer measurement by founder decision on 2026-11-01 (#164); #130 adds capture later. */
 export const foundationsCheckpointLesson: AuthoredLesson = {
   id: definition.id, slug: definition.slug, moduleSlug: "investing-foundations", title: definition.title,
   eyebrow: "Investiční základy", position: 10, estimatedMinutes: definition.estimatedMinutes,
@@ -62,7 +62,7 @@ export const foundationsCheckpointLesson: AuthoredLesson = {
       correctExplanation: "Poplatek je 24 000 × 0,025 = 600 Kč. Investuje se 24 000 − 600 = 23 400 Kč. Průběžné náklady by se posuzovaly zvlášť.", incorrectExplanation: "Nejdřív spočítej 2,5 % z poslaných 24 000 Kč, potom poplatek odečti. Otázka se ptá na investovanou částku, ne samotný poplatek.", reviewHref: "/learn/investing-foundations/funds" },
     { id: "report-interpretation", type: "multipleChoiceQuestion", prompt: "Modelový příklad · Fiktivní přehled ve stylu SPIVA uvádí: 72 ze 100 aktivních fondů ve stejné kategorii za dané desetiletí zaostalo po nákladech za srovnávacím indexem. Co z toho plyne?",
       options: [{ id: "all", label: "Každý aktivní fond vždy zaostane." }, { id: "probability", label: "V tomto vzorku a období zaostala většina; neurčuje to vítěze příštího desetiletí." }, { id: "winner", label: "Stačí vybrat minulého vítěze a budoucí nadvýnos mám jistý." }], correctOptionId: "probability",
-      correctExplanation: "Jde o četnost v konkrétním vzorku, kategorii a období po nákladech, nikoli předpověď konkrétního fondu. Skutečný přehled vyžaduje kontrolu metodiky včetně zaniklých fondů. Čísla zde nejsou výsledkem skutečné studie SPIVA.", incorrectExplanation: "Výsledek skupiny v minulosti není záruka pro jednotlivý fond ani budoucí období. V tomto modelu zaostala většina, ne všechny fondy.", reviewHref: "/learn/investing-foundations/funds" },
+      correctExplanation: "Jde o četnost v konkrétním vzorku, kategorii a období po nákladech, nikoli předpověď konkrétního fondu. Skutečný přehled vyžaduje kontrolu metodiky včetně zaniklých fondů. Čísla zde nejsou výsledkem skutečné studie SPIVA.", incorrectExplanation: "Výsledek skupiny v minulosti není záruka pro jednotlivý fond ani budoucí období. V tomto modelu zaostala většina, ne všechny fondy.", reviewHref: "/learn/investing-foundations/active-vs-index" },
     { id: "reflection", type: "writtenReflection", prompt: "Vyber princip, u kterého ještě váháš. Ve 2–4 větách ho vysvětli vlastními slovy a napiš, co příště před rozhodnutím zkontroluješ. Neuváděj osobní údaje.", rubric: [{ id: "principle", text: "Vysvětlím princip i jeho omezení." }, { id: "safeguard", text: "Zvolím konkrétní kontrolu před rozhodnutím." }], sampleAnswer: "Stejný procentní pokles a růst se nevyruší, protože se mění základ. Před porovnáním výsledků spočítám násobení změn a oddělím vlastní vklady. Minulý výsledek není záruka budoucího." },
     { id: "summary", type: "lessonSummary", title: "Principy propojuj, nehádej výnos", content: "Spoj kupní sílu, složené zhodnocení, diverzifikaci, měnu a náklady do jednoho rozhodnutí. Chybná odpověď je důvod vrátit se k příslušné lekci a později si princip vybavit znovu. Samotné opravení odpovědí není důkazem dlouhodobého zvládnutí. Laboratoř zůstává cvičením; dokončení této kontroly nemění podmínky jejího odemčení." },
   ],

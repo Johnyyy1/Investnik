@@ -5,23 +5,23 @@
 - Identita: `foundations-checkpoint`, úložný modul `module-investing-foundations`, slug `foundations-checkpoint`, URL `/learn/investing-foundations/foundations-checkpoint`. Rezervované ID se nemění.
 - Umístění: L1, modul 1.1, kód 1.1.10, povinná kontrola. Odhad 10 minut včetně oprav a reflexe; zatím bez uživatelského měření délky.
 - Výsledek: propojit kupní sílu, složené zhodnocení, diverzifikaci, přepočet měny, kotace, náklady a omezení historických přehledů. Všech 11 úloh musí být správně; opravy jsou povolené. Dokončení není důkazem retence ani připravenosti na skutečné investování.
-- Předpoklady: lekce 1.1.1–1.1.9. Registr zatím uvádí dostupné koncové větve grafu; při publikaci doplnit skutečné stabilní ID lekce 1.1.9 z #163. Nevymýšlet ID ani odkaz na neexistující lekci.
+- Předpoklady: lekce 1.1.1–1.1.9. Registr uvádí koncové větve grafu včetně publikované `foundations-active-vs-index` (1.1.9).
 - Scénář: výslovně modelové příklady v Kč, jedna USD pozice s daným kurzem. Fiktivní přehled ve stylu SPIVA je počet 72 ze 100 fondů, nikoli historický výzkumný údaj. Lekce neuvádí tvrzení o třetině respondentů ani skutečnou úspěšnost fondů.
 - Ověření: tři otázky Big Three proložené osmi úlohami (pozice, index/ETF, dluhopis/sazby, spread, složená změna, váha, vstupní poplatek, interpretace přehledu). Každá má vysvětlení, opravu a odkaz na dostupnou související lekci. Psaná reflexe je dočasná podle kontraktu `writtenReflection`.
 - Přenos: vlastní kontrolní pravidlo před rozhodnutím; žádný povinný obchod. Checkpoint nenahrazuje praktický výstup modulu ani investiční plán.
-- Fakta a revize: pouze modelové vstupy, žádná nová právní ani empirická tvrzení. Redakční revize čeká; odborné schválení se nevymýšlí.
-- Kompatibilita: nový autorský návrh pod rezervovaným ID; `status: planned`, pouze `draftLessons`. Žádná změna veřejných lekcí, kurzorů, dokončení, účtenek ani grantů. Budoucí první dokončení má podle stávající v4 nula cvičného kapitálu. Podmínky Labu zůstávají původních sedm Foundations + 420 XP.
+- Fakta a revize: pouze modelové vstupy, žádná nová právní ani empirická tvrzení. Obsahová kontrola v publikační změně je uvedená níže; externí odborné schválení se nevymýšlí.
+- Kompatibilita: publikovaná lekce pod rezervovaným ID; `status: available`, `authoredLessons`. Žádná změna veřejných lekcí, kurzorů, dokončení, účtenek ani grantů. První dokončení má podle stávající v4 nula cvičného kapitálu. Podmínky Labu zůstávají původních sedm Foundations + 420 XP.
 
 ## Náhled a design
 
-V development runtime otevři `/dev/foundations-checkpoint`. Náhled používá existující `LessonDraftPreview`, `GuidedQuestion` a `GuidedBlock`; žádný nový typ kroku, styl ani komponenta. Je bez zápisů a v produkci vrací 404. Veřejná lekce zůstává nedostupná. `npm run test:foundations-checkpoint-browser` ověřuje chybu → textovou zpětnou vazbu → opravu → pokračování, klávesnici a fokus, 320/390/1440 px a 200% text. [Ověřené snímky všech kroků](../design/lesson-steps/issue-164/README.md) jsou přiložené v repozitáři. Suite při 390/1440 px ukládá do `test-results/foundations-checkpoint`; porovnat se sdílenými vzory C/G/M a katalogem `docs/education/lesson-steps.md`.
+V development runtime otevři `/dev/foundations-checkpoint`. Náhled používá existující `LessonDraftPreview`, `GuidedQuestion` a `GuidedBlock`; žádný nový typ kroku, styl ani komponenta. Je bez zápisů a v produkci vrací 404. Veřejná lekce používá standardní ukládání pokroku a dokončení. `npm run test:foundations-checkpoint-browser` ověřuje chybu → textovou zpětnou vazbu → opravu → pokračování, klávesnici a fokus, 320/390/1440 px a 200% text. [Ověřené snímky všech kroků](../design/lesson-steps/issue-164/README.md) jsou přiložené v repozitáři. Suite při 390/1440 px ukládá do `test-results/foundations-checkpoint`; porovnat se sdílenými vzory C/G/M a katalogem `docs/education/lesson-steps.md`.
 
-## Co blokuje publikaci
+## Publikace — rozhodnutí foundera 1. 11. 2026
 
-1. Dokončit #163 a upravit předpoklad i odkaz u interpretace přehledu na skutečnou lekci 1.1.9. Nynější odkaz vede na dostupné fondy (1.1.8).
-2. #130 musí dodat samostatné ukládání měření; #124 musí používat stejný český nástroj. `bigThreeQuestions` exportuje stabilní ID, přesné znění, pořadí možností a klíče; snapshot je zamyká. Případnou změnu verzovat jako jiný nástroj, nepřepisovat historické odpovědi.
-3. Před zpřístupněním ukládat každou první odpověď Big Three včetně `unknown`, verzi nástroje, fázi vstup/výstup a čas; identitu odvodit ze session, správnost přepočítat na serveru. Opakované doručení nesmí přepsat první odpověď; oprava nesmí změnit původní měření. Samotný kurzor ani booleovské `skill_attempt.correct` nerozlišují nevím od jiné chyby a nejsou náhradou. Přidat retry, ownership, export a mazání účtu do persistence testů.
-4. Chybné úlohy napojit na skutečnou frontu opakování. Současný náhled ukazuje zpětnou vazbu/odkaz, ale nic neukládá a nezařazuje do opakování. Nevydávat opravenou otázku za nezávislé měření retence.
-5. Dokončit redakční kontrolu. Teprve publikační PR změní manifest na `available`, přesune obsah do `authoredLessons`, doplní mastery item bank a nový kontrakt do `published-lessons-v1.json`, a ověří seed, staré účtenky a odemčení na izolované QA DB. Žádná změna historických kontraktů ani zpětné přepočty odměn.
+Podle [rozhodnutí v #164](https://github.com/Johnyyy1/Investnik/issues/164#issuecomment-6562921144) lekci publikujeme bez měření prvních odpovědí. #130 zůstává v S2; není podmínkou publikace. Znění Big Three, ID možností, pořadí a klíče odpovědí zůstávají zamčené původním snapshotem pro pozdější měření. Kurzory ani běžné pokusy dovedností nejsou měřením prvních odpovědí včetně „nevím“.
 
-Tento návrh záměrně nepřidává jednorázové analytické úložiště ani novou frontu opakování vedle #130/#122. Dokud tyto body nejsou splněny, #164 není dokončená publikovaná lekce.
+Lekce je `available` v `authoredLessons`, s novým historickým kontraktem. Předpoklad i odkaz na interpretaci přehledu používají publikovanou `foundations-active-vs-index` (1.1.9). Big Three a interpretace přehledu mají položky v existující bance dovedností pro opakování; ostatní úlohy jsou běžná procvičování s vysvětlením a odkazem na lekci. Nezavádíme samostatnou frontu ani analytické úložiště.
+
+Obsahová kontrola v publikační změně: všechny příklady jsou označené jako modelové, přehled fondů není prezentován jako výzkumný výsledek, neobsahuje nová právní fakta ani individualizovaná doporučení. Nejde o externí odborné schválení. Výjimka z běžné délky: 14 krátkých kroků pro 11 prokládaných úloh, reflexi a shrnutí.
+
+Publikace nemění původních sedm předpokladů Labu ani 420 XP. První dokončení přidá 60 XP a nula cvičného kapitálu podle v4; opakování nic nepřidává. Historické kontrakty, dokončení, účtenky a granty se nepřepočítávají.

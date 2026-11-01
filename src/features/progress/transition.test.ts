@@ -18,7 +18,7 @@ describe("server-side completion eligibility", () => {
     expect(() => validateMove("foundations-stocks", 0, 8)).toThrow();
     expect(() => validateMove("foundations-stocks", 0, 1)).toThrow();
     expect(() => validateMove("foundations-why-invest", 0, 3)).toThrow();
-    expect(() => validateMove("foundations-checkpoint", 0, 1)).toThrow();
+    expect(() => validateMove("broker-platform-types", 0, 1)).toThrow();
   });
   it("requires a correct answer and permits navigation back", () => {
     const block = lessonSteps("foundations-stocks")[0].blocks.find((b) => b.type === "multipleChoiceQuestion")!;

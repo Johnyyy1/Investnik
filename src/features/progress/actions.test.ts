@@ -51,7 +51,7 @@ describe("shared persisted lesson actions", () => {
     expect(result).toMatchObject({ ok: true, reward: { xpAwarded: 60 } });
     expect(mocks.complete).toHaveBeenCalledWith("session-owner", "foundations-stocks");
   });
-  it.each(["foundations-checkpoint", "unknown"])("rejects writes to %s", async (id) => {
+  it.each(["broker-platform-types", "unknown"])("rejects writes to %s", async (id) => {
     expect(await markLessonStartedAction(id)).toMatchObject({ ok: false });
     expect(await saveLessonPositionAction(id, 1)).toMatchObject({ ok: false });
     expect(await completeLessonAction(id)).toMatchObject({ ok: false });

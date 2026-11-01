@@ -33,7 +33,7 @@ try {
     { number: "198", wrong: "200", review: "risk-vs-reward" },
     { number: "25", wrong: "4", review: "your-first-portfolio" },
     { number: "23400", wrong: "600", review: "funds" },
-    { choice: "V tomto vzorku a období zaostala většina; neurčuje to vítěze příštího desetiletí.", wrong: "Každý aktivní fond vždy zaostane.", review: "funds" },
+    { choice: "V tomto vzorku a období zaostala většina; neurčuje to vítěze příštího desetiletí.", wrong: "Každý aktivní fond vždy zaostane.", review: "active-vs-index" },
   ];
   async function answer(question, wrong) {
     if (question.choice) {
@@ -79,9 +79,5 @@ try {
   }
   assert.deepEqual(posts, [], "Preview must not write answers, progress or rewards");
   assert.deepEqual(errors, [], "No browser errors");
-  await page.goto(`${baseURL}/learn/investing-foundations/foundations-checkpoint`);
-  if (new URL(page.url()).pathname === "/sign-in") await page.getByRole("heading", { name: "Vítej zpět", exact: true }).waitFor();
-  else await page.getByRole("heading", { name: "Tuhle stránku jsme nenašli", exact: true }).waitFor();
-  assert.equal(await page.getByText("Na spořicím účtu máš 10 000 Kč", { exact: false }).count(), 0);
-  console.log(`PASS: 14 draft steps, 11 wrong/unknown → review → retry flows, keyboard/focus, no writes, public gate, 320/390/1440px and 200% text. Screenshots: ${output}`);
+  console.log(`PASS: 14 draft steps, 11 wrong/unknown → review → retry flows, keyboard/focus, no writes, 320/390/1440px and 200% text. Screenshots: ${output}`);
 } finally { await browser.close(); }
