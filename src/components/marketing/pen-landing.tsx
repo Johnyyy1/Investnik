@@ -26,7 +26,7 @@ const outputs = [
   ["Finanční check-up", "Dostupné", true],
   ["Mapa cílů a horizontů", "Dostupné", true],
   ["Investiční plán (IPS)", "Dostupné v Labu", true],
-  ["Srovnání nákladů", "Připravujeme", false],
+  ["Srovnání nákladů", "Dostupné", true],
   ["Checklist výběru ETF", "Dostupné", true],
   ["Checklist brokera", "Připravujeme", false],
 ] as const;

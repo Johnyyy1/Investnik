@@ -25,7 +25,7 @@ function validationMessage(error: unknown) {
   return error instanceof Error ? error.message : "Zkontroluj plán.";
 }
 
-export function IpsBuilder({ history, goals, foundation, portfolioId, sample }: { history: PlanArtifact[]; goals?: IpsPlan["goals"]; foundation?: IpsPlan["foundation"]; portfolioId: string | null; sample: boolean }) {
+export function IpsBuilder({ history, goals, foundation, portfolioId, sample, supportingArtifacts = [] }: { history: PlanArtifact[]; supportingArtifacts?: LearnerArtifact[]; goals?: IpsPlan["goals"]; foundation?: IpsPlan["foundation"]; portfolioId: string | null; sample: boolean }) {
   const [versions, setVersions] = useState(history);
   const current = versions[0];
   const [draft, setDraft] = useState<IpsDraft>(() => current ? draftFromPlan(current.payload) : { ...newIpsDraft(goals), ...(foundation ? { foundation } : {}) });
@@ -130,6 +130,15 @@ export function IpsBuilder({ history, goals, foundation, portfolioId, sample }: 
         <fieldset className={styles.section}><legend>Nástroje a platforma</legend><div className={styles.fields}>
           <Field label="Zvolené nástroje a proč (jeden na řádek)"><textarea maxLength={3200} value={draft.instruments} onChange={(e) => update({ instruments: e.target.value })} /></Field>
           <Field label="Zvolená platforma nebo co ještě ověřím"><input maxLength={160} value={draft.platform} onChange={(e) => update({ platform: e.target.value })} /></Field></div>
+        </fieldset>
+        <fieldset className={styles.section}><legend>Uložené podklady</legend>
+          <p className={styles.hint}>Odkaz patří přesně této verzi výstupu. Modelové srovnání není ověřený náklad tvého plánu. TER a spread posuď zvlášť.</p>
+          {([['cost_comparison', 'costComparisonId', 'Srovnání nákladů'], ['etf_checklist', 'etfChecklistId', 'Checklist ETF']] as const).map(([kind, field, label]) => <Field key={kind} label={label}><select value={draft[field] ?? ""} onChange={(event) => update({ [field]: event.target.value || undefined })}>
+            <option value="">Bez odkazu</option>
+            {draft[field] && !supportingArtifacts.some((artifact) => artifact.id === draft[field]) && <option value={draft[field]}>Dříve připojený podklad (může být smazaný)</option>}
+            {supportingArtifacts.filter((artifact) => artifact.kind === kind).map((artifact) => <option key={artifact.id} value={artifact.id}>{label} · verze {artifact.version} · {ipsDate(artifact.createdAt)}</option>)}
+          </select></Field>)}
+          <ButtonLink href="/learn/costs/compare-two-brokers" variant="ghost">Otevřít modelové srovnání</ButtonLink>
         </fieldset>
         <fieldset className={styles.section}><legend>Pravidelný příspěvek</legend><p className={styles.hint}>Plánovaná vlastní částka v Kč, nikoli pokyn ani vklad do Labu. Nula je platná. Den 1–28 existuje v každém měsíci.</p><div className={styles.row}>
           <Field label="Měsíční částka v Kč"><input inputMode="decimal" value={draft.amount} onChange={(e) => update({ amount: e.target.value })} /></Field>

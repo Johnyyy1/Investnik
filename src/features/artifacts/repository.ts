@@ -6,6 +6,7 @@ import { learnerArtifact, user } from "@/db/schema";
 import { isGuestIdentity } from "@/features/guest/identity";
 import { artifactContentSchema, artifactKindSchema, deleteArtifactSchema, saveArtifactSchema, type ArtifactKind, type ArtifactPayload, type LearnerArtifact, type SaveArtifactInput } from "./schemas";
 
+import { asEtfChecklist } from "./etf-checklist";
 import { getAuthoredLesson } from "@/features/lessons/registry";
 import { availableLessons } from "@/features/learning/catalog";
 import { validOutputForBlock } from "@/features/lessons/output-contract";
@@ -51,6 +52,13 @@ export async function saveLearnerArtifact(userId: string, input: SaveArtifactInp
       }
       return present(retry);
     }
+    if (parsed.content.kind === "investment_plan" && "schemaVersion" in parsed.content.payload) {
+      for (const [kind, id] of [["cost_comparison", parsed.content.payload.costComparisonId], ["etf_checklist", parsed.content.payload.etfChecklistId]] as const) {
+        if (!id) continue;
+        const [row] = await tx.select().from(learnerArtifact).where(and(eq(learnerArtifact.userId, userId), eq(learnerArtifact.id, id)));
+        if (!row || (kind === "etf_checklist" ? !asEtfChecklist(present(row)) : row.kind !== kind)) throw new Error("The referenced artifact is unavailable.");
+      }
+    }
     const [latest] = await tx.select({ version: learnerArtifact.version }).from(learnerArtifact)
       .where(and(eq(learnerArtifact.userId, userId), eq(learnerArtifact.kind, parsed.content.kind))).orderBy(desc(learnerArtifact.version)).limit(1);
     const [created] = await tx.insert(learnerArtifact).values({
@@ -62,8 +70,12 @@ export async function saveLearnerArtifact(userId: string, input: SaveArtifactInp
 }
 
 /** Current revision per document: ordinary kinds, or lesson + block for exercise outputs. */
-export async function listLearnerArtifacts(userId: string, kind?: ArtifactKind) {
+export async function listLearnerArtifacts(userId: string, kind?: ArtifactKind): Promise<LearnerArtifact[]> {
   if (kind !== undefined) artifactKindSchema.parse(kind);
+  if (kind === "etf_checklist") {
+    const all = await listLearnerArtifacts(userId);
+    return all.map(asEtfChecklist).filter((item): item is LearnerArtifact => item !== null);
+  }
   const rows = await db.selectDistinctOn([learnerArtifact.kind, scopeLesson, scopeBlock]).from(learnerArtifact)
     .where(and(eq(learnerArtifact.userId, userId), kind === undefined ? undefined : eq(learnerArtifact.kind, kind)))
     .orderBy(learnerArtifact.kind, scopeLesson, scopeBlock, desc(learnerArtifact.version));

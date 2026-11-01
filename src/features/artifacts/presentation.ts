@@ -4,6 +4,7 @@ export const artifactLabels: Record<ArtifactKind, string> = {
   lesson_output: "Výstup cvičení",
   goal_map: "Mapa cílů",
   financial_checkup: "Finanční check-up",
+  cost_comparison: "Srovnání nákladů",
   fee_profile: "Profil poplatků",
   etf_checklist: "Checklist ETF",
   safeguards: "Osobní pojistky",

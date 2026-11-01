@@ -26,6 +26,7 @@ export function decimalToBps(value: string): number {
 }
 
 export type IpsDraft = {
+  costComparisonId?: string; etfChecklistId?: string;
   goals: IpsPlan["goals"];
   foundation: IpsPlan["foundation"];
   lines: { type: "equity" | "bonds" | "other" | "instrument"; instrumentId: string; label: string; weight: string }[];
@@ -46,7 +47,7 @@ export function draftFromPlan(payload: ArtifactPayload<"investment_plan">): IpsD
       lines: payload.allocation.filter((line) => line.assetClass !== "cash").map((line) => ({ type: line.assetClass as "equity" | "bonds" | "other", instrumentId: "", label: "", weight: percentText(line.weightBasisPoints) })),
       frequency: payload.reviewFrequency, drawdown: payload.crisisPlan };
   }
-  return { ...newIpsDraft(payload.goals), foundation: payload.foundation,
+  return { ...newIpsDraft(payload.goals), costComparisonId: payload.costComparisonId, etfChecklistId: payload.etfChecklistId, foundation: payload.foundation,
     lines: payload.allocation.lines.map((line) => ({ type: "instrumentId" in line ? "instrument" : line.assetClass, instrumentId: "instrumentId" in line ? line.instrumentId : "", label: "instrumentId" in line ? line.instrumentId : "", weight: percentText(line.weightBps) })),
     cash: percentText(payload.allocation.cashBps), instruments: payload.instruments.join("\n"), platform: payload.platform,
     amount: scaledToDecimal(BigInt(payload.contribution.amountMinor), 2), day: String(payload.contribution.dayOfMonth),
@@ -56,7 +57,7 @@ export function draftFromPlan(payload: ArtifactPayload<"investment_plan">): IpsD
     reviewMonth: String(payload.reviewMonth), reason: "" };
 }
 export function planFromDraft(draft: IpsDraft, signedAt: string): IpsPlan {
-  return ipsSchema.parse({ schemaVersion: 2, goals: draft.goals, foundation: draft.foundation,
+  return ipsSchema.parse({ schemaVersion: 2, costComparisonId: draft.costComparisonId, etfChecklistId: draft.etfChecklistId, goals: draft.goals, foundation: draft.foundation,
     allocation: { lines: draft.lines.map((line) => ({ ...(line.type === "instrument" ? { instrumentId: line.instrumentId } : { assetClass: line.type }), weightBps: decimalToBps(line.weight) })), cashBps: decimalToBps(draft.cash) },
     instruments: draft.instruments.split("\n").map((text) => text.trim()).filter(Boolean), platform: draft.platform,
     contribution: { amountMinor: decimalToMinor(draft.amount), dayOfMonth: Number(draft.day) },

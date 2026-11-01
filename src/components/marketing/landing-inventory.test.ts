@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { lessonPlacements } from "@/features/learning/curriculum";
 import { authoredLessons, draftLessons } from "@/features/lessons/registry";
@@ -7,6 +8,10 @@ const published = new Set(authoredLessons.map((lesson) => lesson.id));
 const placed = (prefix: string) => lessonPlacements.filter((placement) => placement.displayModule.startsWith(prefix)).map((placement) => placement.lessonId);
 
 describe("landing page inventory", () => {
+  it("offers a persistable cost comparison", () => {
+    const landing = readFileSync("src/components/marketing/pen-landing.tsx", "utf8");
+    expect(landing).toContain('["Srovnání nákladů", "Dostupné", true]');
+  });
   it("publishes the fee-schedule, TER, trading-cost, currency, 30-year cost, broker-comparison, ETF-checklist, IPS, automation, first-purchase and capstone A lessons in level 2", () => {
     expect(placed("2.").filter((id) => published.has(id))).toEqual(["broker-fee-schedule", "costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "costs-ter-tracking-difference", "etfs-selection-checklist", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "first-plan-capstone-a"]);
   });
