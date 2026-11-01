@@ -16,6 +16,8 @@ export const ipsGoalSchema = z.strictObject({
 /** Payload schema v2; artifact revision numbers remain independent of the schema version. */
 export const ipsSchema = z.strictObject({
   schemaVersion: z.literal(2),
+  costComparisonId: z.uuid().optional(),
+  etfChecklistId: z.uuid().optional(),
   goals: z.array(ipsGoalSchema).min(1).max(10),
   foundation: z.strictObject({
     emergencyFund: z.enum(["building", "ready_for_goal", "needs_review", "prefer_not_to_say"]),

@@ -131,7 +131,7 @@ describe("Kontrola: srovnej dva brokery · 2.2.5 (#175)", () => {
   it("labels model content, names no real broker and states what the Lab does and does not save", () => {
     for (const id of ["opening", "tariffs", "worked", "annual", "frequency-worked", "quarterly", "break-even", "mix-td", "mix-trade"]) expect(JSON.stringify(lesson.blocks.find((entry) => entry.id === id))).toContain("Modelový příklad");
     expect(block(lesson, "non-price", "conceptCallout").content).toContain("nedoporučuje konkrétního brokera");
-    expect(block(lesson, "lab-bridge", "labBridge").content).toContain("neukládá do profilu ani do IPS");
+    expect(block(lesson, "lab-bridge", "labBridge").content).toContain("Ulož si modelové srovnání");
     expect(block(lesson, "sources", "paragraph").content).toContain("Vzdělávací obsah, ne investiční doporučení.");
   });
 });

@@ -1,0 +1,1 @@
+ALTER TYPE "public"."learner_artifact_kind" ADD VALUE 'cost_comparison' BEFORE 'etf_checklist';
