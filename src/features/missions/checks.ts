@@ -2,8 +2,8 @@ import { z } from "zod";
 import { evaluateScenario, lessonInstrumentIds } from "@/features/lessons/diversification/model";
 import { ipsSchema } from "@/features/ips/schema";
 import type { TrainingSeries } from "@/features/training/scenarios";
-import { trainingScenarios } from "@/features/training/scenarios";
-import type { TrainingState } from "@/features/training/domain";
+import { modelSeries, trainingScenarios } from "@/features/training/scenarios";
+import { evaluateTraining, type TrainingSetup, type TrainingState } from "@/features/training/domain";
 import { roundDivide } from "@/features/portfolio/decimal";
 
 const percent = z.number().int().min(0).max(100).multipleOf(10);
@@ -62,4 +62,24 @@ export function completedHistoricalReplays<T extends { session: { scenarioId: st
       && session.series.points.at(-1)!.date.slice(0, 7) === scenario?.endMonth);
     return match ? [match] : [];
   });
+}
+
+/**
+ * B10 crisis drill: the latest finished session of the deterministic model crisis, frozen with the exact
+ * model series. Finishing completes the drill whatever the learner did; keeping the IPS is recorded as
+ * evidence (sells outside the plan, allocation vs band, months with a contribution), never as a pass/fail.
+ */
+export function finishedModelDrill<T extends { session: { id: string; scenarioId: string; series: TrainingSeries; plan: { ipsVersion: number } }; state: TrainingState; setup: TrainingSetup }>(sessions: readonly T[], scenarioId: string) {
+  const expected = modelSeries();
+  const match = sessions.findLast(({ session, state }) => state.finished && session.scenarioId === scenarioId
+    && session.series.source.kind === "model"
+    && session.series.points.length === expected.points.length
+    && session.series.points.every((point, index) => point.date === expected.points[index].date && point.price === expected.points[index].price));
+  if (!match) return undefined;
+  const evaluation = evaluateTraining(match.setup, match.state);
+  return {
+    sessionId: match.session.id, ipsVersion: match.session.plan.ipsVersion, months: match.state.lastMonth,
+    sellsOutsidePlan: evaluation.sellsOutsidePlan, allocationStatus: evaluation.allocation.status,
+    contributionMonths: match.state.contributions.length, planKept: evaluation.sellsOutsidePlan === 0,
+  };
 }

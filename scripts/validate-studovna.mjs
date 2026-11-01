@@ -32,7 +32,7 @@ async function layouts(state, capture = true) {
     const map = learn().getByTestId("journey-modules");
     assert.equal(await map.locator("[data-level]").count(), 9, "all levels including optional tracks");
     assert.equal(await map.locator("[data-display-module]").count(), 25, "registry display modules");
-    assert.equal(await map.locator("ol a").count(), 47, "every published lesson appears once");
+    assert.equal(await map.locator("ol a").count(), 48, "every published lesson appears once");
     assert.equal(await map.locator("[data-level][open]").count(), state === "complete" ? 0 : 1, "only continuation level starts expanded at every viewport");
     // Derived milestones (#126): no capstone lesson is published, so none is achievable, whatever was completed.
     assert.deepEqual(await map.locator("[data-milestone]").evaluateAll((items) => items.map((item) => [item.dataset.milestone, item.dataset.status])),

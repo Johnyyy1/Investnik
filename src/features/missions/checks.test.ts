@@ -1,4 +1,4 @@
-import { completedHistoricalReplays } from "./checks";
+import { completedHistoricalReplays, finishedModelDrill } from "./checks";
 import { describe, expect, it } from "vitest";
 import { checkIpsPurchase, checkPlannedIpsPurchase, checkScenario, contributionMonthsWithBuy, type ScenarioDecision } from "./checks";
 import { exampleIps } from "@/features/ips/test-fixtures";
@@ -45,6 +45,34 @@ describe("server mission criteria", () => {
     // Two buys in one month still count once; selling is not a purchase.
     expect(contributionMonthsWithBuy(replayTraining(setup, [advance, buy, buy, advance, { kind: "sell", quantityUnits: 1_000_000_000n }]))).toBe(1);
     expect(contributionMonthsWithBuy(replayTraining({ ...setup, plan: { ...setup.plan, contributionMinor: "0" } }, regular))).toBe(0);
+  });
+  it("completes the B10 drill on a finished model crisis and records, but never requires, keeping the plan", () => {
+    const series = modelSeries();
+    const setup: TrainingSetup = {
+      dates: series.points.map(({ date }) => date), prices: series.points.map(({ price }) => decimalToPriceUnits(price)),
+      initialCapitalMinor: 10_000_000n, feeProfile: DEFAULT_FEE_PROFILE, plan: trainingPlanFromIps(exampleIps, 3),
+    };
+    const advance = { kind: "advance" } as const;
+    const months = series.points.length - 1;
+    const entry = (id: string, actions: Parameters<typeof replayTraining>[1], overrides: Partial<{ scenarioId: string; series: typeof series }> = {}) =>
+      ({ session: { id, scenarioId: "model-crisis-v1", series, plan: setup.plan, ...overrides }, state: replayTraining(setup, actions), setup });
+    const invest = { kind: "buy", amountMinor: 8_000_000n } as const;
+    const kept = entry("kept", [invest, ...Array.from({ length: months }, () => advance)]);
+    expect(kept.state.finished).toBe(true);
+    expect(finishedModelDrill([kept], "model-crisis-v1")).toEqual({ sessionId: "kept", ipsVersion: 3, months, sellsOutsidePlan: 0, allocationStatus: expect.any(String), contributionMonths: months, planKept: true });
+    // Selling the index in the fifth month while it is under the band breaks the plan; the drill is still complete.
+    const panic = [invest, ...Array.from({ length: 5 }, () => advance), { kind: "sell", quantityUnits: 1_000_000_000n } as const, ...Array.from({ length: months - 5 }, () => advance)];
+    const broken = entry("broken", panic);
+    expect(broken.state.trades.at(-1)?.planStatus).toBe("outside-plan");
+    expect(finishedModelDrill([kept, broken], "model-crisis-v1")).toMatchObject({ sessionId: "broken", sellsOutsidePlan: 1, planKept: false });
+    // Unfinished drills, other scenarios and a series that is not the exact model crisis are not evidence.
+    expect(finishedModelDrill([entry("open", [invest, advance])], "model-crisis-v1")).toBeUndefined();
+    expect(finishedModelDrill([entry("other", [invest, ...Array.from({ length: months }, () => advance)], { scenarioId: "history-2008-v1" })], "model-crisis-v1")).toBeUndefined();
+    const forged = { ...series, points: series.points.map((point, index) => index === 6 ? { ...point, price: "50" } : point) };
+    expect(finishedModelDrill([entry("forged", [invest, ...Array.from({ length: months }, () => advance)], { series: forged })], "model-crisis-v1")).toBeUndefined();
+    const history = { ...series, source: { kind: "history", sourceName: "x", symbol: "X", instrumentName: "X", sample: false, currency: "USD", retrievedAt: "2026-10-31T00:00:00Z" } } as const;
+    expect(finishedModelDrill([entry("history", [invest, ...Array.from({ length: months }, () => advance)], { series: history })], "model-crisis-v1")).toBeUndefined();
+    expect(getMission("crisis-drill-model-v1", "behaviour-crisis-drill")).toMatchObject({ context: "training", check: "crisis-drill-finished-v1", params: { scenarioId: "model-crisis-v1" } });
   });
   it("binds requirements to the registered lesson and server evidence", async () => {
     expect(() => getMission("constructor")).toThrow();

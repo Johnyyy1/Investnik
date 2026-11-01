@@ -26,6 +26,8 @@ Criteria are versioned by the mission/check ID. Do not repurpose an ID or change
 
 - `training-contributions-v1` (training, lesson 2.5.2 `first-plan-automation`): server-owned like the personal check; the client sends no decision. The server replays every Krizový nácvik session of the learner (#139) from its append-only `training_action` log and counts months in which the IPS contribution arrived and at least one BUY happened in that same month. Twelve such months in one session complete the mission. A lump sum, contributions left as cash, sales, returns and the scenario's outcome do not count. The evidence records the session ID, its frozen IPS version and contribution, and the counted months. Verification reads training data only and writes nothing there or to the portfolio.
 
+- `crisis-drill-finished-v1` (training, lesson B.1.10 `behaviour-crisis-drill`, mission `crisis-drill-model-v1`): server-owned; the client sends no decision. The server replays the learner's Krizový nácvik sessions and takes the latest finished `model-crisis-v1` session whose frozen series equals the deterministic model series. Finishing completes the mission whether or not the IPS was kept; the evidence records the session ID, IPS version, months, sells outside the plan, the end allocation status vs the band and the contribution months, for measuring plan adherence. Verification reads training data only and writes nothing there or to the portfolio.
+
 Other tasks in #142, such as rebalancing by contribution and releasing cash in a crisis, need their own authored scenario, immutable source evidence and deterministic check before registration. Do not map them to the diversification check or pretend their outputs exist.
 
 ## Persistence and authority
