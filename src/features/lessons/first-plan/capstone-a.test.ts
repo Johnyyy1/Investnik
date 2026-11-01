@@ -125,6 +125,8 @@ describe("Závěrečný projekt A · 2.5.4 (#198)", () => {
 
   it("collects the capstone self-assessment with the registry's criteria and submits that output as capstone-a-v1", () => {
     const rubric = block(lesson, CAPSTONE_A_OUTPUT_BLOCK_ID, "rubricSelfAssessment");
+    // Its own heading: the capstone title also ships in client chunks (Learn map, manifest), which check:lesson-bundle forbids for block copy.
+    expect(rubric.title).not.toBe(capstone.title);
     expect(rubric.criteria).toEqual(capstone.criteria.map((criterion) => ({ id: criterion.id, label: criterion.title, levels: [...criterion.levels] })));
     expect(capstoneOutputs).toEqual([{ capstoneId: capstone.id, lessonId: lesson.id, blockId: rubric.id }]);
     const submitStep = steps.find((step) => step.blocks.some((item) => item.id === rubric.id))!;
