@@ -45,9 +45,9 @@ for (const lesson of mode === "first-return" ? lessons.slice(0, 1) : lessons) {
   if (lesson.id === "first-plan-automation") await sql`insert into mission_attempt (id, user_id, mission_id, request_id, evidence, completed) values (${randomUUID()}, ${id!}, 'training-contributions-v1', 'training', ${sql.json({ fixture: true })}, true)`;
   if (lesson.id === "behaviour-behaviour-gap") await sql`insert into mission_attempt (id, user_id, mission_id, request_id, evidence, completed) values (${randomUUID()}, ${id!}, 'behaviour-crises-v1', 'training', ${sql.json({ fixture: true })}, true)`;
   if (lesson.id === "behaviour-crisis-drill") await sql`insert into mission_attempt (id, user_id, mission_id, request_id, evidence, completed) values (${randomUUID()}, ${id!}, 'crisis-drill-model-v1', 'training', ${sql.json({ fixture: true })}, true)`;
-  // Lessons B.1.2 and B.1.3 complete only with their saved checklist; an empty selection is a valid output.
-  if (lesson.id === "behaviour-overconfidence" || lesson.id === "behaviour-disposition-effect") await saveLearnerArtifact(id!, {
-    content: { kind: "lesson_output", payload: { type: "checklist", blockId: "checklist", checkedItemIds: lesson.id === "behaviour-overconfidence" ? ["ips", "cost"] : ["target"] } },
+  // Lessons B.1.2, B.1.3 and 2.3.6 complete only with their saved checklist; an empty selection is a valid output.
+  if (lesson.id === "behaviour-overconfidence" || lesson.id === "behaviour-disposition-effect" || lesson.id === "etfs-selection-checklist") await saveLearnerArtifact(id!, {
+    content: { kind: "lesson_output", payload: { type: "checklist", blockId: "checklist", checkedItemIds: lesson.id === "behaviour-overconfidence" ? ["ips", "cost"] : lesson.id === "etfs-selection-checklist" ? ["index", "costs"] : ["target"] } },
     sourceLessonId: lesson.id, consent: true, requestId: randomUUID(),
   });
   // Lesson B.1.9 completes only with its saved pre-mortem (any self-rating counts) and safeguard set.

@@ -7,8 +7,8 @@ const published = new Set(authoredLessons.map((lesson) => lesson.id));
 const placed = (prefix: string) => lessonPlacements.filter((placement) => placement.displayModule.startsWith(prefix)).map((placement) => placement.lessonId);
 
 describe("landing page inventory", () => {
-  it("publishes the fee-schedule, TER, trading-cost, currency, 30-year cost, broker-comparison, IPS, automation and first-purchase lessons in level 2", () => {
-    expect(placed("2.").filter((id) => published.has(id))).toEqual(["broker-fee-schedule", "costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "costs-ter-tracking-difference", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase"]);
+  it("publishes the fee-schedule, TER, trading-cost, currency, 30-year cost, broker-comparison, ETF-checklist, IPS, automation and first-purchase lessons in level 2", () => {
+    expect(placed("2.").filter((id) => published.has(id))).toEqual(["broker-fee-schedule", "costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "costs-ter-tracking-difference", "etfs-selection-checklist", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase"]);
   });
 
   it("still lists the reserve, pension, scams and foundations checkpoint lessons as drafts", () => {
