@@ -343,7 +343,9 @@ try {
           const verify = button("Ověřit misi");
           assert.equal(await button("Pokračovat").isDisabled(), true, "B.1.10 requires a finished drill");
           await verify.click();
-          await page.getByText(/^Zatím nemáš žádnou Modelovou krizi/).waitFor();
+          // Walked after 2.5.2, the learner already has an unfinished model crisis from its mission; walked alone, none.
+          const [earlier] = await sql`select 1 from training_session where user_id = ${userId!} and scenario_id = 'model-crisis-v1'`;
+          await page.getByText(earlier ? /^Modelovou krizi ještě nemáš dokončenou/ : /^Zatím nemáš žádnou Modelovou krizi/).waitFor();
           const [plan] = await sql`select 1 from learner_artifact where user_id = ${userId!} and kind = 'investment_plan'`;
           if (!plan) await sql`insert into learner_artifact (id, user_id, kind, version, payload, source_lesson_id, request_id) values (${randomUUID()}, ${userId!}, 'investment_plan', 1, ${sql.json(exampleIps as never)}, null, ${randomUUID()})`;
           const personalTrades = async () => (await sql<{ count: number }[]>`select count(*)::int as count from portfolio_trade t join portfolio p on p.id = t.portfolio_id where p.user_id = ${userId!}`)[0].count;
@@ -352,8 +354,11 @@ try {
           const labContext = await browser.newContext({ storageState: await page.context().storageState(), viewport: { width: 1440, height: 900 } });
           const lab = await labContext.newPage();
           await lab.goto(`${baseURL}/lab/training`);
+          // A learner without a session sees the picker; an open session offers „jiný“, a finished one „nový“.
           const start = lab.getByRole("button", { name: "Začít nácvik", exact: true });
-          if (!await start.count()) await lab.getByRole("button", { name: "Začít jiný nácvik", exact: true }).click();
+          const another = lab.getByRole("button", { name: /^Začít (jiný|nový) nácvik$/ });
+          await start.or(another).first().waitFor();
+          if (await another.count()) await another.click();
           await lab.getByRole("radio", { name: /^Modelová krize/ }).check();
           await lab.getByRole("button", { name: "Začít nácvik", exact: true }).click();
           await lab.getByRole("heading", { name: "(měsíc 0 z 24)", exact: false }).waitFor();
