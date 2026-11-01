@@ -4,13 +4,15 @@ import { isDeepStrictEqual } from "node:util";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { capstoneSubmission, lessonProgress, skillAttempt, user } from "@/db/schema";
+import { capstoneSubmission, milestoneAchievement, user } from "@/db/schema";
 import { listLearnerArtifacts } from "@/features/artifacts/repository";
 import { isGuestIdentity } from "@/features/guest/identity";
 import { loadPortfolioView } from "@/features/portfolio/service";
 import { loadPortfolioLabUnlockStatus } from "@/features/progression/repository";
 import { evaluateTraining } from "@/features/training/domain";
 import { loadLatestTraining } from "@/features/training/repository";
+import { logUnexpectedError } from "@/lib/server-errors";
+import { loadMilestoneEvidence, recordMilestoneAchievements } from "./achievements";
 import { capstoneOutcome, crisisPlanCheck, diversifiedCoreCheck, ipsAlignmentCheck, selfAssessmentSchema, thesisSavedCheck, type CheckResult } from "./criteria";
 import { milestoneStates } from "./domain";
 import { getCapstone, type CapstoneCheck, type CapstoneDefinition } from "./registry";
@@ -68,21 +70,27 @@ export async function submitCapstone(userId: string, input: { capstoneId: string
     const [previous] = await tx.select({ version: capstoneSubmission.version }).from(capstoneSubmission)
       .where(and(eq(capstoneSubmission.userId, userId), eq(capstoneSubmission.capstoneId, capstone.id))).orderBy(desc(capstoneSubmission.version)).limit(1);
     const [created] = await tx.insert(capstoneSubmission).values({ id: randomUUID(), userId, capstoneId: capstone.id, version: (previous?.version ?? 0) + 1, requestId, selfAssessment, ...evidence }).returning();
+    await recordMilestoneAchievements(tx, userId);
     return present(created);
   });
 }
 
-/** Derived milestone states. The three reads run in parallel with the page's other loads. */
+/**
+ * Derived milestone states. A learner whose evidence reached a milestone without a write that records it (the scope
+ * shrank at a deploy, or evidence predates the table) is recorded here. A failed record never breaks the page.
+ */
 export async function loadMilestones(userId: string | undefined) {
   if (!userId) return milestoneStates({ completions: [], attempts: [], submissions: [] });
-  const [completed, attempts, submissions] = await Promise.all([
-    db.select().from(lessonProgress).where(and(eq(lessonProgress.userId, userId), eq(lessonProgress.status, "completed"))),
-    db.select().from(skillAttempt).where(eq(skillAttempt.userId, userId)),
-    db.select().from(capstoneSubmission).where(eq(capstoneSubmission.userId, userId)),
-  ]);
-  return milestoneStates({
-    completions: completed.map((row) => ({ lessonId: row.lessonId, completedAt: row.completedAt ?? row.updatedAt })),
-    attempts,
-    submissions,
-  });
+  const states = milestoneStates(await loadMilestoneEvidence(db, userId));
+  if (states.some((state) => state.achievedAt)) {
+    const recorded = await db.select({ milestoneId: milestoneAchievement.milestoneId }).from(milestoneAchievement).where(eq(milestoneAchievement.userId, userId));
+    if (states.some((state) => state.achievedAt && !recorded.some((row) => row.milestoneId === state.id))) {
+      await db.transaction(async (tx) => {
+        // Every recording writer holds this lock, so two inserts can never wait on each other through the user foreign key.
+        await tx.select({ id: user.id }).from(user).where(eq(user.id, userId)).for("update");
+        await recordMilestoneAchievements(tx, userId);
+      }).catch((error: unknown) => logUnexpectedError("milestones", "record achievement", error));
+    }
+  }
+  return states;
 }

@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { lessonProgress, skillAttempt, user } from "@/db/schema";
 import type { SkillItem } from "@/features/learning/curriculum";
 import { skillItems } from "@/features/learning/curriculum";
+import { recordMilestoneAchievements } from "@/features/milestones/achievements";
 import { checkpointContext, skillLevel } from "./domain";
 
 /**
@@ -18,6 +19,8 @@ export async function recordSkillAttempt(userId: string, input: { requestId: str
       await tx.select().from(skillAttempt).where(and(eq(skillAttempt.userId, userId), eq(skillAttempt.skillId, item.skillId)))));
     await tx.insert(skillAttempt).values({ userId, requestId, skillId: item.skillId, itemId: item.id, correct, context, attemptedAt: now }).onConflictDoNothing();
     const [stored] = await tx.select().from(skillAttempt).where(and(eq(skillAttempt.userId, userId), eq(skillAttempt.requestId, requestId)));
+    // Only a correct checkpoint answer can raise a skill to Zvládnuté.
+    if (mode === "checkpoint" && correct) await recordMilestoneAchievements(tx, userId);
     return stored;
   });
 }

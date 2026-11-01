@@ -57,6 +57,7 @@ async function withEverything(userId: string, lessonIds: string[]) {
   await sql`insert into learning_profile (user_id, goals, daily_goal_minutes, time_zone, onboarding_step, onboarding_completed_at, updated_at) values (${userId}, '{QUANT}', 10, 'Europe/Prague', 6, now(), now())`;
   await sql`insert into progression_unlock (user_id, unlock_id, practice_capital_minor, reason, unlocked_at) values (${userId}, 'PORTFOLIO_LAB', 500000, 'qa', now())`;
   await sql`insert into analytics_early_return (user_id, returned_at) values (${userId}, now())`;
+  await sql`insert into milestone_achievement (user_id, milestone_id, scope_version, achieved_at) values (${userId}, 'A', 'qa', now())`;
   const closed = `${userId}-p1`, active = `${userId}-p2`;
   await sql`insert into portfolio (id, user_id, opened_at, closed_at, opening_capital_minor) values (${closed}, ${userId}, now() - interval '2 days', now() - interval '1 day', 500000)`;
   await sql`insert into portfolio (id, user_id, opened_at, reset_from_portfolio_id, opening_capital_minor) values (${active}, ${userId}, now(), ${closed}, 700000)`;
@@ -83,6 +84,7 @@ async function owned(userId: string) {
     (select count(*) from lesson_award where user_id = ${userId})::int as awards,
     (select count(*) from progression_unlock where user_id = ${userId})::int as unlocks,
     (select count(*) from analytics_early_return where user_id = ${userId})::int as "earlyReturns",
+    (select count(*) from milestone_achievement where user_id = ${userId})::int as achievements,
     (select count(*) from portfolio where id like ${`${userId}-%`})::int as portfolios,
     (select count(*) from portfolio_trade where portfolio_id like ${`${userId}-%`})::int as trades,
     (select count(*) from portfolio_allocation where portfolio_id like ${`${userId}-%`})::int as allocations,
@@ -110,7 +112,7 @@ try {
   const other = await signUp("other");
   await withEverything(target.id, lessons);
   await withEverything(other.id, lessons);
-  const full = { user: 1, sessions: 1, accounts: 1, artifacts: 2, profile: 1, progress: 2, awards: 2, unlocks: 1, earlyReturns: 1, portfolios: 2, trades: 2, allocations: 1, lines: 1 };
+  const full = { user: 1, sessions: 1, accounts: 1, artifacts: 2, profile: 1, progress: 2, awards: 2, unlocks: 1, earlyReturns: 1, achievements: 1, portfolios: 2, trades: 2, allocations: 1, lines: 1 };
   assert.deepEqual(await owned(target.id), full);
   const otherBefore = await owned(other.id);
   const sharedBefore = await shared();
@@ -125,6 +127,7 @@ try {
   assert.equal(data.user.email, target.email);
   assert.equal(data.learnerArtifacts.length, 2, "all artifact revisions are exported");
   assert.ok(data.productMeasurement.earlyReturnAt, "the funnel's early-return record is exported");
+  assert.equal(data.milestoneAchievements.length, 1, "the first-achievement record is exported");
   assert.equal(data.portfolios.length, 2);
   assert.equal(data.portfolios.flatMap((generation: { trades: unknown[] }) => generation.trades).length, 2);
   assert.equal(data.portfolios[1].targetMixes[0].lines[0].weightBasisPoints, 9000);

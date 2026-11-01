@@ -1,6 +1,6 @@
 import { shiftDate } from "@/features/gamification/domain";
 import {
-  analyticsDate, buildFunnel, buildLessonDropOff, buildWeeklyCohorts, EARLY_RETURN_DAYS, INACTIVE_AFTER_DAYS,
+  analyticsDate, buildFunnel, buildLessonDropOff, buildMilestoneAGate, buildWeeklyCohorts, EARLY_RETURN_DAYS, INACTIVE_AFTER_DAYS,
   type LearnerFacts, type LessonProgressFact,
 } from "./funnel";
 
@@ -19,6 +19,7 @@ export function buildFunnelReport(facts: FunnelFacts, now: Date, { weeks = 8 }: 
     }),
     generatedAt: now.toISOString(),
     funnels: FUNNEL_WINDOWS.map((days) => buildFunnel(facts.learners, facts.visits, days, now)),
+    milestoneA: buildMilestoneAGate(facts.learners),
     weeklyCohorts: buildWeeklyCohorts(facts.learners, weeks, now),
     lessonDropOff: buildLessonDropOff(facts.progress, now),
   };
@@ -48,11 +49,18 @@ export function formatFunnelReport(report: FunnelReport) {
       `Doplňkově, dokud nejsou vedené mise: první cvičný obchod v Labu provedli ${funnel.firstLabTrade}.`,
     ].join("\n"));
   }
+  const gate = report.milestoneA;
+  sections.push([
+    "## Milník A: registrované účty, které ho aspoň jednou splnily (brána S1)",
+    `Registrované účty: ${gate.registered} · splnili: ${gate.achieved} · podíl: ${share(gate.share)}`,
+    table(["Verze rozsahu", "Splnili", "První splnění"], gate.byScopeVersion.map((scope) => [scope.scopeVersion, String(scope.learners), czechDay(analyticsDate(scope.firstAchievedAt))])),
+    "Počítá se první splnění; pozdější rozšíření milníku ho nemaže. Rozsah tvoří jen publikované lekce, takže čísla různých verzí nejsou stejně náročná.",
+  ].join("\n"));
   sections.push([
     "## Týdenní kohorty podle týdne založení (pondělí)",
-    table(["Týden od", "Noví", "Diagnostika", "1. lekce", "1. výstup", `Návrat ≤ ${EARLY_RETURN_DAYS} d`, "V okně"],
-      report.weeklyCohorts.map((cohort) => [czechDay(cohort.week), String(cohort.learners), String(cohort.diagnostic), String(cohort.firstLesson), String(cohort.firstArtifact), String(cohort.returned), String(cohort.returnPending)])),
-    "Milník A a mise v Labu zatím nemají zdroj dat, proto v kohortách chybí.",
+    table(["Týden od", "Noví", "Diagnostika", "1. lekce", "1. výstup", "Milník A", `Návrat ≤ ${EARLY_RETURN_DAYS} d`, "V okně"],
+      report.weeklyCohorts.map((cohort) => [czechDay(cohort.week), String(cohort.learners), String(cohort.diagnostic), String(cohort.firstLesson), String(cohort.firstArtifact), String(cohort.milestoneA), String(cohort.returned), String(cohort.returnPending)])),
+    "Mise v Labu zatím nemají zdroj dat, proto v kohortách chybí.",
   ].join("\n"));
   sections.push([
     "## Odchody po lekcích (všichni současní učící se)",

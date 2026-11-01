@@ -21,6 +21,7 @@ function rows(): AccountExportRows {
     artifacts: [{ id: "artifact1", userId: "u1", kind: "goal_map", version: 1, payload: { goals: [] }, createdAt: at, sourceLessonId: "foundations-why-invest", requestId: "r1" }],
     missionAttempts: [{ id: "mission1", userId: "u1", missionId: "allocation-training-v1", requestId: "retry1", evidence: { context: "training" }, completed: true, createdAt: at }],
     capstoneSubmissions: [{ id: "capstone1", userId: "u1", capstoneId: "capstone-d-v1", version: 1, requestId: "r3", artifactRefs: {}, autoCriteria: {}, selfAssessment: { reflection: "Text" }, submittedAt: at }],
+    milestoneAchievements: [{ userId: "u1", milestoneId: "A", scopeVersion: "abc", achievedAt: at }],
     earlyReturn: { returnedAt: at },
     trainingSessions: [{ id: "s1", userId: "u1", scenarioId: "model-crisis-v1", startedAt: at, ipsArtifactId: "artifact1", feeProfileId: "investi-standard-v1", initialCapitalMinor: 10000000n, requestId: "r2",
       plan: { ipsVersion: 1, contributionMinor: "250025", targetInvestedBps: 8000, rebalancing: { mode: "contributions" }, drawdownAction: "keep_plan" }, series: { points: [{ date: "2000-01-31", price: "100" }], source: { kind: "model" } } }],
@@ -43,6 +44,7 @@ describe("account export", () => {
     expect(parsed.lessonRewardReceipts[0].practiceCapitalMinor).toBe("200000");
     expect(parsed.progressionUnlocks[0].practiceCapitalMinor).toBe("500000");
     expect(parsed.portfolios[0].trades[0]).toMatchObject({ quantity: "0.33333333", fxRateToBase: "23.456789012345", cashDeltaBaseMinor: "-977" });
+    expect(parsed.milestoneAchievements).toEqual([{ milestoneId: "A", scopeVersion: "abc", achievedAt: at.toISOString() }]);
     expect(parsed.productMeasurement).toEqual({ earlyReturnAt: at.toISOString() });
     expect(parsed.trainingSessions[0]).toMatchObject({ id: "s1", initialCapitalMinor: "10000000", actions: [{ sequence: 0, kind: "buy", amountMinor: "13333", quantity: null }] });
     expect(parsed.skillAttempts).toEqual([{ skillId: "position-value", itemId: "foundations-stocks/mastery-position", correct: true, context: "checkpoint", attemptedAt: at.toISOString() }]);

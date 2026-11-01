@@ -12,6 +12,7 @@ import { requireArtifacts } from "@/features/artifacts/requirements";
 import { getGamification, learningDate, LESSON_XP } from "@/features/gamification/domain";
 import { getLearnerSummary } from "@/features/learning/learner-summary";
 import { getPracticeCapitalSummary, lessonReward } from "@/features/rewards/practice-capital";
+import { recordMilestoneAchievements } from "@/features/milestones/achievements";
 import { ensurePortfolioLabUnlockInTransaction } from "@/features/progression/repository";
 
 export async function saveLessonProgress(userId: string, input: SaveLessonProgress, answers?: Record<string, string>) {
@@ -71,6 +72,7 @@ export async function completeLesson(userId: string, lessonId: string) {
       }).onConflictDoNothing().returning();
       xpAwarded = awarded[0]?.xp ?? 0;
       practiceCapitalAwardedMinor = awarded[0]?.practiceCapitalMinor ?? BigInt(0);
+      await recordMilestoneAchievements(tx, userId);
     }
     const awards = await tx.select().from(lessonAward).where(eq(lessonAward.userId, userId));
     const states = await tx.select().from(lessonProgress).where(eq(lessonProgress.userId, userId));

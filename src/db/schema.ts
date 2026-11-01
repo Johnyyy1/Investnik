@@ -509,6 +509,17 @@ export const capstoneSubmission = pgTable("capstone_submission", {
   check("capstone_submission_version_positive", sql`${table.version} > 0`),
 ]);
 
+/**
+ * First time a learner reached a milestone (#456), for the S1 gate. Insert-only: milestone state stays derived and
+ * can reopen when new content is published, this row keeps that it was once achieved and under which scope. It grants nothing.
+ */
+export const milestoneAchievement = pgTable("milestone_achievement", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  milestoneId: text("milestone_id").notNull(),
+  scopeVersion: text("scope_version").notNull(),
+  achievedAt: timestamp("achieved_at", { withTimezone: true }).notNull(),
+}, (table) => [primaryKey({ columns: [table.userId, table.milestoneId] })]);
+
 /** Anonymous daily channel counts; no visitor or shared-output identifiers. */
 export const analyticsAcquisitionDay = pgTable("analytics_acquisition_day", {
   day: date("day").notNull(),

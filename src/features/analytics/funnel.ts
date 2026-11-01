@@ -38,6 +38,9 @@ export type LearnerFacts = {
   firstArtifactAt: Date | null;
   firstLabTradeAt: Date | null;
   returnedAt: Date | null;
+  /** The first time this learner reached milestone A (#456) and the scope it had then; later reopening does not clear it. */
+  milestoneAAt: Date | null;
+  milestoneAScopeVersion: string | null;
 };
 
 export type FunnelStepId = "visit" | "start" | "diagnostic" | "first-lesson" | "first-artifact" | "milestone-a" | "first-lab-mission" | "return-7d";
@@ -49,7 +52,7 @@ export const funnelSteps: readonly { id: FunnelStepId; label: string; unavailabl
   { id: "diagnostic", label: "Diagnostika" },
   { id: "first-lesson", label: "První dokončená lekce" },
   { id: "first-artifact", label: "První výstup lekce" },
-  { id: "milestone-a", label: "Milník A", unavailable: "Splnění milníku se zatím nezaznamenává (#126)." },
+  { id: "milestone-a", label: "Milník A" },
   { id: "first-lab-mission", label: "První mise v Labu", unavailable: "Vedené mise v Labu zatím neexistují (#142)." },
   { id: "return-7d", label: "Návrat do 7 dní" },
 ];
@@ -101,6 +104,7 @@ const reachedStep: Partial<Record<FunnelStepId, (learner: LearnerFacts) => boole
   diagnostic: (learner) => learner.diagnosticAt !== null,
   "first-lesson": (learner) => learner.firstLessonAt !== null,
   "first-artifact": (learner) => learner.firstArtifactAt !== null,
+  "milestone-a": (learner) => learner.milestoneAAt !== null,
   "return-7d": (learner) => learner.returnedAt !== null,
 };
 
@@ -155,6 +159,7 @@ export type WeeklyCohort = {
   diagnostic: number;
   firstLesson: number;
   firstArtifact: number;
+  milestoneA: number;
   returned: number;
   /** Learners whose seven-day window is still open; they may still return. */
   returnPending: number;
@@ -172,10 +177,29 @@ export function buildWeeklyCohorts(learners: readonly LearnerFacts[], weeks: num
       diagnostic: cohort.filter((learner) => learner.diagnosticAt).length,
       firstLesson: cohort.filter((learner) => learner.firstLessonAt).length,
       firstArtifact: cohort.filter((learner) => learner.firstArtifactAt).length,
+      milestoneA: cohort.filter((learner) => learner.milestoneAAt).length,
       returned: cohort.filter((learner) => learner.returnedAt).length,
       returnPending: cohort.filter((learner) => !learner.returnedAt && returnWindowOpen(learner, now)).length,
     };
   });
+}
+
+/**
+ * The S1 gate (#456): of all registered accounts, how many have reached milestone A at least once, split by the scope
+ * they reached it under, oldest scope first. Guests are not registered and cannot submit the capstone.
+ */
+export function buildMilestoneAGate(learners: readonly LearnerFacts[]) {
+  const registered = learners.filter((learner) => learner.kind === "account");
+  const achieved = registered.filter((learner) => learner.milestoneAAt !== null);
+  const scopes = new Map<string, { scopeVersion: string; learners: number; firstAchievedAt: Date }>();
+  for (const learner of achieved) {
+    const scopeVersion = learner.milestoneAScopeVersion!;
+    const scope = scopes.get(scopeVersion);
+    if (!scope) scopes.set(scopeVersion, { scopeVersion, learners: 1, firstAchievedAt: learner.milestoneAAt! });
+    else { scope.learners += 1; if (learner.milestoneAAt! < scope.firstAchievedAt) scope.firstAchievedAt = learner.milestoneAAt!; }
+  }
+  return { registered: registered.length, achieved: achieved.length, share: ratio(achieved.length, registered.length),
+    byScopeVersion: [...scopes.values()].sort((a, b) => a.firstAchievedAt.getTime() - b.firstAchievedAt.getTime()) };
 }
 
 export type LessonProgressFact = { key: string; lessonId: string; completedAt: Date | null; updatedAt: Date };

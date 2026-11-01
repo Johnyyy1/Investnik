@@ -34,10 +34,10 @@ async function layouts(state, capture = true) {
     assert.equal(await map.locator("[data-display-module]").count(), 25, "registry display modules");
     assert.equal(await map.locator("ol a").count(), 50, "every published lesson appears once");
     assert.equal(await map.locator("[data-level][open]").count(), state === "complete" ? 0 : 1, "only continuation level starts expanded at every viewport");
-    // Derived milestones (#126): the 2.4 draft and capstones B–D are unpublished, so none is achievable, whatever was completed.
+    // Derived milestones (#126, #456): A counts published lessons; capstones B–D are unpublished, so those stay unavailable.
     assert.deepEqual(await map.locator("[data-milestone]").evaluateAll((items) => items.map((item) => [item.dataset.milestone, item.dataset.status])),
-      [["A", "unavailable"], ["B", "unavailable"], ["C", "unavailable"], ["D", "unavailable"]], "milestones are derived and never claimed early");
-    assert.match(await map.getByRole("list", { name: "Požadavky milníku A" }).innerText(), /Lekce: připravujeme[\s\S]*Dovednosti na úrovni Zvládnuté: \d+ z \d+[\s\S]*Závěrečný projekt A: plán, nákup a krizový nácvik: zatím ne/);
+      [["A", "open"], ["B", "unavailable"], ["C", "unavailable"], ["D", "unavailable"]], "milestones are derived and never claimed early");
+    assert.match(await map.getByRole("list", { name: "Požadavky milníku A" }).innerText(), /Lekce: \d+ z \d+[\s\S]*Dovednosti na úrovni Zvládnuté: \d+ z \d+[\s\S]*Závěrečný projekt A: plán, nákup a krizový nácvik: zatím ne/);
     assert.equal(await page.locator("h1:visible").count(), 1);
     assert.equal(await page.locator("#main-content").count(), 1);
     assert.ok(await page.locator("main img").evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0)), "illustration loads");
@@ -68,7 +68,7 @@ async function layouts(state, capture = true) {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${state}: 200% text overflow`);
   const clipped = await learn().locator("h1,h2,h3,a,button,label").evaluateAll((elements) => elements.filter((element) => element.clientWidth && element.scrollWidth > element.clientWidth + 2).map((element) => element.textContent));
   assert.deepEqual(clipped, [], `${state}: enlarged essential text clips`);
-  const chapterGeometry = await learn().getByTestId("journey-modules").locator("details > summary").evaluateAll((summaries) => summaries.map((summary) => { const title = summary.querySelector("h3").getBoundingClientRect(); const number = summary.firstElementChild.getBoundingClientRect(); return { belowNumber: title.top >= number.bottom, width: title.width }; }));
+  const chapterGeometry = await learn().getByTestId("journey-modules").locator("details[data-level] > summary").evaluateAll((summaries) => summaries.map((summary) => { const title = summary.querySelector("h3").getBoundingClientRect(); const number = summary.firstElementChild.getBoundingClientRect(); return { belowNumber: title.top >= number.bottom, width: title.width }; }));
   assert.ok(chapterGeometry.every((chapter) => chapter.belowNumber && chapter.width > 200), "enlarged chapter names reflow onto full-width rows");
   await page.screenshot({ path: `${output}/${state}-320-text-200.png`, fullPage: true, animations: "disabled" });
   await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
