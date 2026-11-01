@@ -24,6 +24,7 @@ export const reasonLabels: Record<ReasonCode, string> = {
   BROKER_FEES_AFTER_MARKETS: "Víš, jak se na burze nakupuje. Teď v ceníku brokera najdeš, kolik zaplatíš za samotný nákup.",
   PLAN_AFTER_COSTS: "Víš, kolik tě plán bude stát. Teď si ho sepíšeš i s pravidly pro propad, dokud je klid.",
   BEHAVIOUR_AFTER_PLAN: "Plán máš sepsaný. Teď poznáš chyby, které ho v praxi nejčastěji rozbijí, a nastavíš si proti nim pojistku.",
+  ETF_CHECKLIST_AFTER_COSTS: "Náklady fondů znáš. Teď si sestavíš checklist, podle kterého vybereš ETF podle plánu, ne podle názvu.",
   AUTOMATION_AFTER_PLAN: "Plán máš sepsaný. Teď ho nastavíš tak, aby pravidelná investice běžela sama bez nového rozhodování.",
   COSTS_AFTER_FUNDS: "Fondy už znáš. Teď zjistíš, kolik tě skutečně stojí a jak věrně sledují index.",
   FOUNDATIONS_START: "Začínáš od základů, proto doporučujeme první lekci.",

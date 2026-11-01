@@ -9,6 +9,7 @@ import { CORRELATION_MODULE_ID, correlationLessons } from "../lessons/correlatio
 import { DIVERSIFICATION_MODULE_ID, diversificationLessons } from "../lessons/diversification/manifest";
 import { FIRST_PLAN_MODULE_ID, firstPlanLessons } from "../lessons/first-plan/manifest";
 import { INVESTOR_BEHAVIOUR_MODULE_ID, investorBehaviourLessons } from "../lessons/investor-behaviour/manifest";
+import { EU_FUNDS_AND_ETFS_MODULE_ID, euFundsAndEtfsLessons } from "../lessons/eu-funds-and-etfs/manifest";
 
 /**
  * Curriculum 2.0 registry. Typed code, no database.
@@ -36,6 +37,8 @@ export const storageModules = [
   // Last in storage order for the same reason: publishing 2.5.1 must not reorder an existing learner's next step.
   { id: FIRST_PLAN_MODULE_ID, slug: "first-plan", title: "První plán a první nákup", description: "Sepiš investiční plán dřív, než ho budeš potřebovat.", status: "available", lessons: firstPlanLessons },
   { id: INVESTOR_BEHAVIOUR_MODULE_ID, slug: "investor-behaviour", title: "Investor v zrcadle", description: "Poznej vlastní rozhodování a nastav pojistky v investičním plánu.", status: "available", lessons: investorBehaviourLessons },
+  // Last in storage order: publishing 2.3.6 must not reorder an existing learner's next step.
+  { id: EU_FUNDS_AND_ETFS_MODULE_ID, slug: "eu-funds-and-etfs", title: "Produkty v EU a výběr ETF", description: "Rozliš evropské fondy a vyber ETF podle checklistu, ne podle názvu.", status: "available", lessons: euFundsAndEtfsLessons },
 ] as const;
 
 export type MilestoneId = "A" | "B" | "C" | "D";
@@ -128,6 +131,7 @@ export const skills = {
   "debiasing-safeguards": "Pojistky proti vlastním chybám a pre-mortem investičního plánu",
   "crisis-plan-adherence": "Dodržení IPS v simulované krizi a jeho revize podle zkušenosti",
   "order-review": "Kontrola instrumentu, pokynu a celkových nákladů před nákupem",
+  "etf-selection": "Výběr ETF podle checklistu: trh a index, UCITS, náklady a dostupnost u brokera",
   "tracking-difference": "TER, rozdíl a kolísání rozdílu vůči indexu",
   "fee-schedule": "Ceník brokera: poplatek s minimem a maximem a skryté náklady",
   "active-vs-passive": "Aktivní správa proti indexu",
@@ -177,6 +181,7 @@ export const lessonPlacements: readonly LessonPlacement[] = [
   place("costs-over-30-years", "2.2", 4, "required", ["costs-ter-tracking-difference", "costs-spread-and-fees", "foundations-risk-reward"], ["cost-drag", "compounding"]),
   place("costs-broker-comparison", "2.2", 5, "required", ["costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years"], ["plan-costs", "tracking-difference", "trade-costs", "cost-drag"]),
   place("costs-ter-tracking-difference", "2.2", 1, "required", ["foundations-funds"], ["tracking-difference", "fund-costs"]),
+  place("etfs-selection-checklist", "2.3", 6, "required", ["costs-ter-tracking-difference", "foundations-funds"], ["etf-selection"]),
   place("taxes-filing-obligation", "2.4", 1, "required", ["foundations-stocks"], ["tax-filing"]),
   place("first-plan-ips", "2.5", 1, "required", ["before-investing-goals", "costs-broker-comparison"], ["investment-policy"]),
   place("first-plan-automation", "2.5", 2, "required", ["first-plan-ips"], ["automation"]),
@@ -279,6 +284,7 @@ export const skillItems: readonly SkillItem[] = [
   item("first-plan-automation", "recall-why", "automation"),
   item("first-plan-automation", "recall-losses", "automation"),
   item("first-plan-first-purchase", "recall", "order-review"),
+  item("etfs-selection-checklist", "recall", "etf-selection"),
   item("behaviour-overconfidence", "recall", "turnover"),
   item("behaviour-disposition-effect", "recall", "disposition-effect"),
   item("behaviour-loss-aversion", "recall", "myopic-loss-aversion"),
