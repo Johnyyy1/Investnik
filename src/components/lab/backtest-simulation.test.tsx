@@ -19,6 +19,10 @@ describe("simulation step after a backtest", () => {
     expect(html).toContain("Spustit simulaci");
     expect(html).not.toContain("simulation-short-history");
   });
+  it("discloses price-only returns without dividends before running a simulation", () => {
+    const html = renderToStaticMarkup(createElement(BacktestSimulation, { ...props, values: path(132) }));
+    expect(html).toContain("Výnosy zachycují jen změny cen, bez dividend.");
+  });
   it("warns that a short history narrows the range", () => {
     const html = renderToStaticMarkup(createElement(BacktestSimulation, { ...props, values: path(36) }));
     expect(html).toContain("Historie má jen 36 měsíců.");
