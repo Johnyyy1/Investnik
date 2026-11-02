@@ -22,8 +22,8 @@ export const DEMO_PLAN = { etfBps: 9_000n, cashBps: 1_000n, bandBps: 500n } as c
 
 export type DemoInstrumentId = "etf" | "stock";
 export const DEMO_INSTRUMENTS: Record<DemoInstrumentId, { name: string; kind: string; inPlan: boolean; short: string }> = {
-  etf: { name: "Světový akciový ETF (ukázka)", kind: "ETF · cena v USD", inPlan: true, short: "ETF" },
-  stock: { name: "Fiktivní firma a.s.", kind: "Akcie jedné firmy · cena v USD", inPlan: false, short: "Fiktivní firma" },
+  etf: { name: "Světový akciový ETF (ukázka)", kind: "ETF · cena v\u00a0USD", inPlan: true, short: "ETF" },
+  stock: { name: "Fiktivní firma a.s.", kind: "Akcie jedné firmy · cena v\u00a0USD", inPlan: false, short: "Fiktivní firma" },
 };
 
 export type DemoTariffId = (typeof BROKER_FEE_PROFILES)[number]["id"];
@@ -56,10 +56,10 @@ export type AmountCheck = { ok: true; amountKc: number } | { ok: false; message:
 /** Whole koruny only; the purchase plus its costs must fit in the demo capital (no negative cash). */
 export function checkAmount(raw: string, tariffId: DemoTariffId): AmountCheck {
   const digits = raw.replace(/\s/g, "");
-  if (!/^\d{1,7}$/.test(digits)) return { ok: false, message: "Zadej částku v celých korunách." };
+  if (!/^\d{1,7}$/.test(digits)) return { ok: false, message: "Zadej částku v\u00a0celých korunách." };
   const amountKc = Number(digits);
   if (amountKc < 1) return { ok: false, message: "Zadej částku aspoň 1 Kč." };
-  if (demoCost(amountKc, tariffId).debitMinor > DEMO_CAPITAL_MINOR) return { ok: false, message: "Na nákup i s náklady cvičný kapitál nestačí." };
+  if (demoCost(amountKc, tariffId).debitMinor > DEMO_CAPITAL_MINOR) return { ok: false, message: "Na nákup i\u00a0s\u00a0náklady cvičný kapitál nestačí." };
   return { ok: true, amountKc };
 }
 
@@ -100,7 +100,7 @@ export type CrisisChoice = "sell" | "hold" | "buy";
 export const CRISIS_CHOICES: readonly { id: CrisisChoice; label: string; detail: string }[] = [
   { id: "sell", label: "Prodat", detail: "Prodat polovinu ETF" },
   { id: "hold", label: "Držet", detail: "Nic neměnit" },
-  { id: "buy", label: "Dokoupit podle plánu", detail: "Z hotovosti dorovnat na cíl 90 %" },
+  { id: "buy", label: "Dokoupit podle plánu", detail: "Z\u00a0hotovosti dorovnat na cíl 90 %" },
 ];
 
 /**
