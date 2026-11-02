@@ -31,6 +31,7 @@
 .rows > div + div { border-top: 1px solid var(--color-divider); }
 .rows dt { width: 160px; flex-shrink: 0; font-size: .875rem; font-weight: 500; color: var(--color-muted); }
 .rows dd { flex: 1; min-width: 0; font-size: 1rem; font-weight: 500; overflow-wrap: anywhere; }
+.rows dd.rowAction { flex: 0 0 auto; }
 .unverified { display: block; margin-top: 2px; font-size: .8125rem; font-weight: 500; color: var(--color-muted); }
 .textButton, .textLink { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; gap: 8px; color: var(--color-primary); font-size: .875rem; font-weight: 600; text-align: left; }
 .textButton { cursor: pointer; flex-shrink: 0; }
@@ -151,7 +152,7 @@ form > .session { margin-top: 32px; }
   .rows > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 14px 16px; min-height: 68px; }
   .rows dt { width: auto; font-size: .8125rem; }
   .rows dd { grid-column: 1; grid-row: 2; }
-  .rows .textButton { grid-column: 2; grid-row: 1 / span 2; }
+  .rows dd.rowAction { grid-column: 2; grid-row: 1 / span 2; }
   .rows > div:has(.nameForm) { display: block; }
   .rows > div:has(.nameForm) dt { margin-bottom: 8px; }
   .overviewPreferences { display: none; }

@@ -86,7 +86,7 @@ async function render(page, label, { state, xp, capital, count, action, actionHr
     assert.ok(await root().locator("img").evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0)));
     const nav = page.getByRole("navigation", { name: width < 1024 ? "Mobilní navigace" : "Hlavní navigace" });
     assert.equal(await nav.locator('[aria-current="page"]').getAttribute("href"), "/progress");
-    const account = page.getByLabel("Nabídka účtu", { exact: true });
+    const account = page.locator("summary").filter({ hasText: "Nabídka účtu" });
     await account.focus(); await account.press("Enter"); await page.getByRole("banner").getByRole("link", { name: "Nastavení", exact: true }).waitFor(); await account.press("Escape");
     assert.equal(await account.evaluate((element) => element === document.activeElement && !element.parentElement.open), true);
     await page.screenshot({ path: `${output}/${label}-${width}.png`, fullPage: true, animations: "disabled" });

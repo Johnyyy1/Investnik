@@ -262,7 +262,7 @@ try {
 
   await e.page.goto(`${baseURL}/learn`);
   assert.equal(await e.page.getByRole("heading", { name: "Přizpůsobit učení", exact: true }).count(), 0);
-  assert.equal(await e.page.getByRole("region", { name: "Doporučeno pro tebe" }).getByRole("link", { name: "Pokračovat", exact: true }).getAttribute("href"), "/learn/returns/what-is-a-return");
+  assert.equal(await e.page.getByRole("region", { name: "Doporučeno pro tebe" }).getByRole("link", { name: /^(Začít lekci|Pokračovat od kroku \d+)$/ }).getAttribute("href"), "/learn/returns/what-is-a-return");
   await e.page.goto(`${baseURL}/settings?section=goal`);
   await e.page.getByRole("button", { name: "Změnit cíl nebo úroveň…", exact: true }).click();
   await e.page.locator('input[value="LONG_TERM_ETF"]').check();
@@ -275,7 +275,7 @@ try {
     execFileSync("node_modules/.bin/tsx", ["--tsconfig", "scripts/tsconfig.persistence.json", "scripts/personalization-browser-fixtures.mts"], { env: { ...process.env, PERSONALIZATION_QA_USER_ID: e.id, PERSONALIZATION_QA_LESSONS: mode }, stdio: "pipe" });
     await e.page.reload();
     const recommended = e.page.getByRole("region", { name: "Doporučeno pro tebe" });
-    if (mode === "first-return") assert.equal(await recommended.getByRole("link", { name: "Pokračovat", exact: true }).getAttribute("href"), "/learn/returns/simple-returns");
+    if (mode === "first-return") assert.equal(await recommended.getByRole("link", { name: /^(Začít lekci|Pokračovat od kroku \d+)$/ }).getAttribute("href"), "/learn/returns/simple-returns");
     else {
       await recommended.getByRole("heading", { name: "Kurikulum máš za sebou.", exact: true }).waitFor();
       const completeAction = recommended.getByRole("link", { name: "Vyzkoušet v Labu", exact: true });
@@ -322,8 +322,8 @@ try {
   const [skipped] = await sql`select * from learning_profile where user_id = ${skip.id}`;
   assert.equal(skipped.experience_level, "BEGINNER"); assert.deepEqual(skipped.goals, []); assert.equal(skipped.diagnostic_result, null);
   assert.deepEqual(skipped.interests, []); assert.equal(skipped.daily_goal_minutes, 10); assert.ok(skipped.onboarding_completed_at); assert.equal(skipped.personalized_onboarding_completed_at, null);
-  await skip.page.getByRole("region", { name: "Doporučeno pro tebe" }).getByRole("link", { name: "Pokračovat", exact: true }).waitFor();
-  assert.equal(await skip.page.getByRole("region", { name: "Doporučeno pro tebe" }).getByRole("link", { name: "Pokračovat", exact: true }).getAttribute("href"), "/learn/investing-foundations/why-invest");
+  await skip.page.getByRole("region", { name: "Doporučeno pro tebe" }).getByRole("link", { name: /^(Začít lekci|Pokračovat od kroku \d+)$/ }).waitFor();
+  assert.equal(await skip.page.getByRole("region", { name: "Doporučeno pro tebe" }).getByRole("link", { name: /^(Začít lekci|Pokračovat od kroku \d+)$/ }).getAttribute("href"), "/learn/investing-foundations/why-invest");
   await skip.page.getByText("Jak si rozvrhnout učení", { exact: true }).click();
   await skip.page.getByText("Procházej lekce vlastním tempem a zkoušej jednotlivé úlohy.").waitFor();
   await noRewards(skip.id);

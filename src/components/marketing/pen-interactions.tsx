@@ -54,18 +54,19 @@ export function LessonPreview({ compact = false, hero = false }: { compact?: boo
     el.addEventListener(LESSON_DEMO_EVENT, onDemo);
     return () => el.removeEventListener(LESSON_DEMO_EVENT, onDemo);
   }, []);
+  const Heading = hero ? "h2" : "h3";
   const correct = answer === "B";
   const feedbackTitle = correct
     ? "Přesně. Dluh stojí jistě, výnos jistý není."
     : "Ještě ne. ETF výnos nezaručuje.";
-  const feedback = <><h3 className={correct ? undefined : styles.feedbackWrong}>{feedbackTitle}</h3><p>{reasoning}</p></>;
+  const feedback = <><Heading className={correct ? undefined : styles.feedbackWrong}>{feedbackTitle}</Heading><p>{reasoning}</p></>;
   return <div ref={rootRef} data-lesson-demo={hero ? "hero" : compact ? "compact" : "base"} className={hero ? styles.heroLessonContent : styles.lessonPreview} role="group" aria-label="Ukázka lekce; nezapisuje pokrok ani neuděluje XP">
     <div className={`${styles.lessonCard} ${compact ? styles.lessonCompact : styles.heroLessonMain}`}>
       <p className={styles.lessonDisclosure}>Ukázka lekce · modelový příklad</p>
       <div className={styles.lessonMeta}><span>Dluh, nebo investice?</span><span>≈ 12 min</span></div>
       <p className={styles.lessonTrack}>NEŽ ZAČNEŠ INVESTOVAT · Lekce 0.1.2</p>
       {(!compact || !revealed || hold) && <>
-        <h3 className={styles.lessonQuestion}>Jana má 30 000 Kč navíc, žádnou rezervu a&nbsp;kartu s&nbsp;RPSN 24 %. Co dřív?</h3>
+        <Heading className={styles.lessonQuestion}>Jana má 30 000 Kč navíc, žádnou rezervu a&nbsp;kartu s&nbsp;RPSN 24 %. Co dřív?</Heading>
         <ul className={styles.answers} aria-label="Ukázkové odpovědi">
           {(["A", "B"] as const).map(key => <li key={key}
             className={`${styles.answer} ${answer === key ? styles.answerSelected : ""} ${answer === key && revealed && key !== "B" ? styles.answerWrong : ""}`}
@@ -88,12 +89,12 @@ export function LessonPreview({ compact = false, hero = false }: { compact?: boo
         </span>
       </div>
     </div>
-    {hero && <aside className={styles.heroLessonAside}>
+    {hero && <div className={styles.heroLessonAside}>
       <p className={styles.demoEyebrow}>NEJDŘÍV ROZHODNUTÍ</p>
-      <div className={styles.asideFeedback} role="status" data-aside-feedback>{revealed ? feedback : <><h3>Zkus rozhodnutí.</h3><p>Vyber odpověď a&nbsp;zjisti, proč se drahý dluh vyplatí řešit dřív než investice.</p></>}</div>
+      <div className={styles.asideFeedback} role="status" data-aside-feedback>{revealed ? feedback : <><Heading>Zkus rozhodnutí.</Heading><p>Vyber odpověď a&nbsp;zjisti, proč se drahý dluh vyplatí řešit dřív než investice.</p></>}</div>
       <div className={styles.lessonProgress}><span data-lesson-progress/></div>
       <p className={styles.asideContext}>Úroveň 0 · Než začneš investovat<br/>Ukázka z&nbsp;publikované lekce.</p>
-    </aside>}
+    </div>}
     {compact && <p className={styles.microDisclaimer}>Ukázka lekce · odpověď a&nbsp;vysvětlení</p>}
     <span className={styles.demoCursor} data-demo-cursor aria-hidden="true"><svg width="22" height="22" viewBox="0 0 22 22"><path d="M3 2l15 7.5-6.2 1.9L9 18.5z" fill="#171717" stroke="#fffcf7" strokeWidth="1.5" strokeLinejoin="round"/></svg></span>
   </div>;

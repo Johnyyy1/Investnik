@@ -3,6 +3,7 @@
 import "dotenv/config";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
+import axe from "axe-core";
 import postgres from "postgres";
 import { chromium } from "playwright";
 
@@ -18,7 +19,14 @@ await mkdir(screenshotDir, { recursive: true });
 let userId;
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, timezoneId: "Europe/Prague" });
+  await context.addInitScript(axe.source);
   const page = await context.newPage();
+  async function accessibility(label) {
+    const violations = await page.evaluate(async () => (await window.axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"] } })).violations
+      .filter(({ id, impact }) => ["serious", "critical"].includes(impact) || ["heading-order", "landmark-complementary-is-top-level"].includes(id))
+      .map(({ id, nodes }) => ({ id, targets: nodes.map(({ target }) => target) })));
+    assert.deepEqual(violations, [], `${label}: axe`);
+  }
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   const button = (name) => page.getByRole("button", { name, exact: true });
@@ -32,6 +40,7 @@ try {
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${label}: ${width}px overflow`);
+      if ([375, 1440].includes(width)) await accessibility(`${label}: ${width}px`);
       assert.equal(await page.locator("h1:visible").count(), 1, `${label}: one page heading`);
       const nav = page.getByRole("navigation", { name: width < 1024 ? "Mobilní navigace" : "Hlavní navigace" });
       assert.deepEqual(await nav.getByRole("link").allTextContents(), ["Učení", "Lab", "Pokrok"]);
@@ -42,7 +51,7 @@ try {
         const box = await link.boundingBox();
         assert.ok(box && box.height >= 48, `${label}: navigation touch target`);
       }
-      const account = page.getByLabel("Nabídka účtu", { exact: true });
+      const account = page.locator("summary").filter({ hasText: "Nabídka účtu" });
       await account.focus();
       await account.press("Enter");
       for (const control of [page.getByRole("banner").getByRole("link", { name: "Nastavení", exact: true }), page.getByRole("banner").getByRole("button", { name: "Odhlásit se", exact: true })]) {
@@ -65,6 +74,12 @@ try {
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: `${screenshotDir}/${label}-1440.png`, fullPage: false, animations: "disabled" });
   }
+  for (const width of [375, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(baseURL);
+    await page.locator("h1").waitFor();
+    await accessibility(`landing: ${width}px`);
+  }
   await page.goto(`${baseURL}/sign-in`);
   await button("Vyzkoušet demo").click();
   await page.waitForURL("**/learn");
@@ -86,6 +101,18 @@ try {
   await page.goto(`${baseURL}/settings`);
   await heading("Účet");
   await layouts("settings", null);
+  await page.goto(`${baseURL}/settings?section=account`);
+  await heading("Účet");
+  for (const width of [375, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await accessibility(`settings-account: ${width}px`);
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  for (const instrument of ["US-XNAS:AAPL", "IE-XETR:VWCE"]) {
+    await page.goto(`${baseURL}/lab/instruments/${encodeURIComponent(instrument)}`);
+    await heading("Co říkají čísla");
+    await layouts(`instrument-${instrument.split(":")[1]}`, "/lab");
+  }
   await page.goto(`${baseURL}/progress`);
   await page.getByRole("heading", { level: 1, name: /^(Co už umíš|.+ máš za sebou\.)/ }).waitFor();
   assert.equal(await page.getByTestId("available-progress").textContent(), "6 / 51");
@@ -128,7 +155,7 @@ try {
   await page.locator("h1").waitFor();
   assert.equal(await page.getByRole("navigation", { name: /^(Hlavní|Mobilní) navigace$/ }).count(), 0, "lesson focus mode");
   await page.goto(`${baseURL}/learn`);
-  await page.getByLabel("Nabídka účtu", { exact: true }).click();
+  await page.locator("summary").filter({ hasText: "Nabídka účtu" }).click();
   await button("Odhlásit se").click();
   await page.waitForURL("**/sign-in");
   await page.goto(`${baseURL}/lab`);
