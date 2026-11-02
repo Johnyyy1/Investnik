@@ -24,6 +24,23 @@ const portfolio = () => page.locator("#portfolio-lab");
 const demo = () => portfolio().locator("[data-portfolio-demo]");
 const crisis = () => portfolio().locator("[data-crisis]");
 const button = (scope, name) => scope.getByRole("button", { name, exact: true });
+/** Waits out CSS transitions on the element and its subtree; the frames let a state change start its transition first. */
+const settled = locator => locator.evaluate(async element => {
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  await Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished.catch(() => {})));
+});
+const style = (locator, property) => locator.evaluate((element, name) => getComputedStyle(element).getPropertyValue(name), property);
+/** Computed scale while the mouse holds the element. The pointer leaves before release, so no click fires. */
+async function pressedScale(locator) {
+  await locator.hover();
+  await page.mouse.down();
+  await settled(locator);
+  const scale = await style(locator, "scale");
+  await page.mouse.move(0, 0);
+  await page.mouse.up();
+  await settled(locator);
+  return scale;
+}
 async function recordSession(ctx) {
   const session = await (await ctx.request.get(`${baseURL}/api/auth/get-session`)).json();
   assert.equal(session.user.isAnonymous, true);
@@ -221,6 +238,94 @@ try {
   assert.deepEqual(writes, [], "Marketing interactions perform no network mutation");
   assert.equal((await (await context.request.get(`${baseURL}/api/auth/get-session`)).json()), null, "Previews never create an anonymous identity");
   checks.push("Both lesson previews are read-only (no controls) and show the answered state. Portfolio Lab demo: real tariff costs for both profiles, keyboard tabs, a non-blocking off-plan card, capital guard, explainable criteria without a score, crisis drill judged by the plan; no mutation request or session creation.");
+  // Interaction states. 700 px tall keeps the journey and demo from pinning, so scrolling to a target cannot change the demo step.
+  const buy = () => button(portfolio(), "Koupit nanečisto");
+  await page.setViewportSize({ width: 1440, height: 700 });
+  await page.goto(baseURL);
+  assert.equal(await pressedScale(buy()), "none", "No press scale with reduced motion");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(baseURL);
+  await page.locator("[data-portfolio-demo][data-driven]").waitFor(); // driven mode is only set after hydration
+  await page.setViewportSize({ width: 1440, height: 700 });
+  await page.locator("[data-portfolio-demo]:not([data-driven])").waitFor();
+  const tariffChoice = portfolio().locator("label").filter({ hasText: "Investník nižší konverze" });
+  await settled(tariffChoice);
+  const restingBackground = await style(tariffChoice, "background-color");
+  await tariffChoice.hover();
+  await settled(tariffChoice);
+  assert.notEqual(await style(tariffChoice, "background-color"), restingBackground, "Hovering a tariff choice changes its background");
+  // The lifted CTA proves the GSAP hover layer is live, so the card's missing shadow below means something.
+  const liftedCta = page.getByRole("link", { name: "Začít vstupním testem", exact: true }).first();
+  await liftedCta.hover();
+  await page.waitForFunction(element => getComputedStyle(element).boxShadow !== "none", await liftedCta.elementHandle());
+  await page.mouse.move(0, 0);
+  const courseCard = page.locator("[data-course-card]");
+  await courseCard.hover();
+  // Absence needs an observation window: longer than hoverLift's 350 ms tween, which CSS animation APIs cannot see.
+  const cardHover = await courseCard.evaluate(async element => {
+    const shadows = new Set();
+    const end = performance.now() + 500;
+    while (performance.now() < end) {
+      shadows.add(getComputedStyle(element).boxShadow);
+      await new Promise(requestAnimationFrame);
+    }
+    return { shadows: [...shadows], hovered: element.matches(":hover") };
+  });
+  assert.deepEqual(cardHover, { shadows: ["none"], hovered: true }, "The course card gains no shadow on hover");
+  assert.equal(await pressedScale(buy()), "0.96", "Press scale with motion");
+  assert.equal(await style(buy(), "scale"), "none", "Press scale releases");
+  await buy().click();
+  await portfolio().getByRole("tab").nth(2).and(page.locator('[aria-selected="true"]')).waitFor();
+  const disclosure = demo().locator("[data-demo-step='3'] summary").filter({ hasText: "Jak se to počítá" }).first();
+  const chevron = disclosure.locator("svg");
+  await settled(demo().locator("[data-demo-step='3']")); // the panel fades in, and hit testing skips it until then
+  const hitArea = await disclosure.evaluate(element => {
+    element.scrollIntoView({ block: "center" });
+    const box = element.getBoundingClientRect();
+    const x = box.left + box.width / 2;
+    let height = 0;
+    for (let y = Math.floor(box.top) - 30; y <= box.bottom + 30; y++) if (document.elementFromPoint(x, y)?.closest("summary") === element) height++;
+    return { height, width: box.width };
+  });
+  assert.ok(hitArea.height >= 44 && hitArea.width >= 44, `Disclosure hit area is at least 44 px: ${JSON.stringify(hitArea)}`);
+  assert.equal(await style(chevron, "rotate"), "none");
+  await disclosure.click();
+  await settled(chevron);
+  assert.equal(await style(chevron, "rotate"), "180deg", "The chevron rotates when open");
+  await disclosure.click();
+  await settled(chevron);
+  assert.equal(await style(chevron, "rotate"), "none", "The chevron returns when closed");
+  // Relative to the drill: Playwright scrolls to each radio, so viewport positions shift between measurements.
+  const noteOffset = () => crisis().evaluate(element => {
+    const note = [...element.querySelectorAll("p")].find(paragraph => paragraph.textContent.startsWith("Hodnotí se"));
+    return note.getBoundingClientRect().top - element.getBoundingClientRect().top;
+  });
+  for (const width of [1440, 390, 320]) {
+    await page.setViewportSize({ width, height: 700 });
+    await page.goto(baseURL);
+    await crisis().scrollIntoViewIfNeeded();
+    await settled(crisis());
+    const offset = await noteOffset();
+    for (const name of [/Prodat/, /Držet/, /Dokoupit/]) {
+      await crisis().getByRole("radio", { name }).check();
+      await settled(crisis());
+      const moved = Math.abs(await noteOffset() - offset);
+      assert.ok(moved < 0.5, `${width}px: the crisis note moved ${moved} px after choosing ${name}`); // tolerance: fractional scroll rounding
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto(baseURL);
+  const menu = page.getByLabel("Navigační menu", { exact: true });
+  const closeIcon = menu.locator('[class*="menuClose"]');
+  assert.equal(await style(closeIcon, "opacity"), "0", "Close icon hidden while the menu is closed");
+  await menu.click();
+  await settled(menu);
+  assert.equal(await style(closeIcon, "opacity"), "1", "Close icon visible while the menu is open");
+  await menu.click();
+  await settled(menu);
+  assert.equal(await style(closeIcon, "opacity"), "0", "Close icon hidden after the menu closes");
+  checks.push("Interaction states: tariff hover background, no course card shadow, press scale 0.96 with motion and none when reduced, disclosure chevron and 44 px hit area, crisis note stays put at three widths, menu close icon only while open.");
   await page.emulateMedia({ reducedMotion: "no-preference" });
   // Tall desktop with motion: the demo pins and the scroll walks 1 → 2 → 3, then the page scrolls on.
   await page.setViewportSize({ width: 1440, height: 900 });
