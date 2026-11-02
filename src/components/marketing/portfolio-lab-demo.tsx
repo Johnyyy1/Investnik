@@ -345,7 +345,6 @@ function ProcessStep({ amountKc, tariffId, instrument, onFix }: { amountKc: numb
 /** Month-6 decision in the Lab's model crisis. Judged against the plan, never by the return. */
 export function CrisisDrill() {
   const [choice, setChoice] = useState<CrisisChoice | null>(null);
-  const outcome = choice ? crisisOutcome(choice) : null;
   const before = crisisOutcome("hold").shareBeforeBps;
   const width = 392, height = 150, pad = 8;
   const min = 60, max = 100;
@@ -355,6 +354,14 @@ export function CrisisDrill() {
     sell: `Plán prodej v propadu neobsahoval: podíl v indexu byl ${planPct(before)}, uvnitř pásma ${bandRange(DEMO_PLAN.etfBps)}.`,
     hold: "Podíl zůstal v pásmu, takže plán žádný obchod nevyžadoval.",
     buy: "Dokoupení z hotovosti vrátilo podíl na cíl. Žádný prodej.",
+  };
+  const outcomeOf = (id: CrisisChoice) => {
+    const outcome = crisisOutcome(id);
+    return <>
+      <p data-ok={outcome.sellsOutsidePlan === 0 ? "" : undefined}>{outcome.sellsOutsidePlan === 0 ? <CircleCheck size={18} aria-hidden="true" /> : <CircleAlert size={18} aria-hidden="true" />}Prodeje mimo pravidla: {outcome.sellsOutsidePlan}</p>
+      <p data-ok={outcome.inBand ? "" : undefined}>{outcome.inBand ? <CircleCheck size={18} aria-hidden="true" /> : <CircleAlert size={18} aria-hidden="true" />}Podíl v indexu: {planPct(outcome.indexBps)} · {outcome.inBand ? "v pásmu" : "mimo pásmo"}</p>
+      <small>{explanation[id]}</small>
+    </>;
   };
   return <div className={styles.crisis} data-crisis>
     <p className={styles.crisisEyebrow}>KRIZOVÝ NÁCVIK · DOVĚTEK</p>
@@ -377,12 +384,12 @@ export function CrisisDrill() {
         <em>vybráno</em>
       </label>)}
     </fieldset>
-    <div className={styles.crisisResult} role="status" data-crisis-result>
-      {outcome && choice ? <>
-        <p data-ok={outcome.sellsOutsidePlan === 0 ? "" : undefined}>{outcome.sellsOutsidePlan === 0 ? <CircleCheck size={18} aria-hidden="true" /> : <CircleAlert size={18} aria-hidden="true" />}Prodeje mimo pravidla: {outcome.sellsOutsidePlan}</p>
-        <p data-ok={outcome.inBand ? "" : undefined}>{outcome.inBand ? <CircleCheck size={18} aria-hidden="true" /> : <CircleAlert size={18} aria-hidden="true" />}Podíl v indexu: {planPct(outcome.indexBps)} · {outcome.inBand ? "v pásmu" : "mimo pásmo"}</p>
-        <small>{explanation[choice]}</small>
-      </> : <small>Vyber jednu možnost a uvidíš, jak se drží tvůj plán.</small>}
+    {/* The hidden copies size the shared grid cell to the tallest outcome, so a choice never moves the note below. */}
+    <div className={styles.crisisResult}>
+      <div role="status" data-crisis-result>
+        {choice ? outcomeOf(choice) : <small>Vyber jednu možnost a uvidíš, jak se drží tvůj plán.</small>}
+      </div>
+      {CRISIS_CHOICES.map(({ id }) => <div key={id} className={styles.crisisSizer} aria-hidden="true">{outcomeOf(id)}</div>)}
     </div>
     <p className={styles.crisisNote}>Hodnotí se, jestli dodržíš plán, ne jestli vyděláš. Zjednodušeno: bez poplatků a pravidelných vkladů.</p>
   </div>;
