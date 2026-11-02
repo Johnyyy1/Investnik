@@ -30,7 +30,7 @@ export function MobileNavigation() {
   </div>;
 }
 
-const reasoning = "Karta je v příkladu nejdražší dluh. Jejím splacením Jana omezí jisté budoucí náklady a nechá si malý polštář. Zaručený výnos, který by RPSN 24 % překonal, investice nemá.";
+const reasoning = "Karta je v\u00a0příkladu nejdražší dluh. Jejím splacením Jana omezí jisté budoucí náklady a\u00a0nechá si malý polštář. Zaručený výnos, který by RPSN 24 % překonal, investice nemá.";
 
 /**
  * Read-only illustration of a lesson step: no lesson engine, auth, storage, or mutations, and nothing to click.
@@ -65,7 +65,7 @@ export function LessonPreview({ compact = false, hero = false }: { compact?: boo
       <div className={styles.lessonMeta}><span>Dluh, nebo investice?</span><span>≈ 12 min</span></div>
       <p className={styles.lessonTrack}>NEŽ ZAČNEŠ INVESTOVAT · Lekce 0.1.2</p>
       {(!compact || !revealed || hold) && <>
-        <h3 className={styles.lessonQuestion}>Jana má 30 000 Kč navíc, žádnou rezervu a kartu s RPSN 24 %. Co dřív?</h3>
+        <h3 className={styles.lessonQuestion}>Jana má 30 000 Kč navíc, žádnou rezervu a&nbsp;kartu s&nbsp;RPSN 24 %. Co dřív?</h3>
         <ul className={styles.answers} aria-label="Ukázkové odpovědi">
           {(["A", "B"] as const).map(key => <li key={key}
             className={`${styles.answer} ${answer === key ? styles.answerSelected : ""} ${answer === key && revealed && key !== "B" ? styles.answerWrong : ""}`}
@@ -90,11 +90,11 @@ export function LessonPreview({ compact = false, hero = false }: { compact?: boo
     </div>
     {hero && <aside className={styles.heroLessonAside}>
       <p className={styles.demoEyebrow}>NEJDŘÍV ROZHODNUTÍ</p>
-      <div className={styles.asideFeedback} role="status" data-aside-feedback>{revealed ? feedback : <><h3>Zkus rozhodnutí.</h3><p>Vyber odpověď a zjisti, proč se drahý dluh vyplatí řešit dřív než investice.</p></>}</div>
+      <div className={styles.asideFeedback} role="status" data-aside-feedback>{revealed ? feedback : <><h3>Zkus rozhodnutí.</h3><p>Vyber odpověď a&nbsp;zjisti, proč se drahý dluh vyplatí řešit dřív než investice.</p></>}</div>
       <div className={styles.lessonProgress}><span data-lesson-progress/></div>
-      <p className={styles.asideContext}>Úroveň 0 · Než začneš investovat<br/>Ukázka z publikované lekce.</p>
+      <p className={styles.asideContext}>Úroveň 0 · Než začneš investovat<br/>Ukázka z&nbsp;publikované lekce.</p>
     </aside>}
-    {compact && <p className={styles.microDisclaimer}>Ukázka lekce · odpověď a vysvětlení</p>}
+    {compact && <p className={styles.microDisclaimer}>Ukázka lekce · odpověď a&nbsp;vysvětlení</p>}
     <span className={styles.demoCursor} data-demo-cursor aria-hidden="true"><svg width="22" height="22" viewBox="0 0 22 22"><path d="M3 2l15 7.5-6.2 1.9L9 18.5z" fill="#171717" stroke="#fffcf7" strokeWidth="1.5" strokeLinejoin="round"/></svg></span>
   </div>;
 }
