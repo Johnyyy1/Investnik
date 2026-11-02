@@ -56,7 +56,7 @@ export function StudovnaQuestion({ question, lessonId, position, href, actionLab
     <div className={styles.continueControls}>
       <p className={styles.quietNote}><MousePointerClick size={16} aria-hidden="true" />{question ? "Klikni na odpověď a hned uvidíš proč." : "Tvoje místo v lekci zůstává uložené."}</p>
       {correct ? <button className={cn(buttonVariants(), styles.primaryAction)} aria-busy={pending} disabled={pending} onClick={() => void continueLesson()}>{pending ? "Ukládám…" : "Pokračovat v lekci"}<ArrowRight size={18} aria-hidden="true" /></button>
-        : <Link href={href} className={cn(buttonVariants(), styles.primaryAction)} aria-label="Pokračovat">{actionLabel}<ArrowRight size={18} aria-hidden="true" /></Link>}
+        : <Link href={href} className={cn(buttonVariants(), styles.primaryAction)}>{actionLabel}<ArrowRight size={18} aria-hidden="true" /></Link>}
     </div>
     {error && <p role="alert" className={styles.saveError}>{error}</p>}
   </>;

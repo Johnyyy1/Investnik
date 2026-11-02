@@ -1,5 +1,5 @@
-// Client navigation acceptance: fast navigations commit without a Suspense reveal delay and never flash the
-// pending indicator; slow ones keep the current page, show the indicator and a status, and stay interruptible.
+// Client navigation acceptance: navigations commit without a Suspense reveal delay; the pending indicator
+// stays hidden for 150 ms. Slow navigations keep the page, show feedback and stay interruptible.
 // Slowness is simulated by delaying only the RSC navigation responses in the browser, so the server is untouched.
 // Local production build + disposable local database only (creates one demo identity and deletes it).
 //   NAVIGATION_TEST_URL=http://localhost:3100 DATABASE_URL=postgresql://…@127.0.0.1:…/… node scripts/validate-navigation-feedback.mjs
@@ -78,7 +78,29 @@ try {
   await arrived(page, "/learn");
   await page.waitForTimeout(1000);
 
-  // Fast: commits well below the ~300 ms Suspense reveal throttle; no indicator, no layout fallback.
+  // Seek the actual CSS transition so the no-flash boundary is independent of runner/network speed.
+  const indicatorTiming = await page.evaluate(() => {
+    const bar = document.querySelector("[data-navigation-indicator]").cloneNode();
+    document.body.append(bar);
+    try {
+      if (getComputedStyle(bar).opacity !== "0") throw new Error("Indicator must start hidden");
+      bar.setAttribute("data-navigation-pending", "true");
+      const transition = bar.getAnimations().find((animation) => animation.transitionProperty === "opacity");
+      if (!transition) throw new Error("Missing navigation indicator opacity transition");
+      transition.pause();
+      const opacityAt = (time) => { transition.currentTime = time; return Number(getComputedStyle(bar).opacity); };
+      const timing = { beforeDelay: opacityAt(149), afterDelay: opacityAt(175), revealed: opacityAt(270) };
+      bar.removeAttribute("data-navigation-pending");
+      return { ...timing, cleared: Number(getComputedStyle(bar).opacity) };
+    } finally { bar.remove(); }
+  });
+  assert.equal(indicatorTiming.beforeDelay, 0, "no indicator during the first 150 ms");
+  assert.ok(indicatorTiming.afterDelay > 0, "fade may begin before the 250 ms navigation budget");
+  assert.equal(indicatorTiming.revealed, 1, "indicator revealed after its delay and fade");
+  assert.equal(indicatorTiming.cleared, 0, "indicator hides immediately when pending clears");
+
+  // Fast: below the ~300 ms Suspense reveal throttle, with no layout fallback.
+  // A 150–250 ms navigation can legitimately begin revealing the indicator.
   for (const [name, path] of [["Pokrok", "/progress"], ["Lab", "/lab"], ["Učení", "/learn"]]) {
     await startProbe(page);
     const started = Date.now();
@@ -87,7 +109,8 @@ try {
     const elapsed = Date.now() - started;
     const probe = await stopProbe(page);
     assert.ok(elapsed < 250, `fast navigation to ${path} took ${elapsed} ms`);
-    assert.equal(probe.maxOpacity, 0, `no indicator flash on a fast navigation to ${path}`);
+    if (elapsed < 150) assert.equal(probe.maxOpacity, 0, `no indicator flash before the delay on ${path}`);
+    assert.deepEqual(await idle(page), { busy: false, opacity: 0 }, `indicator cleared after ${path}`);
     assert.equal(probe.fallback, false, `no fallback during client navigation to ${path}`);
   }
 
@@ -163,7 +186,7 @@ try {
   assert.deepEqual(await idle(phone), { busy: false, opacity: 0 });
   await mobile.close();
 
-  console.log(`PASS: fast navigations < 250 ms without indicator flash or fallback; slow navigations keep the page with indicator, status and busy state; interrupted and repeated clicks; back/forward; scroll to top; keyboard; hard reload; mobile; reduced motion. Prefetches of dynamic app routes after load: ${dynamicPrefetches.length}.`);
+  console.log(`PASS: 150 ms indicator delay and immediate clearing; fast navigations < 250 ms without fallback; slow navigations keep the page with indicator, status and busy state; interrupted and repeated clicks; back/forward; scroll to top; keyboard; hard reload; mobile; reduced motion. Prefetches of dynamic app routes after load: ${dynamicPrefetches.length}.`);
 } finally {
   if (userId) await sql`delete from "user" where id = ${userId}`;
   await sql.end();

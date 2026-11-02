@@ -106,7 +106,7 @@
 .answerSelected > span:first-child { color: var(--teal); }
 .answerSelected.answerWrong { border-color: var(--wrong); background: var(--wrong-soft); }
 .answerSelected.answerWrong > span:first-child, .answerWrong svg { color: var(--wrong); }
-.feedback h3.feedbackWrong, .asideFeedback h3.feedbackWrong { color: var(--wrong); }
+.feedback :is(h2, h3).feedbackWrong, .asideFeedback :is(h2, h3).feedbackWrong { color: var(--wrong); }
 .lessonBottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; }
 .sampleReward { color: var(--teal); font-size: .875rem; font-weight: 600; }
 .lessonSubmit { max-width: 100%; flex-wrap: wrap; padding-inline: 22px 20px; cursor: default; user-select: none; }
@@ -115,7 +115,7 @@
 .heroLessonAside { padding: 32px; min-height: 438px; background: var(--color-surface-practice); border-left: 1px solid var(--color-border); border-radius: 0 0 11px 0; }
 .heroLessonAside .demoEyebrow { font-size: .6875rem; }
 .asideFeedback { margin-top: 30px; }
-.feedback h3, .asideFeedback h3 { font-size: 1.625rem; line-height: 1.2; letter-spacing: -.023em; color: var(--teal); }
+.feedback :is(h2, h3), .asideFeedback :is(h2, h3) { font-size: 1.625rem; line-height: 1.2; letter-spacing: -.023em; color: var(--teal); }
 .feedback p, .asideFeedback p { font-size: .9375rem; line-height: 1.55; color: var(--muted); margin-top: 12px; }
 .lessonProgress { margin-top: 36px; height: 4px; background: var(--color-track); }
 .lessonProgress span { display: block; height: 100%; width: 66.67%; background: var(--teal2); }
@@ -165,7 +165,7 @@
 .lessonMeta span:first-child { font-size: 1.125rem; font-weight: 600; }
 .lessonTrack { color: var(--muted); font-size: .6875rem; letter-spacing: .045em; margin-bottom: 20px !important; }
 .lessonCompact .lessonTrack { display: none; }
-.lessonCompact .feedback h3 { font-size: 1.875rem; }
+.lessonCompact .feedback :is(h2, h3) { font-size: 1.875rem; }
 .lessonCompact .lessonBottom { margin-top: 26px; }
 .lessonCompact .lessonQuestion { font-size: 2rem; }
 .lessonCompact .answer { font-size: 1rem !important; min-height: 60px; padding: 16px 18px; }
@@ -248,7 +248,7 @@
   .lessonSection { padding: 64px 0; }
   .lessonSectionLayout { grid-template-columns: 360px minmax(0, 1fr); gap: 48px; }
   .lessonSectionCopy h2 { font-size: 3.25rem; }
-  .lessonCompact .feedback h3 { font-size: 1.75rem; }
+  .lessonCompact .feedback :is(h2, h3) { font-size: 1.75rem; }
   .labSection { padding: 80px 0 56px; }
   .labIntro { grid-template-columns: 550px minmax(0, 1fr); gap: 32px; }
   .labIntro h2 { font-size: 4.75rem; letter-spacing: -.042em; }
@@ -352,7 +352,7 @@
   .lessonSectionCopy > p:not(.eyebrow) { font-size: 1.0625rem; }
   .lessonCompact { padding: 20px; }
   .lessonCompact .lessonMeta { margin-block: 20px; }
-  .lessonCompact .feedback h3 { font-size: 1.625rem; }
+  .lessonCompact .feedback :is(h2, h3) { font-size: 1.625rem; }
   .lessonCompact .feedback p { font-size: .875rem; }
   .labSection { padding: 72px 0 56px; }
   .labIntro h2 { font-size: min(13.334vw, 3.25rem); line-height: 1.04; letter-spacing: -.042em; margin-top: 16px; }

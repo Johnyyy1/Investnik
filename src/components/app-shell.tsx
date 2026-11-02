@@ -65,7 +65,8 @@ export function AppShell({ children, userName, isDemo = false, isGuest = false, 
         </nav>
 
         <details key={pathname} className="group relative shrink-0" onKeyDown={(event) => { if (event.key === "Escape") { event.currentTarget.open = false; event.currentTarget.querySelector("summary")?.focus(); } }}>
-          <summary aria-label="Nabídka účtu" className="flex min-h-12 cursor-pointer list-none items-center gap-1 rounded-button border border-border bg-surface p-1 pr-1.5 font-bold text-foreground shadow-elevation-1 transition-[background-color,border-color] duration-[var(--motion-micro)] hover:border-border-strong hover:bg-surface-muted sm:gap-2 sm:p-1.5 sm:pr-2.5 [&::-webkit-details-marker]:hidden">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center gap-1 rounded-button border border-border bg-surface p-1 pr-1.5 font-bold text-foreground shadow-elevation-1 transition-[background-color,border-color] duration-[var(--motion-micro)] hover:border-border-strong hover:bg-surface-muted sm:gap-2 sm:p-1.5 sm:pr-2.5 [&::-webkit-details-marker]:hidden">
+            <span className="sr-only">Nabídka účtu </span>
             <span aria-hidden="true" className="flex size-[36px] shrink-0 items-center justify-center rounded-control bg-primary-soft text-primary-hover">{initial}</span>
             <span className="hidden max-w-32 truncate text-small xl:block">{displayName}</span>
             <ChevronDown aria-hidden="true" className="size-[16px] shrink-0 text-secondary transition-transform duration-[var(--motion-micro)] group-open:rotate-180" />
