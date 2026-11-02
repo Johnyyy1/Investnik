@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
-import { ArrowRight, CircleAlert, CircleCheck, Info, MapPinned, Search } from "lucide-react";
+import { ArrowRight, ChevronDown, CircleAlert, CircleCheck, Info, MapPinned, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPracticeCapitalMinor as money } from "@/features/rewards/presentation";
 import { formatDecimal } from "@/lib/formatters";
@@ -288,7 +288,7 @@ function Criterion({ title, kind, value, detail, how }: { title: string; kind: "
     <div className={styles.criterionHead}><h5>{title}</h5><Status kind={kind} /></div>
     <strong>{value}</strong>
     <p>{detail}</p>
-    <details><summary>Jak se to počítá</summary><p>{how}</p></details>
+    <details><summary>Jak se to počítá<ChevronDown size={14} aria-hidden="true" /></summary><p>{how}</p></details>
   </li>;
 }
 

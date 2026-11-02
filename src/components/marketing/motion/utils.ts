@@ -92,14 +92,12 @@ export function magnetic(el: HTMLElement, { strength = 0.3, lift = 2 }: { streng
   return () => { el.removeEventListener("pointermove", move); el.removeEventListener("pointerleave", leave); leave(); };
 }
 
-/** Lift + shadow hover for buttons and cards (fine pointers only). Elements with data-magnetic lift via magnetic(). */
+/** Lift + shadow hover for buttons (fine pointers only). Elements with data-magnetic lift via magnetic(). */
 export function hoverLift(el: HTMLElement) {
   const isMagnetic = el.hasAttribute("data-magnetic");
-  const card = el.hasAttribute("data-lift-card");
-  const shadow = card ? "0 18px 36px rgba(23,23,23,.10)" : "0 8px 18px rgba(23,23,23,.14)";
   const enter = () => {
     if ((el as HTMLButtonElement).disabled) return;
-    gsap.to(el, { ...(isMagnetic ? {} : { y: card ? -3 : -2 }), boxShadow: shadow, duration: 0.35, ease: EASE.enter, overwrite: "auto" });
+    gsap.to(el, { ...(isMagnetic ? {} : { y: -2 }), boxShadow: "0 8px 18px rgba(23,23,23,.14)", duration: 0.35, ease: EASE.enter, overwrite: "auto" });
   };
   const leave = () => gsap.to(el, { ...(isMagnetic ? {} : { y: 0 }), boxShadow: "0 0 0 rgba(23,23,23,0)", duration: 0.45, ease: EASE.enter, overwrite: "auto" });
   el.addEventListener("pointerenter", enter);

@@ -26,6 +26,7 @@ The landing page (`src/components/marketing/pen-landing.tsx`) has a GSAP motion 
 - **Keyboard:** anything containing links or buttons is hidden with `opacity` (not `autoAlpha`), so it stays in the tab order. Tabbing to it scrolls it into view, which triggers its reveal.
 - **Desktop ≥ 1024px vs mobile:** pinning, the magnetic effect and the 60 → 40 % demo are desktop only. Mobile gets shorter reveals (y 24px, 0.6s).
 - **Hover effects** (`data-lift`, `data-magnetic`) run only on `(hover: hover) and (pointer: fine)`.
+- CSS owns hover, active and focus colours (`pen-landing.module.css`, `portfolio-lab-demo.module.css`). Press on non-GSAP controls uses the individual `scale` property (0.96), so it never fights a GSAP transform, and sits behind `prefers-reduced-motion: no-preference`. Icons that appear (answer check, crisis result, menu ↔ close) use opacity, scale 0.25 → 1 and blur 4px → 0.
 - Only `transform`, `opacity` and SVG stroke (`drawSVG`) are animated. Exceptions: the lesson feedback `height: auto` expand (inside a card, after layout), the box-shadow on hover lift.
 - SplitText uses `aria: "auto"`, and every split is reverted once its reveal finishes.
 
@@ -34,7 +35,7 @@ The landing page (`src/components/marketing/pen-landing.tsx`) has a GSAP motion 
 | # | Section | Trigger | What happens | Where to tweak |
 | --- | --- | --- | --- | --- |
 | – | Scroll progress | scrub over the whole document | 3px teal bar, `scaleX` 0 → 1 | `sections/global.ts › initScrollProgress` |
-| – | Hover / press | pointer | Lift and shadow (`data-lift`, `data-lift-card` for cards), magnetic pull via `quickTo` (`data-magnetic`), squash and `back.out` release (`data-press`) | `utils.ts › hoverLift / magnetic / pressFeedback` |
+| – | Hover / press | pointer | Lift and shadow on buttons (`data-lift`; informational cards do not lift, because they are not clickable), magnetic pull via `quickTo` (`data-magnetic`), squash and `back.out` release (`data-press`) | `utils.ts › hoverLift / magnetic / pressFeedback` |
 | 1 | Nav | load + scroll | Fades down on load and becomes sticky. A surface and shadow appear after 24px. It hides on scroll down past 240px and returns on scroll up; it stays visible while the mobile menu is open or focus is inside it. Magnetic "Přihlásit se". | `initNav` (thresholds 24 / 240) |
 | 2 | Hero | load (after fonts, max 1.2s wait) | H1 masked line reveal; the second line lands 0.2s later with a slight skew. Then subtitle (0.75s), CTAs pop (0.95s), lesson card (1.05s), illustration (1.35s). The illustration only fades in and never moves (no float, no parallax). Then a scrubbed title scale/fade on scroll-out (desktop). The primary CTA plays a soft sheen on hover. | `sections/hero.ts` (timeline positions are the trailing numbers) |
 | 3 | Hero lesson card | card top hits 80% of viewport (desktop) | A ghost cursor picks B and clicks check. The feedback expands, the "Správně" badge pops (`back.out(1.4)`) with a 10-dot burst, and the progress fills. The lesson previews are read-only illustrations (no clickable answers or submit), so the demo always runs to its end state. | `sections/lesson-demo.ts › armHeroDemo`, `burst()` |

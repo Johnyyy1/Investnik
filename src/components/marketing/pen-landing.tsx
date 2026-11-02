@@ -49,7 +49,7 @@ export function PenLanding() {
         <nav className={styles.topNav} aria-label="Hlavní navigace">
           <a href="#jak-to-funguje">Jak to funguje</a>
           <a href="#portfolio-lab">Portfolio Lab</a>
-          <Link href="/sign-in" prefetch={false} {...magneticProps}>Přihlásit se</Link>
+          <Link href="/sign-in" prefetch={false} data-press {...magneticProps}>Přihlásit se</Link>
         </nav>
         <MobileNavigation />
       </div>
@@ -62,7 +62,7 @@ export function PenLanding() {
           <div className={styles.heroIntro} data-hero-intro>
             <p data-hero-sub>Připrav se na první investici a vydrž u svého plánu. Projdeš rozpočet, drahý dluh a náklady investování a sestavíš vlastní investiční plán, který si vyzkoušíš v modelové krizi. Bez skutečných peněz.</p>
             <div className={styles.heroActions} data-hero-actions>
-              <Link className={`${styles.primaryButton} ${styles.shimmerHost}`} href="/onboarding" prefetch={false} data-lift data-press {...magneticProps}>Začít vstupním testem <ArrowRight aria-hidden="true" size={19}/><span className={styles.shimmer} data-shimmer aria-hidden="true"/></Link>
+              <Link className={`${styles.primaryButton} ${styles.shimmerHost}`} href="/onboarding" prefetch={false} data-lift data-press {...magneticProps}>Začít vstupním testem <ArrowRight aria-hidden="true" size={18}/><span className={styles.shimmer} data-shimmer aria-hidden="true"/></Link>
               <a className={styles.textAction} href="#jak-to-funguje">Jak to funguje</a>
             </div>
             <p className={styles.heroNote}>Pár otázek o tvých cílech a znalostech doporučí, kde začít. Lekce o rezervě, výběru brokera a daních připravujeme.</p>
@@ -84,7 +84,7 @@ export function PenLanding() {
             <div className={styles.journeyIllustration} aria-hidden="true" data-journey-art>
               <Image src="/marketing/v14-discovery-edge.webp" alt="" width={685} height={1065} sizes="(max-width: 780px) 250px, (max-width: 1100px) 302px, 397px" />
             </div>
-            <div className={styles.courseCard} data-lift data-lift-card data-course-card>
+            <div className={styles.courseCard} data-course-card>
               <Image className={styles.discoveryGripTop} src="/marketing/v14-discovery-top-grip.webp" alt="" aria-hidden="true" width={136} height={86} />
               <Image className={styles.discoveryGripSide} src="/marketing/v14-discovery-side-grip.webp" alt="" aria-hidden="true" width={97} height={115} />
               <span className={styles.cardOverline}>Co je dostupné dnes a co připravujeme</span>
