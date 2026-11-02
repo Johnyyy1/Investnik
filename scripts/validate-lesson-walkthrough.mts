@@ -151,6 +151,8 @@ try {
           await page.getByRole("link", { name: /^Otevřít Portfolio Lab/ }).click();
           const lab = await popup;
           lab.on("pageerror", (error) => errors.push(`${where} Lab: ${error.message}`));
+          // The popup can expose its server-rendered input before React attaches its change handler.
+          await lab.waitForLoadState("networkidle");
           const search = lab.getByRole("combobox").first();
           await search.fill("CVETF");
           await lab.getByRole("option", { name: /CVETF/ }).click();
