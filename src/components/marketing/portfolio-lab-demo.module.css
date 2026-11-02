@@ -190,14 +190,16 @@
 .crisisChoice strong { font-size: .875rem; font-weight: 500; }
 .crisisChoice small { font-size: .75rem; color: #e0e3d8; }
 .crisisChoice em { font-style: normal; font-size: .75rem; color: var(--color-muted); transition: opacity var(--motion-micro) ease-out; }
-@starting-style { .crisisChoice em { opacity: 0; } }
+/* Always in the layout: appearing only when chosen narrows the label, and at 320 px that wraps its detail and moves the note below. */
+.crisisChoice:not([data-checked]) em { visibility: hidden; opacity: 0; }
 .crisisChoice[data-checked] { background: var(--color-background); border-color: var(--color-background); color: var(--color-foreground); }
 .crisisChoice[data-checked] strong { font-weight: 600; }
 .crisisChoice[data-checked] small { color: var(--color-muted); }
 .crisisChoice input { accent-color: var(--color-primary); }
 .crisisChoice:has(input:focus-visible) { outline: 2px solid var(--color-background); outline-offset: 3px; }
-/* Reserves the answered height, so the first choice does not push the note below it. */
-.crisisResult { display: flex; flex-direction: column; gap: 8px; min-height: 6.75rem; }
+.crisisResult { display: grid; }
+.crisisResult > div { grid-area: 1 / 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.crisisResult > .crisisSizer { visibility: hidden; }
 .crisisResult p { display: flex; align-items: center; gap: 8px; font-size: .9375rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .crisisResult p svg { flex-shrink: 0; color: var(--color-warning); transition: opacity 300ms cubic-bezier(.2, 0, 0, 1), scale 300ms cubic-bezier(.2, 0, 0, 1), filter 300ms cubic-bezier(.2, 0, 0, 1); }
 @starting-style { .crisisResult p svg { opacity: 0; scale: .25; filter: blur(4px); } }
