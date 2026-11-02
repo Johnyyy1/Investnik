@@ -10,6 +10,8 @@ export function IpsSummary({ plan }: { plan: ArtifactPayload<"investment_plan"> 
     <dt>Finanční základ</dt><dd>{reserveLabels[plan.foundation.emergencyFund]} · {debtLabels[plan.foundation.highCostDebt]}</dd>
     <dt>Alokace</dt><dd><ul>{plan.allocation.lines.map((line, index) => <li key={index}>{"instrumentId" in line ? line.instrumentId : assetLabels[line.assetClass]} · {percentText(line.weightBps)} %</li>)}<li>Hotovost · {percentText(plan.allocation.cashBps)} %</li></ul></dd>
     <dt>Nástroje a platforma</dt><dd>{plan.instruments.join("\n")} · {plan.platform}</dd>
+    {plan.costComparisonId && <><dt>Srovnání nákladů</dt><dd>Připojena konkrétní uložená verze modelového srovnání (bez TER a spreadu).</dd></>}
+    {plan.etfChecklistId && <><dt>Checklist ETF</dt><dd>Připojena konkrétní uložená verze checklistu.</dd></>}
     <dt>Pravidelný příspěvek</dt><dd>{scaledToDecimal(BigInt(plan.contribution.amountMinor), 2).replace(".", ",")} Kč · den {plan.contribution.dayOfMonth} v měsíci</dd>
     <dt>Rebalancing</dt><dd>{plan.rebalancing.mode === "calendar" ? `Kalendářně · ${monthLabel(plan.rebalancing.month)}` : plan.rebalancing.mode === "band" ? `Při odchylce ${percentText(plan.rebalancing.bandBps)} procentního bodu` : "Novými příspěvky"}</dd>
     <dt>Pravidlo propadu</dt><dd>{actionLabels[plan.drawdownRule.action]} · {plan.drawdownRule.text}</dd>

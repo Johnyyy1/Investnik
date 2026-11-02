@@ -183,6 +183,13 @@
       "when": 1793562828982,
       "tag": "0025_milestone_achievement",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793565750748,
+      "tag": "0026_cost_comparison",
+      "breakpoints": true
     }
   ]
 }

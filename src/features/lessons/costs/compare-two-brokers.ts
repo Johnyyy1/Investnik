@@ -1,3 +1,4 @@
+import { evaCostComparison } from "@/features/artifacts/cost-comparison";
 import type { AuthoredLesson } from "../types";
 import { costsLessons } from "./manifest";
 const lesson = costsLessons.find((entry) => entry.id === "costs-broker-comparison")!;
@@ -68,7 +69,7 @@ export const compareTwoBrokersLesson: AuthoredLesson = {
       { id: "no-absolutes", text: "Nepíšu „vždy“ ani „nikdy“; závěr vztahuji ke svému plánu." },
     ], sampleAnswer: "Při 12 nákupech po 2 500 Kč by mě broker A stál 75 Kč ročně a broker B 482,40 Kč, protože u B bych každý měsíc platil minimum. Kdybych nakupoval jednou ročně, byl by rozdíl mnohem menší. Než se rozhodnu, ověřím ještě, jak je u brokera chráněný můj majetek a jestli nabízí ETF, které chci." },
 
-    { id: "lab-bridge", type: "labBridge", title: "Porovnej profily v Labu", content: "Portfolio Lab má dva fiktivní profily poplatků. Při kontrole nákupu uvidíš poplatek za obchod a přirážku konverze podle zvoleného profilu; čísla počítá server. Zkus stejnou částku u obou profilů a porovnej náklady. Obchod potvrdit nemusíš. Výsledek této lekce se zatím neukládá do profilu ani do IPS." },
+    { id: "lab-bridge", type: "labBridge", savedArtifact: { kind: "cost_comparison", payload: evaCostComparison }, title: "Porovnej profily v Labu", content: "Portfolio Lab má dva fiktivní profily poplatků. Při kontrole nákupu uvidíš poplatek za obchod a přirážku konverze podle zvoleného profilu; čísla počítá server. Zkus stejnou částku u obou profilů a porovnej náklady. Obchod potvrdit nemusíš. Ulož si modelové srovnání Evina plánu: 12 × 2 500 Kč, A 75 Kč a B 482,40 Kč ročně. Obsahuje poplatky, konverzi a nulovou úschovu; nezahrnuje TER ani spread. V IPS na něj můžeš odkázat jako na vzdělávací podklad, ne jako na ověřený náklad svého vlastního plánu." },
     { id: "summary", type: "lessonSummary", title: "Srovnávej celý plán, ne sazbu", content: "Roční náklady plánu = počet nákupů × (poplatek za obchod + konverze) + úschova. U malých pravidelných nákupů může minimum převážit nižší sazbu; při větších nebo méně častých nákupech se rozdíl mění. Výsledek platí pro tvůj plán a tyto ceníky, proto ho přepočítej při každé změně. A ověř i to, co ceník neukazuje." },
     { id: "sources", type: "paragraph", content: "Zdroje k dalšímu čtení · FINRA, Fees and commissions: https://www.finra.org/investors/investing/investing-basics/fees-commissions · Brokeři A a B, jejich ceníky i kurz 24,30 Kč za euro jsou smyšlené; nejde o srovnání skutečných poskytovatelů. Vzdělávací obsah, ne investiční doporučení." },
   ],

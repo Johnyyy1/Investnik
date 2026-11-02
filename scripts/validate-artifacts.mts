@@ -72,10 +72,10 @@ try {
 
   const { readAccountExportRows, buildAccountExport, serializeAccountExport } = await import("../src/features/account/export");
   const rows = (await readAccountExportRows(db, owner))!;
-  assert.equal(rows.artifacts.length, 16, "export includes every revision of every kind");
+  assert.equal(rows.artifacts.length, 17, "export includes every revision of every kind");
   assert.ok(rows.artifacts.every((row) => row.userId === owner));
   const exported = JSON.parse(serializeAccountExport(buildAccountExport(rows)));
-  assert.equal(exported.learnerArtifacts.length, 16);
+  assert.equal(exported.learnerArtifacts.length, 17);
   assert.equal(exported.learnerArtifacts.find((row: { kind: string }) => row.kind === "fee_profile").payload.orderFeeMinor, "25");
   assert.ok(exported.learnerArtifacts.every((row: object) => !Object.hasOwn(row, "userId") && !Object.hasOwn(row, "requestId")));
   console.log("PASS: migration/rerun, all typed payloads, concurrent versions, retry idempotency, ownership, guest rejection and full export.");

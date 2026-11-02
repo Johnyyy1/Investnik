@@ -111,3 +111,7 @@ Následující typy doplňují stávající katalog. Používají stejnou kartu 
 | Odevzdat psaný výstup a posoudit kritéria ve čtyřech úrovních | `rubricSelfAssessment` | ne | Uloží se přes úložiště výstupů; pokračování vyžaduje odevzdání, nikoli správnost či minimální úroveň. |
 
 `writtenReflection` si zachovává dosavadní dočasnou reflexi s ukázkovou odpovědí; nejde o stejný kontrakt jako uložený `rubricSelfAssessment`. Žádný z nových typů nepřidává hodnocení volného textu pomocí AI ani odměnu za obchod. Pro hodnocené typy platí také `isQuestion`, `evaluateQuestion`, `feedbackFor`, sdílené `answer-keys`, nejvýše jedna otázka na krok a žádná na závěrečném kroku.
+
+### Uložené podklady v existujících blocích (#457)
+
+`labBridge.savedArtifact` může nabídnout existující ovládání souhlasu a uložení typovaného modelového výstupu. Uložení je nepovinné; nepřidává krok ani podmínku dokončení. `explanation.artifactEvidence` zobrazuje vlastní uložený podklad v rozbalovacím přehledu (náklady v 2.5.4, checklist ETF v 2.5.3), bez hodnocení nebo odměny. Oba používají stávající blok, typografii a ovládání výstupů; nejde o nový druh kroku. Reference nákladů znamená modelový příklad bez TER a spreadu, nikoli ověřený roční náklad osobního plánu.

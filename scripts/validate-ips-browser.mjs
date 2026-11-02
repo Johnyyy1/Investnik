@@ -21,6 +21,11 @@ try {
   assert.ok(signup.ok(), await signup.text()); const owner = (await signup.json()).user; ids.push(owner.id);
   await sql`insert into learning_profile(user_id,experience_level,goals,interests,daily_goal_minutes,time_zone,onboarding_completed_at) values (${owner.id},'BEGINNER','{}','{}',10,'Europe/Prague',now())`;
   await sql`insert into learner_artifact(id,user_id,kind,version,payload,request_id) values (${randomUUID()},${owner.id},'goal_map',1,${sql.json({ goals: [goal] })},${randomUUID()})`;
+  const costId = randomUUID();
+  const checklistId = randomUUID();
+  const model = { schemaVersion: 1, purchaseMinor: '250000', purchasesPerYear: 12, eurCzk: '24.30', a: { orderBps: 0, minimumEurMinor: '0', fxBps: 25, custodyMinor: '0', annualMinor: '7500' }, b: { orderBps: 10, minimumEurMinor: '150', fxBps: 15, custodyMinor: '0', annualMinor: '48240' } };
+  await sql`insert into learner_artifact(id,user_id,kind,version,payload,request_id) values (${costId},${owner.id},'cost_comparison',1,${sql.json(model)},${randomUUID()})`;
+  await sql`insert into learner_artifact(id,user_id,kind,version,payload,request_id,source_lesson_id) values (${checklistId},${owner.id},'lesson_output',1,${sql.json({ type: 'checklist', blockId: 'checklist', checkedItemIds: ['index', 'costs'] })},${randomUUID()},'etfs-selection-checklist')`;
   await page.goto(`${baseURL}/lab`); await page.getByRole('link', { name: 'Můj investiční plán (IPS)' }).click();
   await page.getByRole('heading', { name: 'Můj investiční plán', exact: true }).waitFor();
   assert.equal(await page.getByLabel('Název cíle 1', { exact: true }).inputValue(), goal.label);
@@ -42,6 +47,8 @@ try {
   await page.getByLabel('Cílová hotovost v %', { exact: true }).fill('20');
   await page.getByLabel('Zvolené nástroje a proč (jeden na řádek)', { exact: true }).fill('Široké ETF pro můj dlouhodobý cíl');
   await page.getByLabel('Zvolená platforma nebo co ještě ověřím', { exact: true }).fill('Fiktivní platforma pro výuku');
+  await page.getByLabel('Srovnání nákladů', { exact: true }).selectOption(costId);
+  await page.getByLabel('Checklist ETF', { exact: true }).selectOption(checklistId);
   await page.getByLabel('Měsíční částka v Kč', { exact: true }).fill('0,25');
   await page.getByLabel('Den v měsíci (1–28)', { exact: true }).fill('15');
   await page.getByLabel('Způsob rebalancingu', { exact: true }).selectOption('band');
@@ -62,6 +69,9 @@ try {
   assert.equal((await sql`select * from portfolio where user_id=${owner.id}`).length, 0);
   assert.equal((await sql`select * from learner_artifact where user_id=${owner.id} and kind='investment_plan'`)[0].payload.contribution.amountMinor, '25');
   await page.reload(); assert.equal(await page.getByLabel('Měsíční částka v Kč', { exact: true }).inputValue(), '0.25');
+  assert.equal(await page.getByLabel('Srovnání nákladů', { exact: true }).inputValue(), costId);
+  assert.equal(await page.getByLabel('Checklist ETF', { exact: true }).inputValue(), checklistId);
+  console.log('PASS: immutable cost and converted ETF revision selection survives save/reload.');
   console.log('PASS: entry before Lab unlock, goal-map reuse, keyboard search/consent, network retry, exact decimal persistence, idempotent save and refresh.');
 
   await sql`insert into progression_unlock(user_id,unlock_id,practice_capital_minor,reason,unlocked_at) values (${owner.id},'PORTFOLIO_LAB',500000,'legacy',now())`;

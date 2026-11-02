@@ -151,6 +151,8 @@ try {
           await page.getByRole("link", { name: /^Otevřít Portfolio Lab/ }).click();
           const lab = await popup;
           lab.on("pageerror", (error) => errors.push(`${where} Lab: ${error.message}`));
+          // The popup can expose its server-rendered input before React attaches its change handler.
+          await lab.waitForLoadState("networkidle");
           const search = lab.getByRole("combobox").first();
           await search.fill("CVETF");
           await lab.getByRole("option", { name: /CVETF/ }).click();
@@ -203,6 +205,16 @@ try {
             assert.deepEqual(Object.keys(submissions[0].auto_criteria).sort(), ["crisis", "diversification", "ips-alignment"]);
             assert.equal(submissions[0].auto_criteria.crisis.status, "fail", "the walked drill broke the plan once");
           }
+          await audit(`${where} after saving`, width);
+        }
+        if (block.type === "labBridge" && block.savedArtifact) {
+          const output = page.getByRole("complementary", { name: block.title, exact: true });
+          assert.equal(await button(index === lesson.steps.length - 1 ? "Dokončit lekci" : "Pokračovat").isEnabled(), true, "optional saving preserves published completion");
+          await output.getByRole("checkbox", { name: /Souhlasím s uložením/ }).check();
+          await output.getByRole("button", { name: "Uložit výstup", exact: true }).click();
+          await output.getByText(/^Výstup je uložený\. Verze \d+\.$/).waitFor();
+          const savedComparison: { payload: unknown }[] = await sql`select payload from learner_artifact where user_id=${userId!} and kind=${block.savedArtifact.kind}`;
+          assert.deepEqual(savedComparison[0].payload, block.savedArtifact.payload);
           await audit(`${where} after saving`, width);
         }
         if (block.type === "checklist") {

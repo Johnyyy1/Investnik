@@ -28,6 +28,22 @@ try {
   for (const id of ids) await sql`insert into "user" (id,name,email,is_anonymous,anonymous_kind,created_at,updated_at) values (${id},'IPS QA',${`${id}@example.com`},${id === guest || id === demo},${id === guest ? "guest" : id === demo ? "demo" : null},now(),now())`;
   await sql`insert into progression_unlock (user_id,unlock_id,practice_capital_minor,reason,unlocked_at) values (${owner},'PORTFOLIO_LAB',500000,'legacy','2026-10-01T10:00:00Z')`;
   const generation = await getOrCreateActivePortfolio(owner);
+  const cost = await save(owner, { content: { kind: "cost_comparison", payload: artifactExamples.cost_comparison }, sourceLessonId: "costs-broker-comparison", consent: true, requestId: randomUUID() });
+  const linked = await savePlan(owner, { ...exampleIps, costComparisonId: cost.id });
+  assert.equal((linked.payload as typeof exampleIps & { costComparisonId: string }).costComparisonId, cost.id);
+  await assert.rejects(() => savePlan(other, { ...exampleIps, costComparisonId: cost.id }), "cross-owner references are rejected");
+  await assert.rejects(() => savePlan(owner, { ...exampleIps, costComparisonId: randomUUID() }), "missing references are rejected");
+  const checklist = await save(owner, { content: { kind: "lesson_output", payload: { type: "checklist", blockId: "checklist", checkedItemIds: ["index", "ucits"] } }, sourceLessonId: "etfs-selection-checklist", consent: true, requestId: randomUUID() });
+  await savePlan(owner, { ...exampleIps, etfChecklistId: checklist.id });
+  const { listLearnerArtifacts } = await import("../src/features/artifacts/repository");
+  assert.ok((await listLearnerArtifacts(owner, "etf_checklist")).some((artifact) => artifact.id === checklist.id && artifact.kind === "etf_checklist"));
+  // Leave the original suite's per-kind version counts unchanged.
+  await remove(owner, cost.id);
+  assert.ok((await history(owner, "investment_plan")).some((artifact) => artifact.id === linked.id && "costComparisonId" in artifact.payload && artifact.payload.costComparisonId === cost.id), "deleting a source preserves historical plan references");
+  await assert.rejects(() => savePlan(owner, { ...exampleIps, costComparisonId: cost.id }), "deleted references cannot be reused in a new plan");
+  await remove(owner, linked.id);
+  await remove(owner, checklist.id);
+
   assert.equal(await readIpsPortfolioId(owner), generation.id);
   const original = await savePlan(owner, artifactExamples.investment_plan);
   const originalRow = await sql`select * from learner_artifact where id=${original.id}`;

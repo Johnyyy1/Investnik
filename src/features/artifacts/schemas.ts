@@ -2,6 +2,8 @@ import { z } from "zod";
 import { ipsSchema } from "@/features/ips/schema";
 import { availableLessons } from "@/features/learning/catalog";
 
+import { costComparisonSchema } from "./cost-comparison";
+
 const shortText = z.string().trim().min(1).max(160);
 const explanation = z.string().trim().min(1).max(2000);
 const texts = z.array(shortText).min(1).max(20);
@@ -56,14 +58,15 @@ export const artifactPayloadSchemas = {
     custodyBasisPoints: basisPoints.optional(),
     custodyFreeUpToMinor: minorUnits.optional(),
   }),
-  etf_checklist: z.strictObject({
+  cost_comparison: costComparisonSchema,
+  etf_checklist: z.union([z.strictObject({ schemaVersion: z.literal(2), type: z.literal("selection_checklist"), checkedItemIds: z.array(z.enum(["index", "ucits", "distribution", "costs", "size", "replication", "currency", "broker"])).max(8).refine((ids) => new Set(ids).size === ids.length) }), z.strictObject({
     instrument: shortText,
     ucits: z.enum(["yes", "no", "unknown"]),
     kidReviewed: z.boolean(),
     costsReviewed: z.boolean(),
     diversificationReviewed: z.boolean(),
     rationale: explanation,
-  }),
+  })]),
   safeguards: z.strictObject({ rules: z.array(z.strictObject({ trigger: shortText, action: explanation })).min(1).max(20) }),
   investment_plan: z.union([ipsSchema, z.strictObject({
     goals: z.array(goal).min(1).max(10),
@@ -90,7 +93,7 @@ export type ArtifactContent = { [K in ArtifactKind]: { kind: K; payload: Artifac
 const variant = <K extends ArtifactKind>(kind: K) => z.strictObject({ kind: z.literal(kind), payload: artifactPayloadSchemas[kind] });
 export const artifactContentSchema = z.discriminatedUnion("kind", [
   variant("lesson_output"),
-  variant("goal_map"), variant("financial_checkup"), variant("fee_profile"), variant("etf_checklist"), variant("safeguards"),
+  variant("goal_map"), variant("financial_checkup"), variant("fee_profile"), variant("cost_comparison"), variant("etf_checklist"), variant("safeguards"),
   variant("investment_plan"), variant("trade_checklist"), variant("business_map"), variant("investment_thesis"), variant("journal"),
 ]);
 export const artifactSourceSchema = z.string().max(100).refine((id) => availableLessons.some((lesson) => lesson.id === id)).nullable();
