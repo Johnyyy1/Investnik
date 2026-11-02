@@ -29,12 +29,13 @@
 .landing a { color: inherit; text-decoration: none; }
 .landing button, .landing input { font-family: inherit; }
 .landing button { touch-action: manipulation; }
-.landing h1, .landing h2, .landing h3 { font-family: var(--font-display); font-weight: 600; margin: 0; hyphens: auto; }
+.landing h1, .landing h2, .landing h3 { font-family: var(--font-display); font-weight: 600; margin: 0; hyphens: auto; text-wrap: balance; }
 .landing p { margin: 0; }
+.landing p, .landing li, .landing small { text-wrap: pretty; }
 .landing h2 { letter-spacing: -.038em; }
 .container { width: min(1312px, calc(100% - 128px)); margin-inline: auto; }
 .visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.skip { position: absolute; z-index: 50; top: 8px; left: 16px; background: var(--surface); padding: 12px; transform: translateY(-200%); }
+.skip { position: absolute; z-index: 50; top: 8px; left: 16px; background: var(--surface); border-radius: 8px; padding: 12px; transform: translateY(-200%); }
 .skip:focus { transform: none; }
 .siteHeader { position: relative; z-index: 4; padding-block: 28px; }
 .navBg { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: color-mix(in srgb, var(--paper) 92%, transparent); box-shadow: 0 1px 0 var(--divider), 0 10px 28px #17171710; backdrop-filter: blur(10px); }
@@ -45,11 +46,17 @@
 .topNav a { display: inline-flex; align-items: center; min-height: 48px; }
 .topNav a:last-child { border: 1px solid #c6c3ba; border-radius: 8px; padding-inline: 20px; font-weight: 500; transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease; }
 .mobileActions { display: none; }
-.mobileNav summary { list-style: none; cursor: pointer; display: grid; place-items: center; width: 44px; height: 48px; }
+.mobileNav summary { list-style: none; cursor: pointer; display: grid; place-items: center; width: 44px; height: 48px; border-radius: 8px; transition: background-color var(--motion-micro) ease-out; }
+/* Both icons stay in the DOM and share one grid cell, so the swap can be interrupted mid-way. */
+.mobileNav summary svg { grid-area: 1 / 1; transition: opacity 300ms cubic-bezier(.2, 0, 0, 1), scale 300ms cubic-bezier(.2, 0, 0, 1), filter 300ms cubic-bezier(.2, 0, 0, 1); }
+.mobileNav:not([open]) .menuClose, .mobileNav[open] .menuOpen { opacity: 0; scale: .25; filter: blur(4px); }
+.mobileNav summary:active, .mobileNav[open] summary { background: var(--soft); }
 .mobileNav summary::-webkit-details-marker { display: none; }
 .mobileNav:not([open]) nav { display: none; }
-.mobileNav nav { position: absolute; z-index: 20; right: 20px; top: 74px; display: grid; padding: 16px; width: min(300px, calc(100vw - 40px)); background: var(--surface); border: 1px solid var(--divider); border-radius: 10px; box-shadow: 0 15px 30px #0002; }
-.mobileNav nav a { display: flex; align-items: center; min-height: 48px; padding: 8px; }
+.mobileNav nav { position: absolute; z-index: 20; right: 20px; top: 74px; display: grid; padding: 8px; width: min(300px, calc(100vw - 40px)); background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; box-shadow: 0 15px 30px #0002; transition: opacity var(--motion-micro) ease-out, translate var(--motion-micro) ease-out; }
+@starting-style { .mobileNav[open] nav { opacity: 0; translate: 0 -8px; } }
+.mobileNav nav a { display: flex; align-items: center; min-height: 48px; padding: 8px 12px; border-radius: 4px; transition: background-color var(--motion-micro) ease-out, color var(--motion-micro) ease-out; }
+.mobileNav nav a:active { background: var(--soft); }
 .eyebrow, .demoEyebrow { font-size: .75rem; font-weight: 600; letter-spacing: .083em; color: var(--teal); line-height: 1.25; }
 .cardOverline, .lessonDisclosure { display: block; font-size: .75rem; color: var(--muted); line-height: 1.4; }
 .hero { padding: 36px 0 64px; }
@@ -61,46 +68,48 @@
 .heroActions { display: flex; align-items: center; gap: 24px; }
 .heroNote { width: 590px; max-width: 100%; font-size: .875rem; line-height: 1.5; color: var(--muted); }
 .primaryButton, .lessonSubmit, .portfolioSave, .secondaryButton {
-  display: inline-flex; align-items: center; justify-content: center; gap: 18px; min-height: 54px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 54px;
   background: var(--teal); color: var(--color-primary-foreground) !important; padding: 14px 22px; border: 1px solid var(--teal);
   border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; line-height: 1.35;
-  transition: background-color 180ms ease, border-color 180ms ease;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, scale 150ms ease-out;
 }
-.primaryButton { padding-inline: 24px; min-height: 56px; }
+.primaryButton { padding-inline: 24px 22px; min-height: 56px; }
 .primaryButton svg { flex-shrink: 0; transition: transform 240ms cubic-bezier(.2, .7, .2, 1); }
 .textAction { display: inline-flex; align-items: center; min-height: 48px; font-size: 1rem; font-weight: 500; }
 /* Underline that draws in from the left on hover, instead of a text-decoration jump. */
-.topNav a:not(:last-child), .textAction, .footer nav a {
+.topNav a:not(:last-child), .textAction, .footer nav a, .mobileActions > a {
   background: linear-gradient(currentColor, currentColor) 0 calc(50% + .78em) / 0 1px no-repeat;
   transition: background-size 260ms cubic-bezier(.2, .7, .2, 1), color 180ms ease;
 }
+/* The wrap's 12px radius minus its 1px border gives the 11px inner corners below. */
 .heroLessonWrap { position: relative; border: 1px solid var(--color-border-card); background: var(--surface); border-radius: 12px; box-shadow: 0 12px 24px #1717170c; }
 .heroArt { position: absolute; right: 8px; top: -238px; width: 256px; height: 260px; object-fit: contain; pointer-events: none; }
-.lessonBrowserHeader { position: relative; background: var(--surface); border-radius: 12px 12px 0 0; min-height: 78px; display: flex; gap: 16px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding: 22px 32px; font-size: .9375rem; color: var(--muted); }
+.lessonBrowserHeader { position: relative; background: var(--surface); border-radius: 11px 11px 0 0; min-height: 78px; display: flex; gap: 16px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding: 22px 32px; font-size: .9375rem; color: var(--muted); }
 .lessonBrowserHeader span:nth-child(3) { font-size: .875rem; }
 .lessonBrowserHeader span:last-child { font-size: .75rem; }
 .smallWordmark { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: var(--ink); letter-spacing: -.07em; }
 .heroLessonContent { display: grid; grid-template-columns: minmax(0, 1fr) 390px; }
 .lessonCard { background: var(--surface); color: var(--ink); }
-.heroLessonMain { padding: 40px; min-height: 438px; border-radius: 0 0 0 12px; }
+.heroLessonMain { padding: 40px; min-height: 438px; border-radius: 0 0 0 11px; }
 .heroLessonMain .lessonDisclosure, .heroLessonMain .lessonMeta, .heroLessonMain .lessonTrack { display: none; }
 .lessonQuestion { font-size: 2.625rem; line-height: 1.15; letter-spacing: -.033em; margin-bottom: 24px !important; }
 .answers { display: grid; gap: 24px; list-style: none; margin: 0; padding: 0; }
 .answer { min-height: 72px; background: var(--surface); border: 1px solid #7b7b70; border-radius: 8px; text-align: left; display: flex; align-items: center; gap: 12px; padding: 20px 22px; font-size: 1.125rem !important; line-height: 1.55 !important; color: var(--ink); transition: background-color 160ms ease, border-color 160ms ease; }
 .answer > span:first-child { font-size: .8125rem; font-weight: 600; color: var(--muted); flex-shrink: 0; }
 .answer > span:nth-child(2) { flex: 1; }
-.answer svg { flex-shrink: 0; color: var(--teal); }
-.answerSelected { border-color: var(--teal); background: #e7f0eb; }
+.answer svg { flex-shrink: 0; color: var(--teal); transition: opacity 300ms cubic-bezier(.2, 0, 0, 1), scale 300ms cubic-bezier(.2, 0, 0, 1), filter 300ms cubic-bezier(.2, 0, 0, 1); }
+@starting-style { .answer svg { opacity: 0; scale: .25; filter: blur(4px); } }
+.answerSelected { border-color: var(--teal); background: var(--color-primary-soft); }
 .answerSelected > span:first-child { color: var(--teal); }
 .answerSelected.answerWrong { border-color: var(--wrong); background: var(--wrong-soft); }
 .answerSelected.answerWrong > span:first-child, .answerWrong svg { color: var(--wrong); }
 .feedback h3.feedbackWrong, .asideFeedback h3.feedbackWrong { color: var(--wrong); }
 .lessonBottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; }
 .sampleReward { color: var(--teal); font-size: .875rem; font-weight: 600; }
-.lessonSubmit { max-width: 100%; flex-wrap: wrap; cursor: default; user-select: none; }
+.lessonSubmit { max-width: 100%; flex-wrap: wrap; padding-inline: 22px 20px; cursor: default; user-select: none; }
 .lessonSubmit[data-disabled] { background: var(--color-track); border-color: var(--color-track); color: #50554b !important; }
 .heroInlineFeedback { display: none; }
-.heroLessonAside { padding: 32px; min-height: 438px; background: var(--color-surface-practice); border-left: 1px solid var(--color-border); border-radius: 0 0 12px 0; }
+.heroLessonAside { padding: 32px; min-height: 438px; background: var(--color-surface-practice); border-left: 1px solid var(--color-border); border-radius: 0 0 11px 0; }
 .heroLessonAside .demoEyebrow { font-size: .6875rem; }
 .asideFeedback { margin-top: 30px; }
 .feedback h3, .asideFeedback h3 { font-size: 1.625rem; line-height: 1.2; letter-spacing: -.023em; color: var(--teal); }
@@ -127,8 +136,8 @@
 .courseHeader { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-block: 20px; }
 .courseHeader h3 { font-family: var(--font-sans); font-size: 1.375rem; font-weight: 600; line-height: 1.25; }
 .courseHeader > span { color: var(--teal); font-size: .875rem; font-weight: 600; white-space: nowrap; }
-.courseRow { display: flex; align-items: center; gap: 16px; min-height: 44px; padding: 12px 0; border-bottom: 1px solid var(--color-divider); font-size: 1rem; line-height: 1.2; margin-bottom: 20px; }
-.courseRow small { margin-left: auto; text-align: right; color: var(--muted); font-size: .8125rem; }
+.courseRow { display: flex; align-items: flex-start; gap: 16px; min-height: 44px; padding: 12px 0; border-bottom: 1px solid var(--color-divider); font-size: 1rem; line-height: 1.2; margin-bottom: 20px; }
+.courseRow small { margin-left: auto; margin-top: 2px; text-align: right; color: var(--muted); font-size: .8125rem; }
 .courseRow:not([data-planned]) small { color: var(--teal); }
 .courseRow[data-planned] .rowIcon { color: var(--muted); }
 .rowText { flex: 1 1 12rem; min-width: 0; }
@@ -137,7 +146,8 @@
 .outputList li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding: 12px 0; border-bottom: 1px solid var(--divider); font-size: 1rem; line-height: 1.3; }
 .outputList small { color: var(--muted); font-size: .8125rem; }
 .outputList li[data-available] small { color: var(--teal); }
-.rowIcon { color: var(--teal); flex-shrink: 0; width: 20px; display: grid; place-items: center; }
+.rowIcon { color: var(--teal); flex-shrink: 0; width: 20px; height: 1.2em; display: grid; place-items: center; }
+.rowIcon svg { stroke-width: 1.5; }
 .courseCard > p { font-size: .8125rem; color: var(--muted); line-height: 1.25; }
 .threeSteps { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 56px; border-top: 1px solid var(--divider); margin-top: 40px; padding-top: 22px; }
 .threeSteps > div > span { font-size: .75rem; color: var(--teal); display: block; line-height: 1.25; }
@@ -166,14 +176,15 @@
 .labFooter { margin-top: 56px; padding-top: 28px; border-top: 1px solid #f7f2e833; display: flex; justify-content: space-between; align-items: center; gap: 32px; }
 .labFooter p { font-size: .8125rem; line-height: 1.5; color: #e0e3d8; max-width: 640px; }
 .labFooter .primaryButton { flex-shrink: 0; }
+.labFooter :focus-visible { outline-color: var(--paper); }
 .progressSection { padding: 100px 0; }
 .progressSection h2 { font-size: 4.125rem; line-height: 1.1; letter-spacing: -.035em; margin: 32px 0; }
 .progressLayout { display: grid; grid-template-columns: 570px minmax(0, 1fr); gap: 112px; align-items: center; }
 .progressImage { height: 380px; display: grid; grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); place-items: center; }
 .progressImage img { min-height: 0; max-height: 100%; width: 100%; height: 100%; object-fit: contain; }
 .progressCard { display: flex; flex-direction: column; gap: 24px; }
-.progressItem { display: flex; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--divider); }
-.progressItem > svg { color: var(--teal); flex-shrink: 0; }
+.progressItem { display: flex; gap: 16px; align-items: flex-start; padding: 16px 0; border-bottom: 1px solid var(--divider); }
+.progressItem > svg { color: var(--teal); flex-shrink: 0; stroke-width: 1.5; }
 .progressItem:last-of-type > svg { color: var(--muted); }
 .progressItem span { display: block; font-size: 1rem; line-height: 1.2; }
 .progressItem small { display: block; font-size: .8125rem; color: var(--muted); margin-top: 6px; }
@@ -184,7 +195,8 @@
 .closing p { font-size: 1.125rem; line-height: 1.5; color: var(--muted); margin-top: 24px; position: relative; }
 .closingArt { position: absolute; right: 24px; top: 46px; width: 360px; height: 330px; object-fit: contain; pointer-events: none; }
 .closingActions { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 24px; position: relative; }
-.landing .secondaryButton { background: transparent; border-color: var(--divider); color: var(--teal) !important; box-shadow: none; font-family: var(--font-sans); font-size: .9375rem; }
+.landing .secondaryButton { min-height: 56px; padding-inline: 20px 22px; background: transparent; border-color: var(--divider); color: var(--teal) !important; box-shadow: none; font-family: var(--font-sans); font-size: .9375rem; transition: background-color 180ms ease, border-color 180ms ease, scale 150ms ease-out; }
+.landing .secondaryButton svg { width: 18px; height: 18px; }
 .demoButtonWrap { display: grid; align-content: start; }
 .demoButtonWrap > p { color: var(--color-danger); font-size: .875rem; max-width: 300px; }
 .footer { padding-bottom: 64px; }
@@ -194,13 +206,21 @@
 .footer nav { display: flex; flex-wrap: wrap; column-gap: 24px; font-size: .8125rem; }
 .footer nav a { display: flex; align-items: center; min-height: 44px; }
 @media (hover: hover) and (pointer: fine) {
-  .mobileNav a:hover { color: var(--teal); text-decoration: underline; text-underline-offset: 4px; }
-  .topNav a:not(:last-child):hover, .textAction:hover, .footer nav a:hover { color: var(--teal); background-size: 100% 1px; }
+  .mobileNav summary:hover { background: var(--soft); }
+  .mobileNav nav a:hover { background: var(--soft); color: var(--teal); }
+  .topNav a:not(:last-child):hover, .textAction:hover, .footer nav a:hover, .mobileActions > a:hover { color: var(--teal); background-size: 100% 1px; }
   .topNav a:last-child:hover { background: var(--teal); border-color: var(--teal); color: var(--color-primary-foreground); }
   .primaryButton:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
   .primaryButton:hover svg { transform: translateX(4px); }
-  .landing .secondaryButton:hover { background: #e7f0eb; border-color: var(--teal); }
+  .landing .secondaryButton:hover:not(:disabled) { background: var(--color-primary-soft); border-color: var(--teal); }
 }
+/* After the hover rules: on touch :active is the only state feedback, and it wins while a mouse holds the press. */
+.primaryButton:active { background: var(--color-primary-pressed); border-color: var(--color-primary-pressed); }
+.landing .secondaryButton:active:not(:disabled) { background: var(--color-primary-soft); border-color: var(--color-primary-pressed); }
+.topNav a:last-child:active { background: var(--color-primary-pressed); border-color: var(--color-primary-pressed); color: var(--color-primary-foreground); }
+.topNav a:not(:last-child):active, .textAction:active, .footer nav a:active, .mobileActions > a:active { color: var(--color-primary-pressed); }
+/* The individual `scale` property stays clear of the transform GSAP writes to hovered and magnetic buttons. */
+@media (prefers-reduced-motion: no-preference) { .landing .secondaryButton:active:not(:disabled) { scale: .96; } }
 @media (min-width: 1101px) { .heroLessonMain .lessonBottom { margin-top: 24px; } }
 @media (max-width: 1100px) {
   .container { width: calc(100% - 96px); }
@@ -252,7 +272,7 @@
   .heroIntro > p { width: 520px; }
   .heroLessonContent { grid-template-columns: minmax(0, 1fr); }
   .heroLessonMain { min-height: 438px; border-radius: 0; }
-  .heroLessonAside { min-height: 210px; border-left: 0; border-top: 1px solid var(--divider); border-radius: 0 0 12px 12px; }
+  .heroLessonAside { min-height: 210px; border-left: 0; border-top: 1px solid var(--divider); border-radius: 0 0 11px 11px; }
   .asideFeedback { margin-top: 20px; }
   .lessonProgress { margin-top: 24px; }
   .asideContext { margin-top: 20px !important; }
@@ -294,7 +314,7 @@
   .textAction { justify-content: center; min-height: 48px; }
   .heroArt { width: 98px; height: 100px; top: -91px; right: 4px; }
   .lessonBrowserHeader { display: none; }
-  .heroLessonMain { padding: 20px; min-height: 0; border-radius: 10px; }
+  .heroLessonMain { padding: 20px; min-height: 0; border-radius: 11px; }
   .heroLessonMain .lessonDisclosure, .heroLessonMain .lessonMeta, .heroLessonMain .lessonTrack { display: flex; }
   .lessonMeta { margin-block: 20px; }
   .lessonMeta span:first-child { font-size: 1rem; }
@@ -307,7 +327,7 @@
   .heroInlineFeedback h3 { font: 400 1rem/1.55 var(--font-sans); letter-spacing: 0; }
   .heroInlineFeedback p { font-size: .875rem; margin-top: 10px; }
   .heroLessonMain .lessonBottom { margin-top: 20px; }
-  .lessonSubmit { padding-inline: 18px; min-height: 52px; }
+  .lessonSubmit { padding-inline: 18px 16px; min-height: 52px; }
   .hero > .container > .microDisclaimer { font-size: .75rem; margin-top: 12px !important; }
   .journey h2, .lessonSectionCopy h2 { font-size: 2.25rem; line-height: 1.1; letter-spacing: -.036em; margin-top: 14px; }
   .journeyDescription { display: block; font-size: 1.0625rem; color: var(--muted); line-height: 1.55; margin-top: 20px !important; }

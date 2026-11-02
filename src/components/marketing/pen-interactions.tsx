@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import Link from "next/link";
-import { ArrowRight, CircleCheck, CircleX, Menu } from "lucide-react";
+import { ArrowRight, CircleCheck, CircleX, Menu, X } from "lucide-react";
 import { LESSON_DEMO_EVENT, type LessonDemoDetail } from "./motion/events";
 import styles from "./pen-landing.module.css";
 
@@ -19,7 +19,7 @@ export function MobileNavigation() {
     <details ref={details} className={styles.mobileNav} onKeyDown={event => {
       if (event.key === "Escape") { event.preventDefault(); close(true); }
     }}>
-      <summary aria-label="Navigační menu"><Menu aria-hidden="true" size={22}/></summary>
+      <summary aria-label="Navigační menu"><Menu className={styles.menuOpen} aria-hidden="true" size={22}/><X className={styles.menuClose} aria-hidden="true" size={22}/></summary>
       <nav aria-label="Mobilní navigace" onClick={() => close()}>
         <a href="#jak-to-funguje">Jak to funguje</a>
         <a href="#portfolio-lab">Portfolio Lab</a>
