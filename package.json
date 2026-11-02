@@ -138,7 +138,7 @@
   "devDependencies": {
     "@next/env": "16.4.2",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^24",
+    "@types/node": "^26",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "axe-core": "^4.14.0",
