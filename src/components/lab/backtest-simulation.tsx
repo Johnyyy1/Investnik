@@ -64,7 +64,7 @@ export function BacktestSimulation({ values, basis, sourceTag, currency, amount 
   return <section className={styles.simulation} aria-labelledby="simulation-heading" aria-busy={running}>
     <p className={styles.eyebrow}>Další krok · Simulace</p>
     <h2 id="simulation-heading">Co by mohlo nastat dál?</h2>
-    <p>Simulace poskládá {formatPaths(DEFAULT_SIMULATION_PATHS)} možných budoucích cest z měsíčních výnosů strategie A v tomto backtestu: {historyMonths} měsíců, {basis}. Uvidíš prostřední cestu i to, jak široký je rozsah kolem ní.</p>
+    <p>Simulace poskládá {formatPaths(DEFAULT_SIMULATION_PATHS)} možných budoucích cest z měsíčních výnosů strategie A v tomto backtestu: {historyMonths} měsíců, {basis}. Výnosy zachycují jen změny cen, bez dividend. Uvidíš prostřední cestu i to, jak široký je rozsah kolem ní.</p>
     <p className={styles.simulationFrame}><Info size={16} aria-hidden="true" /><span><strong>Není to předpověď ani doporučení.</strong> Rozsah ukazuje nejistotu. Vychází jen z minulých dat a minulost se nemusí opakovat.</span></p>
     {historyMonths < MIN_SIMULATION_HISTORY_MONTHS ? <p className={styles.notice} data-testid="simulation-unavailable">Simulace potřebuje alespoň {MIN_SIMULATION_HISTORY_MONTHS} měsíců historie, tento backtest má {historyMonths}. Z tak krátkého úseku by rozsah nic neřekl. Zvol delší období a spusť backtest znovu.</p> : <>
     <form className={styles.simulationForm} onSubmit={(event) => { event.preventDefault(); void simulate({ ...config, seed: result?.config.seed ?? config.seed }); }} aria-label="Nastavení simulace">
@@ -94,6 +94,7 @@ export function BacktestSimulation({ values, basis, sourceTag, currency, amount 
       </div>
       <details className={styles.methodology}><summary><Info size={16} aria-hidden="true" />Jak simulace funguje<ChevronDown size={16} aria-hidden="true" /></summary><div>
         <p>Z backtestu vezmeme {historyMonths} měsíčních výnosů strategie A. Každá z {formatPaths(result.paths)} cest se skládá z bloků po {DEFAULT_SIMULATION_BLOCK_MONTHS} po sobě jdoucích měsících historie. Kde blok začne, se losuje; po posledním měsíci historie pokračuje prvním. Bloky drží pohromadě klidná i bouřlivá období (blokový bootstrap).</p>
+        <p>Simulace nezahrnuje dividendy ani jejich reinvestování. U aktiv, která dividendy vyplácejí, tak chybí tato část celkového výnosu.</p>
         <p>Každý měsíc se hodnota cesty vynásobí 1 + vylosovaný výnos a pak se přičte měsíční vklad. Žádné další poplatky, daně ani inflace. Náklady obchodů jsou ve výnosech jen tak, jak je zaplatil zobrazený backtest.</p>
         <p>P5 znamená, že v daném měsíci je 5 % cest níž. Mezi nejbližšími pořadími hodnoty lineárně dopočítáme. Medián (P50) je prostřední hodnota v každém měsíci zvlášť, ne jedna konkrétní cesta.</p>
         <p>Losování je seedované (seed {result.config.seed}): stejné nastavení dá vždy stejný výsledek. Simulace nepočítá „pravděpodobnost zisku“: rozsah popisuje jen to, co dovolí minulé výnosy, ne skutečné šance na trhu.</p>

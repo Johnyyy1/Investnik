@@ -113,6 +113,7 @@ try {
 
   // The simulation step: future paths drawn from A's 132 monthly returns, framed as uncertainty, not a forecast.
   assert.match(await simulation().textContent(), /Není to předpověď ani doporučení\. Rozsah ukazuje nejistotu\. Vychází jen z minulých dat a minulost se nemusí opakovat\./);
+  assert.match(await simulation().textContent(), /Výnosy zachycují jen změny cen, bez dividend\./);
   assert.match(await simulation().textContent(), /132 měsíců, Mix 60 \/ 30 \/ 10/);
   assert.equal(await page.getByRole("textbox", { name: "Vklad na začátku" }).inputValue(), "100000");
   assert.equal(await page.getByRole("combobox", { name: "Horizont" }).inputValue(), "10");
@@ -128,6 +129,8 @@ try {
   await fan.locator(".recharts-surface").waitFor();
   assert.match(await fan.getByRole("img").getAttribute("aria-label"), /^Simulace 1\s000 cest\. Za 10 let je prostřední cesta \(medián\) .+ Polovina cest skončila mezi .+, 90 % cest mezi .+\. Vloženo celkem 100\s000\sKč\.$/);
   for (const label of ["P95", "P75", "Medián", "P25", "P5"]) assert.equal(await fan.locator("svg text").filter({ hasText: new RegExp(`^${label}$`) }).count(), 1, `in-chart label ${label}`);
+  await simulation().getByText("Jak simulace funguje", { exact: true }).click();
+  await simulation().getByText("Simulace nezahrnuje dividendy ani jejich reinvestování. U aktiv, která dividendy vyplácejí, tak chybí tato část celkového výnosu.", { exact: true }).waitFor();
   const median = await text("simulation-median");
   await button("Spustit znovu").click(); await settle();
   assert.equal(await text("simulation-median"), median, "the same settings and seed give the same paths");
