@@ -374,7 +374,7 @@ export function CrisisDrill() {
       {CRISIS_CHOICES.map(({ id, label, detail }) => <label key={id} className={styles.crisisChoice} data-checked={choice === id ? "" : undefined}>
         <input type="radio" name="demo-crisis" value={id} checked={choice === id} onChange={() => setChoice(id)} />
         <span><strong>{label}</strong><small>{detail}</small></span>
-        {choice === id && <em>vybráno</em>}
+        <em>vybráno</em>
       </label>)}
     </fieldset>
     <div className={styles.crisisResult} role="status" data-crisis-result>
