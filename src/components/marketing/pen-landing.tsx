@@ -60,7 +60,6 @@ export function PenLanding() {
           <p className={styles.eyebrow}>LEARN INVESTING BY DOING</p>
           <h1 id="hero-title" data-hero-title>Nejdřív plán.<br/><span>Pak investice.</span></h1>
           <div className={styles.heroIntro} data-hero-intro>
-            <p data-hero-sub>Připrav se na první investici a&nbsp;vydrž u&nbsp;svého plánu. Projdeš rozpočet, drahý dluh a&nbsp;náklady investování a&nbsp;sestavíš vlastní investiční plán, který si vyzkoušíš v&nbsp;modelové krizi. Bez skutečných peněz.</p>
             <div className={styles.heroActions} data-hero-actions>
               <Link className={`${styles.primaryButton} ${styles.shimmerHost}`} href="/onboarding" prefetch={false} data-lift data-press {...magneticProps}>Začít vstupním testem <ArrowRight aria-hidden="true" size={18}/><span className={styles.shimmer} data-shimmer aria-hidden="true"/></Link>
               <a className={styles.textAction} href="#jak-to-funguje">Jak to funguje</a>

@@ -157,6 +157,7 @@ try {
   await page.goto(baseURL);
   assert.equal(await page.title(), "Investník – připrav se na první investici a vydrž u svého plánu");
   assert.equal(await page.locator("h1").count(), 1);
+  assert.equal(await page.locator("[data-hero-intro]").getByText("Připrav se na první investici", { exact: false }).count(), 0);
   assert.equal(await page.locator("main > section").count(), 6);
   assert.deepEqual(await page.locator("main > section").evaluateAll(sections => sections.map(section => section.querySelector("h1,h2").textContent)), [
     "Nejdřív plán.Pak investice.", "Od rozpočtuk vlastnímu plánu.", "Každý modul končívýstupem.",
