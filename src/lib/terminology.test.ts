@@ -13,6 +13,8 @@ const retiredTerms: [RegExp, string][] = [
   [/(?<![\p{L}(.-]|max\. )drawdown(u|em)?(?= \p{Ll}| \d|[.,"](?!\p{L}))/iu, "propad (drawdown) / Největší propad (max. drawdown)"],
   [/(?<!\p{L})body (za lekce|nemění)/iu, "XP"],
   [/(?<!\p{L})transakční\p{L}* náklad/iu, "Náklady obchodů"],
+  // Sale value is not a return: a losing sale still shows a positive amount.
+  [/(?<!\p{L})odhadovan\p{L}*\s+výnos/iu, "Hodnota prodeje bez nákladů"],
   // The former name in copy; technical identifiers (investi-deterministic, [investi:email], .investi-theme) pass.
   [/(?<![\p{L}\d_./:-])investi(?![\p{L}\d_:-]|\.\p{L})/iu, "Investník"],
   [/(?<![\p{L}\d_./@-])Investnik(?![\p{L}\d_-])/u, "Investník (bez diakritiky jen v doméně a identifikátorech)"],
