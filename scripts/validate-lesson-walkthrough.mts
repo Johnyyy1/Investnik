@@ -152,8 +152,15 @@ try {
           const lab = await popup;
           lab.on("pageerror", (error) => errors.push(`${where} Lab: ${error.message}`));
           const search = lab.getByRole("combobox").first();
+          const option = lab.getByRole("option", { name: /CVETF/ });
           await search.fill("CVETF");
-          await lab.getByRole("option", { name: /CVETF/ }).click();
+          // In CI the search has twice never fired (cause unconfirmed). Retype once and log it; clear first because an unchanged value fires no change event.
+          if (!await option.waitFor({ timeout: 10_000 }).then(() => true, () => false)) {
+            console.log(`${where}: no search results after 10 s, retyping (field holds ${JSON.stringify(await search.inputValue())})`);
+            await search.fill("");
+            await search.fill("CVETF");
+          }
+          await option.click();
           await lab.getByRole("heading", { name: "Modelové ETF Nácvik", exact: true }).waitFor();
           await lab.getByRole("button", { name: "Koupit CVETF", exact: true }).first().click();
           const order = lab.getByRole("dialog", { name: "Investovat do CVETF" });
