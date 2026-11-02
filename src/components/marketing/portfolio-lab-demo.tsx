@@ -15,9 +15,9 @@ import styles from "./portfolio-lab-demo.module.css";
 
 type Step = PortfolioStep;
 const STEPS: readonly { step: Step; label: string }[] = [
-  { step: 1, label: "Nákup s náklady" },
-  { step: 2, label: "Karta v okamžiku rozhodnutí" },
-  { step: 3, label: "Zpětná vazba k procesu" },
+  { step: 1, label: "Nákup s\u00a0náklady" },
+  { step: 2, label: "Karta v\u00a0okamžiku rozhodnutí" },
+  { step: 3, label: "Zpětná vazba k\u00a0procesu" },
 ];
 
 /** Tabs from 801 px; below that the three steps stack (Pen 14.2, 390 px board). Server render stacks. */
@@ -158,7 +158,7 @@ function AmountField({ amountRaw, setAmountRaw, tariffId }: { amountRaw: string;
       <span aria-hidden="true">Kč</span>
     </div>
     <p id={`${id}-hint`} className={amount.ok ? styles.hint : styles.error} aria-live="polite">
-      {amount.ok ? `Po nákupu a nákladech zbude v hotovosti ${money(remaining!)}.` : amount.message}
+      {amount.ok ? `Po nákupu a\u00a0nákladech zbude v\u00a0hotovosti ${money(remaining!)}.` : amount.message}
     </p>
   </div>;
 }
@@ -197,10 +197,10 @@ function PurchaseStep({ amountRaw, setAmountRaw, tariffId, setTariffId, instrume
       <dl className={styles.costRows} data-cost-rows>
         <div><dt>Částka</dt><dd>{cost ? money(cost.amountMinor) : "—"}</dd></div>
         <div><dt>Poplatek<small>{rate(profile.tradeFee.rateBps)}, min. {money(profile.tradeFee.minMinor)}</small></dt><dd>{cost ? money(cost.feeMinor) : "—"}</dd></div>
-        <div><dt>Měnová přirážka<small>{rate(profile.fxMarkupBps)} z částky</small></dt><dd>{cost ? money(cost.fxMarkupMinor) : "—"}</dd></div>
+        <div><dt>Měnová přirážka<small>{rate(profile.fxMarkupBps)} z&nbsp;částky</small></dt><dd>{cost ? money(cost.fxMarkupMinor) : "—"}</dd></div>
         <div className={styles.costTotal}><dt>Celkem náklady</dt><dd data-cost-total>{cost ? money(cost.totalCostMinor) : "—"}</dd></div>
       </dl>
-      <p className={styles.note}><Info size={18} aria-hidden="true" />U malých nákupů rozhoduje minimum poplatku, u velkých konverze.</p>
+      <p className={styles.note}><Info size={18} aria-hidden="true" />U&nbsp;malých nákupů rozhoduje minimum poplatku, u&nbsp;velkých konverze.</p>
       <table className={styles.compare}>
         <caption>Celkové náklady podle tarifu</caption>
         <thead><tr><th scope="col">Nákup</th>{DEMO_TARIFFS.map((option) => <th scope="col" key={option.id}>{option.name.replace("Investník ", "")}</th>)}</tr></thead>
@@ -215,7 +215,7 @@ function PurchaseStep({ amountRaw, setAmountRaw, tariffId, setTariffId, instrume
         <Button onClick={onBuy} disabled={!cost} data-demo-buy>Koupit nanečisto <ArrowRight size={18} aria-hidden="true" /></Button>
         <Button variant="secondary" onClick={onWait}>Počkat</Button>
       </div>
-      <p className={styles.status} role="status">{waited ? "Nic se nekoupilo. Počkat je v Labu platné rozhodnutí, ne chyba." : ""}</p>
+      <p className={styles.status} role="status">{waited ? "Nic se nekoupilo. Počkat je v\u00a0Labu platné rozhodnutí, ne chyba." : ""}</p>
     </div>
   </div>;
 }
@@ -228,7 +228,8 @@ function DecisionStep({ amountRaw, setAmountRaw, tariffId, instrument, setInstru
   const searchId = useId();
   const results = (Object.keys(DEMO_INSTRUMENTS) as DemoInstrumentId[]).filter((id) => {
     const { name, kind } = DEMO_INSTRUMENTS[id];
-    return `${name} ${kind}`.toLocaleLowerCase("cs").includes(query.trim().toLocaleLowerCase("cs"));
+    // Typed queries use plain spaces; kinds contain non-breaking ones.
+    return `${name} ${kind}`.replaceAll("\u00a0", " ").toLocaleLowerCase("cs").includes(query.trim().toLocaleLowerCase("cs"));
   });
   const amount = checkAmount(amountRaw, tariffId);
   const offPlan = !DEMO_INSTRUMENTS[instrument].inPlan;
@@ -244,7 +245,7 @@ function DecisionStep({ amountRaw, setAmountRaw, tariffId, instrument, setInstru
             return <label key={id} className={styles.result} data-checked={instrument === id ? "" : undefined}>
               <input type="radio" name="demo-instrument" checked={instrument === id} onChange={() => setInstrument(id)} />
               <span><strong>{name}</strong><small>{kind}</small></span>
-              <em data-in-plan={inPlan ? "" : undefined}>{inPlan ? <CircleCheck size={16} aria-hidden="true" /> : <MapPinned size={16} aria-hidden="true" />}{inPlan ? "v plánu" : "mimo plán"}</em>
+              <em data-in-plan={inPlan ? "" : undefined}>{inPlan ? <CircleCheck size={16} aria-hidden="true" /> : <MapPinned size={16} aria-hidden="true" />}{inPlan ? "v\u00a0plánu" : "mimo plán"}</em>
             </label>;
           })}
         </div>
@@ -255,21 +256,21 @@ function DecisionStep({ amountRaw, setAmountRaw, tariffId, instrument, setInstru
       ? <aside className={styles.decisionCard} aria-labelledby="demo-card-title" data-decision-card>
         <p className={styles.cardEyebrow}><MapPinned size={16} aria-hidden="true" />MIMO TVŮJ PLÁN</p>
         <h4 id="demo-card-title">Tento nákup není ve tvém plánu</h4>
-        <p>Mix v tvém investičním plánu tento instrument neobsahuje. Pokud jde o změnu plánu, zapiš si nejdřív důvod. Nákup tím není zakázaný.</p>
+        <p>Mix v&nbsp;tvém investičním plánu tento instrument neobsahuje. Pokud jde o&nbsp;změnu plánu, zapiš si nejdřív důvod. Nákup tím není zakázaný.</p>
         <dl className={styles.cardRows}>
-          <div><dt>Mix v plánu</dt><dd>{planPct(DEMO_PLAN.etfBps)} ETF · {planPct(DEMO_PLAN.cashBps)} hotovost</dd></div>
+          <div><dt>Mix v&nbsp;plánu</dt><dd>{planPct(DEMO_PLAN.etfBps)} ETF · {planPct(DEMO_PLAN.cashBps)} hotovost</dd></div>
           <div><dt>Tento nákup</dt><dd>akcie jedné firmy</dd></div>
-          <div><dt>Podíl z cvičného kapitálu</dt><dd>{amount.ok ? planPct(demoProcess(amount.amountKc, tariffId, instrument).capitalShareBps) : "—"}</dd></div>
+          <div><dt>Podíl z&nbsp;cvičného kapitálu</dt><dd>{amount.ok ? planPct(demoProcess(amount.amountKc, tariffId, instrument).capitalShareBps) : "—"}</dd></div>
         </dl>
         <p className={styles.small}>Karta jen informuje. Rozhodnutí zůstává na tobě.</p>
         <div className={styles.cardActions}>
-          <Button variant="secondary" onClick={onBack}>Zpět k plánu</Button>
+          <Button variant="secondary" onClick={onBack}>Zpět k&nbsp;plánu</Button>
           <Button variant="secondary" onClick={onContinue}>Pokračovat stejně</Button>
         </div>
       </aside>
       : <aside className={styles.inPlan} aria-labelledby="demo-in-plan-title">
-        <p className={styles.panelEyebrow}><CircleCheck size={16} aria-hidden="true" />V PLÁNU</p>
-        <h4 id="demo-in-plan-title">Tento nákup sedí s tvým plánem</h4>
+        <p className={styles.panelEyebrow}><CircleCheck size={16} aria-hidden="true" />V&nbsp;PLÁNU</p>
+        <h4 id="demo-in-plan-title">Tento nákup sedí s&nbsp;tvým plánem</h4>
         <p>Karta se ukáže jen ve chvíli, kdy vybereš něco, co tvůj plán neobsahuje. Zkus vybrat „{DEMO_INSTRUMENTS.stock.name}“.</p>
         <Button variant="secondary" onClick={onContinue}>Pokračovat ke kontrole nákupu</Button>
       </aside>}
@@ -279,7 +280,7 @@ function DecisionStep({ amountRaw, setAmountRaw, tariffId, instrument, setInstru
 function Status({ kind }: { kind: "in" | "out" | "info" }) {
   return <span className={styles.criterionStatus} data-kind={kind}>
     {kind === "in" ? <CircleCheck size={16} aria-hidden="true" /> : kind === "out" ? <CircleAlert size={16} aria-hidden="true" /> : <Info size={16} aria-hidden="true" />}
-    {kind === "in" ? "V plánu" : kind === "out" ? "Mimo plán" : "Informace"}
+    {kind === "in" ? "V\u00a0plánu" : kind === "out" ? "Mimo plán" : "Informace"}
   </span>;
 }
 
@@ -295,7 +296,7 @@ function Criterion({ title, kind, value, detail, how }: { title: string; kind: "
 function ProcessStep({ amountKc, tariffId, instrument, onFix }: { amountKc: number | null; tariffId: DemoTariffId; instrument: DemoInstrumentId; onFix: () => void }) {
   if (amountKc === null) return <div className={styles.body}><div className={styles.form}>
     <PanelHeading eyebrow="JAK SE DRŽÍ TVŮJ PLÁN">Nejdřív zadej platnou částku</PanelHeading>
-    <p className={styles.muted}>Zpětná vazba vychází z nákupu v kroku 1. Bez platné částky ji nejde spočítat a nic si nevymýšlíme.</p>
+    <p className={styles.muted}>Zpětná vazba vychází z&nbsp;nákupu v&nbsp;kroku 1. Bez platné částky ji nejde spočítat a&nbsp;nic si nevymýšlíme.</p>
     <div className={styles.actions}><Button variant="secondary" onClick={onFix}>Zpět ke kroku 1</Button></div>
   </div></div>;
   const process = demoProcess(amountKc, tariffId, instrument);
@@ -307,20 +308,20 @@ function ProcessStep({ amountKc, tariffId, instrument, onFix }: { amountKc: numb
       <PanelHeading eyebrow="JAK SE DRŽÍ TVŮJ PLÁN">Tvůj plán: {PLAN_LINE}</PanelHeading>
       <p className={styles.valueMeta}>Hodnota {money(process.totalMinor)}<span>{money(process.changeMinor)} od začátku (náklady)</span></p>
     </div>
-    <p className={styles.muted}>Po nákupu z kroku 1: {formatKc(amountKc)} · {DEMO_INSTRUMENTS[instrument].name}.</p>
+    <p className={styles.muted}>Po nákupu z&nbsp;kroku 1: {formatKc(amountKc)} · {DEMO_INSTRUMENTS[instrument].name}.</p>
     <div className={styles.processGrid}>
       <ul className={styles.criteria} aria-label="Kritéria procesu">
         <Criterion title="Největší pozice" kind={process.holdingInPlan ? "in" : "out"} value={`${short} ${planPct(process.holdingBps)}`}
           detail={inPlan ? `Cíl ${planPct(DEMO_PLAN.etfBps)}, pásmo ${bandRange(DEMO_PLAN.etfBps)}.` : "Tvůj plán tento instrument neobsahuje, jeho cíl je 0 %."}
-          how="Hodnota pozice dělená celou hodnotou portfolia včetně hotovosti. V plánu je, když se od cíle neliší víc než o pásmo z plánu." />
+          how="Hodnota pozice dělená celou hodnotou portfolia včetně hotovosti. V&nbsp;plánu je, když se od cíle neliší víc než o&nbsp;pásmo z&nbsp;plánu." />
         <Criterion title="Hotovost" kind={process.cashInPlan ? "in" : "out"} value={`${planPct(process.cashBps)} proti cíli ${planPct(DEMO_PLAN.cashBps)}`}
           detail={`Pásmo ${bandRange(DEMO_PLAN.cashBps)}.`}
           how="Hotovost dělená celou hodnotou portfolia. Rezerva, kterou plán počítá, není chyba." />
         <Criterion title="Náklady za období" kind="info" value={money(process.cost.totalCostMinor)}
           detail={`1 nákup: poplatek ${money(process.cost.feeMinor)} + měnová přirážka ${money(process.cost.fxMarkupMinor)}.`}
-          how="Součet poplatků a měnových přirážek všech obchodů za období podle zvoleného fiktivního tarifu." />
+          how="Součet poplatků a&nbsp;měnových přirážek všech obchodů za období podle zvoleného fiktivního tarifu." />
         <Criterion title="Obrat" kind="info" value={`${process.trades} obchod`} detail="Za celé období ukázky."
-          how="Kolik obchodů a za kolik peněz proběhlo. Lab ho ukazuje jako informaci, ne jako cíl: víc obchodů znamená víc nákladů." />
+          how="Kolik obchodů a&nbsp;za kolik peněz proběhlo. Lab ho ukazuje jako informaci, ne jako cíl: víc obchodů znamená víc nákladů." />
       </ul>
       <div className={styles.split}>
         <h5>Rozložení proti plánu</h5>
@@ -336,7 +337,7 @@ function ProcessStep({ amountKc, tariffId, instrument, onFix }: { amountKc: numb
           <li><i className={styles.legendCash} />Hotovost<span>{planPct(process.cashBps)} · cíl {planPct(DEMO_PLAN.cashBps)}</span></li>
           <li><i className={styles.legendTarget} />Cíl<span>světlý pás = pásmo ±{(DEMO_PLAN.bandBps / 100n).toString()} p. b.</span></li>
         </ul>
-        <p className={styles.callout}><CircleCheck size={18} aria-hidden="true" />Počkat a dodržet plán je taky správný výsledek.</p>
+        <p className={styles.callout}><CircleCheck size={18} aria-hidden="true" />Počkat a&nbsp;dodržet plán je taky správný výsledek.</p>
       </div>
     </div>
   </div>;
@@ -352,13 +353,13 @@ export function CrisisDrill() {
   const points = CRISIS_LEVELS.map((level, month) => [pad + (month * (width - 2 * pad)) / (CRISIS_LEVELS.length - 1), pad + ((max - level) * (height - 2 * pad)) / (max - min)] as const);
   const [lowX, lowY] = points[CRISIS_DECISION_MONTH];
   const explanation: Record<CrisisChoice, string> = {
-    sell: `Plán prodej v propadu neobsahoval: podíl v indexu byl ${planPct(before)}, uvnitř pásma ${bandRange(DEMO_PLAN.etfBps)}.`,
-    hold: "Podíl zůstal v pásmu, takže plán žádný obchod nevyžadoval.",
-    buy: "Dokoupení z hotovosti vrátilo podíl na cíl. Žádný prodej.",
+    sell: `Plán prodej v\u00a0propadu neobsahoval: podíl v\u00a0indexu byl ${planPct(before)}, uvnitř pásma ${bandRange(DEMO_PLAN.etfBps)}.`,
+    hold: "Podíl zůstal v\u00a0pásmu, takže plán žádný obchod nevyžadoval.",
+    buy: "Dokoupení z\u00a0hotovosti vrátilo podíl na cíl. Žádný prodej.",
   };
   return <div className={styles.crisis} data-crisis>
     <p className={styles.crisisEyebrow}>KRIZOVÝ NÁCVIK · DOVĚTEK</p>
-    <h3 className={styles.crisisTitle}>Trh spadne o 30 %. Co uděláš?</h3>
+    <h3 className={styles.crisisTitle}>Trh spadne o&nbsp;30 %. Co uděláš?</h3>
     <figure className={styles.chart}>
       <figcaption><span>Modelový index po měsících</span><span className={styles.chip}>Modelový scénář</span></figcaption>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Modelový index: start 100, v měsíci ${CRISIS_DECISION_MONTH} ${CRISIS_LEVELS[CRISIS_DECISION_MONTH]} (−30 %), v měsíci 12 ${CRISIS_LEVELS[12]}.`}>
@@ -368,7 +369,7 @@ export function CrisisDrill() {
       </svg>
       <div className={styles.chartLabels} aria-hidden="true"><span>start 100</span><span className={styles.lowLabel}>−30 % · měsíc {CRISIS_DECISION_MONTH}</span><span>měsíc 12</span></div>
     </figure>
-    <p className={styles.crisisContext}>Měsíc {CRISIS_DECISION_MONTH}: index je o 30 % níž. Tvůj plán: {planPct(DEMO_PLAN.etfBps)} ETF, pásmo ±{(DEMO_PLAN.bandBps / 100n).toString()} p. b.</p>
+    <p className={styles.crisisContext}>Měsíc {CRISIS_DECISION_MONTH}: index je o&nbsp;30 % níž. Tvůj plán: {planPct(DEMO_PLAN.etfBps)} ETF, pásmo ±{(DEMO_PLAN.bandBps / 100n).toString()} p. b.</p>
     <fieldset className={styles.crisisChoices}>
       <legend className={styles.visuallyHidden}>Co uděláš v měsíci {CRISIS_DECISION_MONTH}?</legend>
       {CRISIS_CHOICES.map(({ id, label, detail }) => <label key={id} className={styles.crisisChoice} data-checked={choice === id ? "" : undefined}>
@@ -380,10 +381,10 @@ export function CrisisDrill() {
     <div className={styles.crisisResult} role="status" data-crisis-result>
       {outcome && choice ? <>
         <p data-ok={outcome.sellsOutsidePlan === 0 ? "" : undefined}>{outcome.sellsOutsidePlan === 0 ? <CircleCheck size={18} aria-hidden="true" /> : <CircleAlert size={18} aria-hidden="true" />}Prodeje mimo pravidla: {outcome.sellsOutsidePlan}</p>
-        <p data-ok={outcome.inBand ? "" : undefined}>{outcome.inBand ? <CircleCheck size={18} aria-hidden="true" /> : <CircleAlert size={18} aria-hidden="true" />}Podíl v indexu: {planPct(outcome.indexBps)} · {outcome.inBand ? "v pásmu" : "mimo pásmo"}</p>
+        <p data-ok={outcome.inBand ? "" : undefined}>{outcome.inBand ? <CircleCheck size={18} aria-hidden="true" /> : <CircleAlert size={18} aria-hidden="true" />}Podíl v&nbsp;indexu: {planPct(outcome.indexBps)} · {outcome.inBand ? "v\u00a0pásmu" : "mimo pásmo"}</p>
         <small>{explanation[choice]}</small>
-      </> : <small>Vyber jednu možnost a uvidíš, jak se drží tvůj plán.</small>}
+      </> : <small>Vyber jednu možnost a&nbsp;uvidíš, jak se drží tvůj plán.</small>}
     </div>
-    <p className={styles.crisisNote}>Hodnotí se, jestli dodržíš plán, ne jestli vyděláš. Zjednodušeno: bez poplatků a pravidelných vkladů.</p>
+    <p className={styles.crisisNote}>Hodnotí se, jestli dodržíš plán, ne jestli vyděláš. Zjednodušeno: bez poplatků a&nbsp;pravidelných vkladů.</p>
   </div>;
 }
