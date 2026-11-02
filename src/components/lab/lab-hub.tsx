@@ -75,10 +75,12 @@ async function LoadedGuide({ view }: { view: ViewPromise }) {
   return <HubGuide view={await view} />;
 }
 
-/** The guide's line follows what the Portfolio card is about to say; a failed load reads as missing prices. */
+/** The guide's line follows what the Portfolio card is about to say; a failed load reads as missing prices.
+ * Only `stale` may promise last known values: `unavailable` and a failed load render none. */
 export function HubGuide({ view }: { view: PortfolioView | null }) {
   const status = view ? dataStatus(view) : null;
-  if (!view || status?.kind === "stale" || status?.kind === "unavailable") return <Guide pose="searching">Ceny se teď nenačetly. Hádat je nebudeme, ukážu ti poslední známé.</Guide>;
+  if (status?.kind === "stale") return <Guide pose="searching">Ceny se teď nenačetly. Hádat je nebudeme, ukážu ti poslední známé.</Guide>;
+  if (!view || status?.kind === "unavailable") return <Guide pose="searching">Ceny teď chybí. Hádat je nebudeme a nic nedoplníme.</Guide>;
   if (view.holdings.length > 0) return <Guide pose="hourglass">Všechno je tam, kde jsme to nechali: tvůj mix i jeho hodnota.</Guide>;
   return <Guide pose="hourglass">Tady se nic nerozbije. Něco změň a uvidíš, co se stane.</Guide>;
 }

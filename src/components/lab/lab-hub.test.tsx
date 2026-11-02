@@ -95,4 +95,21 @@ describe("Lab hub", () => {
     expect(stale).toContain("nic se nepřepočítává");
     expect(card(null)).toContain("Nic se neztratilo.");
   });
+
+  it("promises last known prices in the guide only when the card shows them", () => {
+    const lastKnown = "ukážu ti poslední známé";
+    const noEstimate = "Ceny teď chybí. Hádat je nebudeme a nic nedoplníme.";
+    const stale = view({ ...saved, holdings: saved.holdings.map((item) => ({ ...item, quoteUsability: "stale" as const })) });
+    const partial = view({ ...saved, valuationComplete: false, portfolioTotalMinor: null, holdings: [saved.holdings[0], { ...saved.holdings[1], marketValueMinor: null }] });
+    const allMissing = view({ ...saved, valuationComplete: false, portfolioTotalMinor: null, holdings: saved.holdings.map((item) => ({ ...item, marketValueMinor: null })) });
+
+    expect(guide(stale)).toContain(lastKnown);
+    expect(card(stale)).toContain("Ukazujeme poslední známé hodnoty.");
+    for (const missing of [partial, allMissing, null]) {
+      expect(guide(missing)).toContain(noEstimate);
+      expect(guide(missing)).not.toContain(lastKnown);
+      expect(guide(missing)).toContain("20-searching-box");
+      expect(card(missing)).not.toContain("poslední známé");
+    }
+  });
 });
