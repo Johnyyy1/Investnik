@@ -29,7 +29,8 @@
 .landing a { color: inherit; text-decoration: none; }
 .landing button, .landing input { font-family: inherit; }
 .landing button { touch-action: manipulation; }
-.landing h1, .landing h2, .landing h3 { font-family: var(--font-display); font-weight: 600; margin: 0; hyphens: auto; text-wrap: balance; }
+/* Balance narrows the lines, so Firefox would otherwise hyphenate short words such as "mo-dul". 7 keeps 320px at 200% text free of overflow. */
+.landing h1, .landing h2, .landing h3 { font-family: var(--font-display); font-weight: 600; margin: 0; hyphens: auto; hyphenate-limit-chars: 7 3 3; text-wrap: balance; }
 .landing p { margin: 0; }
 .landing p, .landing li, .landing small { text-wrap: pretty; }
 .landing h2 { letter-spacing: -.038em; }
@@ -53,6 +54,8 @@
 .mobileNav summary:active, .mobileNav[open] summary { background: var(--soft); }
 .mobileNav summary::-webkit-details-marker { display: none; }
 .mobileNav:not([open]) nav { display: none; }
+/* Without this, Chrome runs the @starting-style entrance only on the first open. */
+.mobileNav::details-content { content-visibility: visible; }
 .mobileNav nav { position: absolute; z-index: 20; right: 20px; top: 74px; display: grid; padding: 8px; width: min(300px, calc(100vw - 40px)); background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; box-shadow: 0 15px 30px #0002; transition: opacity var(--motion-micro) ease-out, translate var(--motion-micro) ease-out; }
 @starting-style { .mobileNav[open] nav { opacity: 0; translate: 0 -8px; } }
 .mobileNav nav a { display: flex; align-items: center; min-height: 48px; padding: 8px 12px; border-radius: 4px; transition: background-color var(--motion-micro) ease-out, color var(--motion-micro) ease-out; }
@@ -303,6 +306,8 @@
   .container { width: calc(100% - 40px); }
   .journey, .lessonSection, .progressSection, .closing, .footer { --section-gutter: 24px; }
   .siteHeader { padding-block: 18px 0; }
+  /* The header wraps to two rows at 320px; a fixed offset would cover the menu button. */
+  .mobileNav nav { top: calc(100% + 8px); }
   .wordmark { font-size: 1.75rem; }
   .hero { padding: 44px 0 64px; }
   .hero h1 { font-size: min(13.85vw, 3.375rem); line-height: 1.03; letter-spacing: -.0426em; }
