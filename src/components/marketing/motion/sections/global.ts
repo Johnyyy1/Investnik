@@ -27,7 +27,7 @@ export const initInteractions: SectionInit = ({ root, c }) => {
   return () => cleanups.forEach(fn => fn());
 };
 
-/** Site header: fades down on load, gains a surface when scrolled, hides on scroll down and returns on scroll up. */
+/** Site header: slides down on load, gains a surface when scrolled, hides on scroll down and returns on scroll up. */
 export const initNav: SectionInit = ({ root }) => {
   const header = $(root, "[data-nav]");
   const bg = $(root, "[data-nav-bg]");
@@ -35,7 +35,8 @@ export const initNav: SectionInit = ({ root }) => {
   // Sticky is applied from JS so the no-JS / reduced-motion header stays in normal flow.
   gsap.set(header, { position: "sticky", top: 0 });
   gsap.set(bg, { autoAlpha: 0 });
-  gsap.from(header, { y: -24, autoAlpha: 0, duration: 0.9, delay: 0.1, ease: EASE.enter, clearProps: "opacity,visibility" });
+  // Keep navigation fully opaque so sign-in stays readable throughout the intro.
+  gsap.from(header, { y: -24, duration: 0.9, delay: 0.1, ease: EASE.enter });
 
   const details = header.querySelector("details");
   ScrollTrigger.create({
