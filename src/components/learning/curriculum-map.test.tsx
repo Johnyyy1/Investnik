@@ -14,6 +14,18 @@ const noEvidence = milestoneStates({ completions: [], attempts: [], submissions:
 const moduleOf = (levels: ReturnType<typeof curriculumMapModel>, code: string) => levels.flatMap((level) => level.modules).find((module) => module.code === code)!;
 
 describe("Curriculum map presentation", () => {
+  it("renders requirement actions as named links without changing requirement counts", () => {
+    const states = noEvidence.map((state) => state.id === "A" ? { ...state, navigation: {
+      lessons: [{ href: "/learn/investing-foundations/why-invest", label: "Další lekce" }],
+      skills: [{ href: "/learn/checkpoint/1.1", label: "Smíšená kontrola 1.1" }],
+      capstone: [{ href: "/learn/first-plan/capstone-a", label: "Závěrečný projekt" }],
+    } } : state);
+    const html = renderToStaticMarkup(createElement(CurriculumMap, { levels: curriculumMapModel(summary()), milestones: states }));
+    expect(html).toContain('href="/learn/checkpoint/1.1"');
+    expect(html).toContain('href="/learn/first-plan/capstone-a"');
+    expect(html).toContain("Smíšená kontrola 1.1</a>");
+    expect(states[0].requirements).toEqual(noEvidence[0].requirements);
+  });
   it("places all published lessons exactly once, keeping storage URLs and display order", () => {
     const levels = curriculumMapModel(summary());
     const lessons = levels.flatMap((level) => level.modules.flatMap((module) => module.lessons));

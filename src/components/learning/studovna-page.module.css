@@ -261,3 +261,5 @@
   .lessonText, .lessonState { grid-column: 2; width: auto; }
   .lessonText { overflow-wrap: normal; hyphens: auto; }
 }
+
+.continueCard[data-milestone-summary] { grid-template-columns: minmax(0, 1fr); min-height: 0; }

@@ -58,3 +58,5 @@
   .name { grid-column: 1 / -1; grid-row: 2; }
 }
 @media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
+
+.requirementLink { display: flex; align-items: center; min-height: 44px; color: var(--color-primary); text-decoration: underline; text-underline-offset: 4px; overflow-wrap: anywhere; }

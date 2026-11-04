@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import postgres from "postgres";
+import axe from "axe-core";
 import { chromium } from "playwright";
 import { finishOnboarding } from "./onboarding-helper.mjs";
 
@@ -26,6 +27,7 @@ const href = (lesson) => `/learn/${lesson.module_slug}/${lesson.slug}`;
 async function learner(name) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, timezoneId: "Europe/Prague", reducedMotion: "reduce" });
   const page = await context.newPage();
+  await page.addInitScript(axe.source);
   page.on("pageerror", (error) => errors.push(error.message));
   const response = await context.request.post(`${baseURL}/api/auth/sign-up/email`, { headers: { origin: baseURL }, data: { name, email: `progress-${randomUUID()}@example.com`, password: randomUUID() } });
   assert.ok(response.ok(), `signup: ${response.status()}`);
@@ -55,6 +57,7 @@ async function render(page, label, { state, xp, capital, count, action, actionHr
     await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map((image) => image.decode().catch(() => {}))); window.scrollTo(0, 0); await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))); });
   }
   async function reflow(width, note) {
+    assert.deepEqual(await page.evaluate(async () => (await window.axe.run(document.querySelector("main"), { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] } })).violations.filter((item) => item.impact === "serious" || item.impact === "critical").map((item) => item.id)), [], `${label}: axe at ${note}`);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${label}: overflow at ${note}`);
     const clipped = await root().locator("h1,h2,h3,h4,p,a,button,summary,dt,dd,li").evaluateAll((elements) => elements.filter((el) => el.clientWidth && el.scrollWidth > el.clientWidth + 2).map((el) => el.textContent?.slice(0, 80)));
     assert.deepEqual(clipped, [], `${label}: clipped text at ${note}`);

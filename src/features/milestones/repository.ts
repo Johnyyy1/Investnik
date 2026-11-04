@@ -14,6 +14,8 @@ import { loadLatestTraining } from "@/features/training/repository";
 import { logUnexpectedError } from "@/lib/server-errors";
 import { loadMilestoneEvidence, recordMilestoneAchievements } from "./achievements";
 import { capstoneOutcome, crisisPlanCheck, diversifiedCoreCheck, ipsAlignmentCheck, selfAssessmentSchema, thesisSavedCheck, type CheckResult } from "./criteria";
+import { ipsSchema } from "@/features/ips/schema";
+import { milestoneANavigation } from "./navigation";
 import { milestoneStates } from "./domain";
 import { getCapstone, type CapstoneCheck, type CapstoneDefinition } from "./registry";
 
@@ -81,7 +83,18 @@ export async function submitCapstone(userId: string, input: { capstoneId: string
  */
 export async function loadMilestones(userId: string | undefined) {
   if (!userId) return milestoneStates({ completions: [], attempts: [], submissions: [] });
-  const states = milestoneStates(await loadMilestoneEvidence(db, userId));
+  const evidence = await loadMilestoneEvidence(db, userId);
+  const states = milestoneStates(evidence);
+  const a = states.find((state) => state.id === "A")!;
+  if (a.status !== "achieved") {
+    const [plans, lab, training] = await Promise.all([
+      listLearnerArtifacts(userId, "investment_plan"), loadPortfolioLabUnlockStatus(userId), loadLatestTraining(userId),
+    ]);
+    a.navigation = milestoneANavigation(a, evidence, {
+      hasIps: ipsSchema.safeParse(plans.at(0)?.payload).success,
+      labUnlocked: lab.unlocked, crisisFinished: training?.state.finished ?? false,
+    });
+  }
   if (states.some((state) => state.achievedAt)) {
     const recorded = await db.select({ milestoneId: milestoneAchievement.milestoneId }).from(milestoneAchievement).where(eq(milestoneAchievement.userId, userId));
     if (states.some((state) => state.achievedAt && !recorded.some((row) => row.milestoneId === state.id))) {
