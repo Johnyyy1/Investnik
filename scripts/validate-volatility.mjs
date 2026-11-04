@@ -64,17 +64,18 @@ try {
   await page.goto(`${baseURL}/onboarding`);
   await finishOnboarding(page);
   [{ id: userId }] = await sql`select id from "user" where email = ${email}`;
-  // Fixture: Foundations and Returns are done; the Volatility lessons are completed through the UI below.
+  // Every other published module is complete; Volatility is exercised through the UI below.
   const predecessors = await sql`select id from lesson where is_published and module_id <> 'module-volatility'`;
   for (const { id } of predecessors) {
     await sql`insert into lesson_progress (user_id, lesson_id, status, last_position, completed_at, updated_at) values (${userId}, ${id}, 'completed', 0, now() - interval '1 day', now() - interval '1 day')`;
     await sql`insert into lesson_award (user_id, lesson_id, xp, practice_capital_minor, reward_policy_version, learning_date, time_zone, awarded_at) values (${userId}, ${id}, 60, 0, 2, current_date - 1, 'Europe/Prague', now() - interval '1 day')`;
   }
 
-  // Learn recommends the new module once Returns is finished.
+  // Scoped lessons are complete, so Learn prioritizes the missing Milestone A skills.
   await page.goto(`${baseURL}/learn`);
   const recommended = page.getByRole("region", { name: "Doporučeno pro tebe", exact: true });
-  await recommended.getByText("Co je volatilita").first().waitFor();
+  await recommended.getByRole("heading", { name: "Co ti zbývá do milníku A", exact: true }).waitFor();
+  assert.equal(await recommended.getByRole("link", { name: "Pokračovat", exact: true }).getAttribute("href"), "/learn/checkpoint/1.1");
   await page.goto(`${baseURL}/learn/volatility`);
   await heading("Volatilita");
   assert.equal(await page.getByTestId("module-progress").textContent(), "0 / 5 lekcí dokončeno");
@@ -253,7 +254,7 @@ try {
 
   const actionable = errors.filter((message) => !message.startsWith("You have Reduced Motion enabled on your device.") && !message.includes("404 (Not Found)"));
   assert.deepEqual(actionable, []);
-  console.log(`PASS: Volatility recommended after Returns; L1–L4 and the checkpoint walked with retries, explorers, real-history prediction and calculation at six widths and 200% text; one 2,000 Kč v3 receipt per lesson; Lab metric and backtest links. Screenshots: ${screenshotDir}`);
+  console.log(`PASS: Milestone A checkpoint prioritized after scoped completion; L1–L4 and the checkpoint walked with retries, explorers, real-history prediction and calculation at six widths and 200% text; one 2,000 Kč v4 receipt per lesson; Lab metric and backtest links. Screenshots: ${screenshotDir}`);
 } finally {
   await browser.close();
   if (userId) await sql`delete from "user" where id = ${userId} and email = ${email}`;

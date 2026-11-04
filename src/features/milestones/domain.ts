@@ -1,3 +1,4 @@
+import type { MilestoneNavigation } from "./navigation";
 import { createHash } from "node:crypto";
 import { availableLessons } from "@/features/learning/catalog";
 import { displayModules, lessonPlacements, milestones, skillItems, storageModules, type MilestoneId } from "@/features/learning/curriculum";
@@ -20,7 +21,7 @@ export type MilestoneEvidence = {
 export type RequirementStatus = "done" | "open" | "unavailable";
 export type MilestoneRequirement = { kind: "milestone" | "lessons" | "skills" | "capstone"; label: string; status: RequirementStatus; done: number; total: number; satisfiedAt: Date | null };
 export type MilestoneLesson = { id: string; displayCode: string; title: string; done: boolean };
-export type MilestoneState = { id: MilestoneId; title: string; status: "achieved" | "open" | "unavailable"; achievedAt: Date | null; scopeVersion: string; lessons: MilestoneLesson[]; requirements: MilestoneRequirement[] };
+export type MilestoneState = { navigation?: MilestoneNavigation; id: MilestoneId; title: string; status: "achieved" | "open" | "unavailable"; achievedAt: Date | null; scopeVersion: string; lessons: MilestoneLesson[]; requirements: MilestoneRequirement[] };
 
 const moduleOrder = new Map<string, number>(displayModules.map((module) => [module.code, module.order]));
 const lessonTitles = new Map<string, string>(storageModules.flatMap((module) => module.lessons.map((lesson) => [lesson.id, lesson.title] as const)));

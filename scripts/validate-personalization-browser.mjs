@@ -277,14 +277,14 @@ try {
     const recommended = e.page.getByRole("region", { name: "Doporučeno pro tebe" });
     if (mode === "first-return") assert.equal(await recommended.getByRole("link", { name: /^(Začít lekci|Pokračovat od kroku \d+)$/ }).getAttribute("href"), "/learn/returns/simple-returns");
     else {
-      await recommended.getByRole("heading", { name: "Kurikulum máš za sebou.", exact: true }).waitFor();
-      const completeAction = recommended.getByRole("link", { name: "Vyzkoušet v Labu", exact: true });
-      assert.equal(await completeAction.getAttribute("href"), "/lab");
-      await completeAction.click(); await e.page.waitForURL("**/lab");
+      await recommended.getByRole("heading", { name: "Co ti zbývá do milníku A", exact: true }).waitFor();
+      const completeAction = recommended.getByRole("link", { name: "Pokračovat", exact: true });
+      assert.equal(await completeAction.getAttribute("href"), "/learn/checkpoint/1.1");
+      await completeAction.click(); await e.page.waitForURL("**/learn/checkpoint/1.1");
       await e.page.goto(`${baseURL}/learn`);
     }
   }
-  console.log("PASS: Learn quant and ETF explanations, next incomplete published lesson, curriculum-complete fallback.");
+  console.log("PASS: Learn quant and ETF explanations, next incomplete published lesson, scoped completion leads to a mixed checkpoint.");
 
   const keyboard = await account(); await keyboard.page.goto(`${baseURL}/onboarding`);
   // All choices and progression in this attempt use keyboard events, including native radio arrows.

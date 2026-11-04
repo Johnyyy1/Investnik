@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import postgres from "postgres";
+import axe from "axe-core";
 import { chromium } from "playwright";
 import { finishOnboarding } from "./onboarding-helper.mjs";
 
@@ -38,6 +39,8 @@ async function layouts(state, capture = true) {
     assert.deepEqual(await map.locator("[data-milestone]").evaluateAll((items) => items.map((item) => [item.dataset.milestone, item.dataset.status])),
       [["A", "open"], ["B", "unavailable"], ["C", "unavailable"], ["D", "unavailable"]], "milestones are derived and never claimed early");
     assert.match(await map.getByRole("list", { name: "Požadavky milníku A" }).innerText(), /Lekce: \d+ z \d+[\s\S]*Dovednosti na úrovni Zvládnuté: \d+ z \d+[\s\S]*Závěrečný projekt A: plán, nákup a krizový nácvik: zatím ne/);
+    await page.addScriptTag({ content: axe.source });
+    assert.deepEqual(await page.evaluate(async () => (await window.axe.run(document.querySelector("main"), { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] } })).violations.map((item) => item.id)), [], `${state}: axe at ${width}`);
     assert.equal(await page.locator("h1:visible").count(), 1);
     assert.equal(await page.locator("#main-content").count(), 1);
     assert.ok(await page.locator("main img").evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0)), "illustration loads");
@@ -144,8 +147,9 @@ try {
   assert.match(await quantLevel.locator('[aria-current="step"]').textContent(), /krok 3/);
   // All-complete view is derived from published DB lessons, with no reward fabricated.
   await sql`insert into lesson_progress(user_id,lesson_id,status,last_position,updated_at,completed_at) select ${userId},id,'completed',0,now(),now() from lesson where is_published=true on conflict(user_id,lesson_id) do update set status='completed',completed_at=now()`;
-  await page.goto(`${baseURL}/learn`); await page.getByRole("heading", { name: "To je všechno. Zatím.", exact: true }).waitFor(); await layouts("complete", false);
-  await learn().getByRole("link", { name: "Vyzkoušet v Labu", exact: true }).click(); await page.waitForURL("**/lab");
+  await page.goto(`${baseURL}/learn`); await page.getByRole("heading", { name: "Co ti zbývá do milníku A", level: 1, exact: true }).waitFor(); await layouts("complete", false);
+  await learn().getByRole("link", { name: "Pokračovat", exact: true }).focus();
+  await page.keyboard.press("Enter"); await page.waitForURL("**/learn/checkpoint/1.1");
   assert.deepEqual(errors, []);
   console.log(`PASS: catalog/state wiring, real authored inline question, incorrect/retry/save error, persisted continuation/reload, no completion/reward on preview, mobile chapter keyboard, account Escape/focus, navigation, illustrations, 320–1440px and 200% text. Screenshots: ${output}`);
 } finally { await browser.close(); if (userId) await sql`delete from "user" where id=${userId}`; await sql.end(); }

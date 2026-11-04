@@ -45,7 +45,7 @@ function Milestone({ state, timeZone }: { state: MilestoneState; timeZone: strin
       : state.status === "unavailable" ? "Zatím nejde splnit: část obsahu připravujeme." : `Splněno ${done} z ${state.requirements.length} požadavků.`}</span>
     <ul className={styles.requirements} aria-label={`Požadavky milníku ${state.id}`}>{state.requirements.map((item) => {
       const Marker = item.status === "done" ? CircleCheck : Circle;
-      return <li key={`${item.kind}-${item.label}`} data-status={item.status}><Marker size={16} aria-hidden="true" />{item.label}: {requirementState(item)}</li>;
+      return <li key={`${item.kind}-${item.label}`} data-status={item.status}><Marker size={16} aria-hidden="true" /><div>{item.label}: {requirementState(item)}{state.navigation?.[item.kind as keyof NonNullable<MilestoneState["navigation"]>]?.map((action) => <Link className={styles.requirementLink} key={action.href} href={action.href}>{action.label}</Link>)}</div></li>;
     })}</ul>
     {state.lessons.length > 0 && <details className={styles.scopeLessons}>
       <summary>Lekce v milníku teď: {state.lessons.length}</summary>

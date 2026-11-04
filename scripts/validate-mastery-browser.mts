@@ -11,9 +11,12 @@ import axe from "axe-core";
 import postgres from "postgres";
 import { chromium, type Page } from "playwright";
 import { availableLessons } from "../src/features/learning/catalog";
-import { skills } from "../src/features/learning/curriculum";
+import { skillItems, skills } from "../src/features/learning/curriculum";
 import { correctAnswers } from "../src/features/lessons/answer-keys";
 import { isQuestion, type QuestionBlock } from "../src/features/lessons/question-evaluation";
+import { milestoneStates } from "../src/features/milestones/domain";
+import { getCapstone } from "../src/features/milestones/registry";
+import { crisisPlanCheck, diversifiedCoreCheck, ipsAlignmentCheck } from "../src/features/milestones/criteria";
 import { mixedCheckpoint } from "../src/features/mastery/domain";
 import { lessonSteps } from "../src/features/progress/transition";
 
@@ -83,9 +86,10 @@ try {
       await page.getByRole("alert").filter({ hasText: "Odpověď se nepodařilo uložit" }).waitFor();
       await page.unroute("**/learn/checkpoint/1.1");
       assert.deepEqual(await axeViolations(page), [], "checkpoint question: axe");
-      for (const width of [390, 320]) { await page.setViewportSize({ width, height: 900 }); assert.equal(await overflow(page), false, `overflow at ${width}`); }
+      for (const width of [1440, 768, 390, 320]) { await page.setViewportSize({ width, height: 900 }); assert.equal(await overflow(page), false, `overflow at ${width}`); assert.deepEqual(await axeViolations(page), [], `checkpoint axe at ${width}`); }
       await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
       assert.equal(await overflow(page), false, "overflow at 320 px / 200 % text");
+      assert.deepEqual(await axeViolations(page), [], "checkpoint axe at 200% text");
       await page.screenshot({ path: `${output}/checkpoint-320-200.png`, fullPage: true });
       await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
       await page.setViewportSize({ width: 1440, height: 900 });
@@ -107,6 +111,36 @@ try {
   const missed = items[0].skillId;
   assert.equal(await skillRow(page, missed).innerText(), missed === "bid-ask-spread" ? "Známé" : "Zkoušeno");
   for (const item of items.slice(1)) assert.equal(await skillRow(page, item.skillId).innerText(), "Zvládnuté", item.skillId);
+  // A learner with all scoped lessons still needs mixed checks.
+  const milestone = milestoneStates({ completions: [], attempts: [], submissions: [] })[0];
+  for (const lesson of milestone.lessons) await sql`insert into lesson_progress(user_id,lesson_id,status,last_position,completed_at,updated_at) values (${owner.id},${lesson.id},'completed',0,now(),now()) on conflict(user_id,lesson_id) do update set status='completed',completed_at=now()`;
+  await page.goto(`${baseURL}/learn`);
+  await page.getByRole("heading", { name: "Co ti zbývá do milníku A", level: 1 }).waitFor();
+  assert.equal(await page.getByRole("link", { name: "Pokračovat", exact: true }).getAttribute("href"), "/learn/checkpoint/1.1");
+  for (const code of ["1.1", "2.2", "2.5"] as const) for (const item of mixedCheckpoint(code, "milestone-qa")) {
+    assert.ok(skillItems.some((entry) => entry.id === item.id));
+    await sql`insert into skill_attempt(user_id,request_id,skill_id,item_id,correct,context,attempted_at) values (${owner.id},${randomUUID()},${item.skillId},${item.id},true,'checkpoint',now())`;
+  }
+  await page.goto(`${baseURL}/learn`);
+  assert.equal(await page.getByRole("link", { name: "Pokračovat", exact: true }).getAttribute("href"), "/learn/first-plan/investment-policy-statement", "missing IPS is actionable");
+  const capstone = getCapstone("capstone-a-v1")!;
+  const auto = { "ips-alignment": ipsAlignmentCheck({ value: "100", threshold: null, status: "information", lines: [] }), diversification: diversifiedCoreCheck({ valuationComplete: true, holdings: [{ assetType: "etf", portfolioWeightBasisPoints: "9000" }] }), crisis: crisisPlanCheck({ finished: true, sellsOutsidePlan: 0 }) };
+  const self = { ratings: capstone.criteria.map((criterion) => ({ criterionId: criterion.id, level: 3 })), reflection: "Modelový ověřený plán." };
+  await sql`insert into capstone_submission(id,user_id,capstone_id,version,request_id,artifact_refs,auto_criteria,self_assessment) values (${randomUUID()},${owner.id},${capstone.id},1,${randomUUID()},'{}'::jsonb,${JSON.stringify(auto)}::jsonb,${JSON.stringify(self)}::jsonb)`;
+  const awards = [...await sql`select * from lesson_award where user_id=${owner.id}`];
+  await page.goto(`${baseURL}/learn`);
+  await page.getByRole("heading", { name: "Milník A splněn", level: 1 }).waitFor();
+  for (const width of [1440, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    assert.equal(await overflow(page), false, `milestone achieved at ${width}`);
+    assert.deepEqual(await axeViolations(page), [], `milestone achieved axe at ${width}`);
+    await page.screenshot({ path: `${output}/milestone-achieved-${width}.png`, fullPage: true });
+  }
+  await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+  assert.equal(await overflow(page), false, "milestone achieved at 320 / 200% text");
+  await page.screenshot({ path: `${output}/milestone-achieved-320-200.png`, fullPage: true });
+  assert.deepEqual([...await sql`select * from lesson_award where user_id=${owner.id}`], awards, "milestone recognition adds no reward");
+  console.log("PASS: Learn routes scoped completion to mixed checks, then missing IPS, then calmly recognizes milestone A without rewards.");
   assert.deepEqual(errors, []);
   console.log("PASS: Progress shows Zvládnuté for correct checkpoint answers and keeps the missed skill below it.");
 } finally {
