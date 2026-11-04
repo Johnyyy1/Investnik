@@ -78,6 +78,15 @@ try {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(baseURL);
     await page.locator("h1").waitFor();
+    // Header navigation must stay readable while the intro runs (#475), so no ancestor may fade it.
+    const signInOpacity = await page.locator('header a[href$="sign-in"]:visible').first().evaluate((link) => {
+      let opacity = 1;
+      for (let node = link; node; node = node.parentElement) opacity *= Number(getComputedStyle(node).opacity);
+      return opacity;
+    });
+    assert.equal(signInOpacity, 1, `landing: ${width}px: sign-in link fully opaque during the intro`);
+    // Axe measures the settled page: the hero art is the intro's last fade and GSAP leaves it at inline opacity 1.
+    await page.waitForFunction(() => document.querySelector("[data-hero-art]")?.style.opacity === "1");
     await accessibility(`landing: ${width}px`);
   }
   await page.goto(`${baseURL}/sign-in`);
