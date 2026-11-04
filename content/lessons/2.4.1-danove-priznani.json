@@ -1,0 +1,15 @@
+{
+  "lessonId": "2.4.1",
+  "title": "Kdy musí investor podat daňové přiznání",
+  "summary": "Přehled zákonných limitů (hodnotový test 100 000 Kč a tříletý časový test) pro zdanění příjmů z prodeje cenných papírů.",
+  "rules": [
+    {
+      "code": "VALUE_TEST_100K",
+      "description": "Pokud celkové hrubé příjmy z prodeje cenných papírů nepřesáhnou 100 000 Kč za kalendářní rok, jsou osvobozeny od daně."
+    },
+    {
+      "code": "TIME_TEST_3Y",
+      "description": "Pokud mezi nákupem a prodejem cenného papíru uplynuly alespoň 3 roky, příjem je osvobozen od daně."
+    }
+  ]
+}
