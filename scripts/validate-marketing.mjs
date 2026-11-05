@@ -172,7 +172,7 @@ try {
     assert.equal(await image.getAttribute("alt"), "");
     assert.equal(await image.evaluate(element => element.complete && element.naturalWidth > 0), true);
   }
-  assert.deepEqual([...new Set(await page.locator("a[href]").evaluateAll(links => links.map(link => link.getAttribute("href"))))].sort(), ["#jak-to-funguje", "#main", "#portfolio-lab", "/", "/onboarding", "/privacy", "/pruvodce", "/sign-in", "/terms"]);
+  assert.deepEqual([...new Set(await page.locator("a[href]").evaluateAll(links => links.map(link => link.getAttribute("href"))))].sort(), ["#jak-to-funguje", "#main", "#portfolio-lab", "/", "/onboarding", "/privacy", "/pro-instituce", "/pruvodce", "/sign-in", "/terms"]);
   const layouts = [];
   for (const width of widths) {
     layouts.push(await layout(width));

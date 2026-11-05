@@ -18,8 +18,9 @@
 .article { overflow-wrap: anywhere; hyphens: auto; }
 .section h2 span { color: var(--color-muted); }
 .section h3 { margin-top: 24px; font-size: 1.0625rem; letter-spacing: 0; }
-.section p, .section ul, .section dl { margin-top: 12px; color: var(--color-secondary); }
+.section p, .section ul, .section ol, .section dl { margin-top: 12px; color: var(--color-secondary); }
 .section ul { padding-left: 1.25rem; list-style: disc; }
+.section ol { padding-left: 1.5rem; list-style: decimal; }
 .section li + li { margin-top: 8px; }
 .section strong { color: var(--color-foreground); font-weight: 600; }
 .section a:not([data-slot="button"]) { color: var(--color-foreground); font-weight: 600; text-decoration: underline; text-underline-offset: .2em; }

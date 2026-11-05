@@ -5,12 +5,13 @@ import styles from "./legal.module.css";
 import { Wordmark } from "@/components/brand/wordmark";
 
 /**
- * Who runs Investník. Both values must be filled in by the operator, and the texts reviewed by a person
+ * Who runs Investník. All values must be filled in by the operator, and the texts reviewed by a person
  * (ideally a lawyer), before these pages are relied on.
  */
 export const legalOperator = {
   identity: "[DOPLNIT: jméno nebo název provozovatele, IČO a adresa]",
   contactEmail: "[DOPLNIT: kontaktní e-mail pro ochranu osobních údajů]",
+  partnerEmail: "[DOPLNIT: kontaktní e-mail pro partnerský pilot]",
 } as const;
 export const LEGAL_UPDATED_AT = "21. října 2026";
 
