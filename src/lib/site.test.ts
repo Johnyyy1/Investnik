@@ -55,7 +55,7 @@ describe("metadata routes", () => {
 
   it("lists only public pages on the canonical origin", () => {
     expect(sitemap().map(({ url }) => url).sort()).toEqual([
-      "", "/privacy", "/terms", "/pruvodce", "/pruvodce/rozpocet-a-mira-uspor", "/pruvodce/kolik-stoji-poplatky", "/pruvodce/co-je-etf", "/pruvodce/sporit-nebo-investovat",
+      "", "/privacy", "/terms", "/pro-instituce", "/pruvodce", "/pruvodce/rozpocet-a-mira-uspor", "/pruvodce/kolik-stoji-poplatky", "/pruvodce/co-je-etf", "/pruvodce/sporit-nebo-investovat",
     ].map((path) => `https://investnik.cz${path}`).sort());
   });
 
