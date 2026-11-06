@@ -5,6 +5,7 @@ import { mkdir, writeFile, readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { chromium } from "playwright";
 import postgres from "postgres";
+import axe from "axe-core";
 
 const baseURL = process.env.MARKETING_TEST_URL ?? "http://localhost:3000";
 const local = host => ["localhost", "127.0.0.1", "[::1]"].includes(host);
@@ -154,6 +155,31 @@ async function snapshot(owner) {
   return result;
 }
 try {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    assert.equal((await page.goto(`${baseURL}/pro-instituce`)).status(), 200);
+    await page.getByRole("heading", { level: 1, name: "Investník pro brokery a banky" }).waitFor();
+    const diagnostic = await page.locator("#pilot li").nth(1).innerText();
+    assert.match(diagnostic, /doporučí, kde začít/);
+    assert.match(diagnostic, /Celou diagnostiku lze přeskočit/);
+    assert.match(diagnostic, /Přeskakování obsahu podle prokázaných znalostí připravujeme/);
+    assert.match(diagnostic, /všech publikovaných lekcí ve svém rozsahu/);
+    assert.doesNotMatch(diagnostic, /Co už umí, mohou přeskočit/);
+    for (const index of [0, 4, 5]) assert.match(await page.locator("#pilot li").nth(index).innerText(), /Připravujeme pro první pilot/);
+    await page.addScriptTag({ content: axe.source });
+    const violations = await page.evaluate(async () => (await window.axe.run(document, {
+      runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"] },
+    })).violations.map(({ id, nodes }) => ({ id, targets: nodes.map(node => node.target) })));
+    assert.deepEqual(violations, [], `Institutions ${width}px: axe`);
+    for (const fontSize of ["100%", "200%"]) {
+      await page.evaluate(value => { document.documentElement.style.fontSize = value; }, fontSize);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `Institutions ${width}px/${fontSize}: overflow`);
+    }
+    await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
+    await page.screenshot({ path: `${output}/institutions-${width}.png`, fullPage: true });
+  }
+  checks.push("Institutions: accurate diagnostic and planned pilot copy, 1440/390 px, 200% text, axe.");
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(baseURL);
   assert.equal(await page.title(), "Investník – připrav se na první investici a vydrž u svého plánu");
   assert.equal(await page.locator("h1").count(), 1);
