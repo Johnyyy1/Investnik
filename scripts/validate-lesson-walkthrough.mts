@@ -11,14 +11,15 @@ import { randomUUID } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import axe from "axe-core";
 import postgres from "postgres";
-import { chromium, type Locator, type Page } from "playwright";
+import { chromium, type Page } from "playwright";
 import { finishOnboarding } from "./onboarding-helper.mjs";
 import { prepareLessonFacts } from "../src/features/facts/lesson-facts";
 import { factRegistry } from "../src/features/facts/registry";
 import { factToday } from "../src/features/facts/resolve";
 import { availableLessons } from "../src/features/learning/catalog";
 import { correctAnswers, wrongAnswers } from "../src/features/lessons/answer-keys";
-import { isQuestion, parseSelection, type QuestionBlock } from "../src/features/lessons/question-evaluation";
+import { isQuestion, type QuestionBlock } from "../src/features/lessons/question-evaluation";
+import { fillAnswer } from "./lesson-answer-driver.mjs";
 import { getAuthoredLesson } from "../src/features/lessons/registry";
 import { getGuidedSteps } from "../src/features/lessons/steps";
 import { defaultFeeProfileDraft, feeProfileFromDraft } from "../src/features/lessons/broker-and-account/fee-schedule-model";
@@ -41,22 +42,6 @@ const lessons = availableLessons.filter((lesson) => !requested || requested.incl
   const { lesson } = prepareLessonFacts(getAuthoredLesson(definition.moduleSlug, definition.slug)!, factRegistry, { today: factToday(), published: true });
   return { id: lesson.id, path: `/learn/${lesson.moduleSlug}/${lesson.slug}`, steps: getGuidedSteps(lesson) };
 });
-
-type Control = { radio: string; value: string } | { label: string; fill: string } | { label: string; select: string } | { checkbox: string; checked: boolean };
-/** How the player takes an answer from `answer-keys`. A new graded kind in a published lesson needs a driver here. */
-function controls(block: QuestionBlock, answers: Record<string, string>): Control[] {
-  switch (block.type) {
-    case "multipleChoiceQuestion": case "findErrorQuestion": return [{ radio: block.id, value: answers.answer }];
-    case "numericQuestion": return [{ label: "Tvoje odpověď", fill: answers.answer }];
-    case "multiNumericQuestion": return block.answers.map((field) => ({ label: field.label, fill: answers[field.id] }));
-    case "fadedExample": return block.blank.input === "choice" ? [{ radio: block.id, value: answers.answer }] : [{ label: "Tvoje doplnění", fill: answers.answer }];
-    case "documentSearchQuestion": return block.target.type === "region" ? [{ radio: block.id, value: answers.answer }] : [{ label: "Hodnota z dokumentu", fill: answers.answer }];
-    case "categorizeQuestion": return block.items.map((item) => ({ label: item.label, select: answers[item.id] }));
-    case "orderQuestion": return block.items.map((_, index) => ({ label: `${index + 1}. místo`, select: answers[String(index)] }));
-    case "documentTap": return block.document.rows.filter((row) => row.selectable !== false).map((row) => ({ checkbox: `Označit řádek: ${block.document.columns.map((column) => row.cells[column.id]).filter(Boolean).join(", ")}`, checked: parseSelection(answers.selected).includes(row.id) }));
-    default: throw new Error(`No walkthrough driver for ${block.type} (${block.id})`);
-  }
-}
 
 const sql = postgres(process.env.DATABASE_URL!, { prepare: false });
 const browser = await chromium.launch({ headless: true, channel: process.env.BROWSER_CHANNEL || "chrome" });
@@ -91,14 +76,7 @@ try {
     assert.deepEqual(violations, [], `${label}: axe`);
   }
   async function answer(question: QuestionBlock, answers: Record<string, string>) {
-    const card: Locator = page.locator(`section[aria-labelledby^="${question.id}-"]`);
-    for (const control of controls(question, answers)) {
-      if ("radio" in control) await page.locator(`input[type="radio"][name="${control.radio}"][value="${control.value}"]`).check();
-      else if ("fill" in control) await card.getByLabel(control.label, { exact: true }).fill(control.fill);
-      // getByRole skips the hidden copy: the document renders a table from 1280 px and row cards below.
-      else if ("checkbox" in control) await page.getByRole("checkbox", { name: control.checkbox, exact: true }).setChecked(control.checked);
-      else await card.locator("label", { has: page.getByText(control.label, { exact: true }) }).locator("select").selectOption(control.select);
-    }
+    await fillAnswer(page, question, answers);
     await button("Zkontrolovat odpověď").click();
   }
 
