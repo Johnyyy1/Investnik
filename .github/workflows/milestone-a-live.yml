@@ -1,0 +1,73 @@
+name: Milestone A live journey
+
+# Founder decision of 2026-11-06 (#477): the honest Milestone A journey runs against the live FMP provider on a
+# schedule and on demand. It never runs on pull requests and is not a required check.
+# Portfolio Lab executes orders only on a fresh quote, so the schedule sits inside regular NYSE hours on weekdays
+# (13:30–20:00 UTC in summer, 14:30–21:00 UTC in winter) instead of at night. On an exchange holiday the suite fails
+# early with a clear "market closed" message.
+#
+# FMP terms do not allow redistributing its data and this repository is public. Nothing here caches, prints or
+# uploads FMP responses: no actions/cache step (setup-node caches npm packages only), no artifacts, and the app's own
+# market-data cache lives in the job's Postgres service, which is destroyed with the runner.
+on:
+  schedule:
+    - cron: "30 15 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: milestone-a-live
+  cancel-in-progress: false
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  MARKET_DATA_PROVIDER: fmp
+  FX_DATA_PROVIDER: cnb
+  FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+  POSTGRES_URL: postgresql://postgres:postgres@127.0.0.1:5432
+  DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/investi_milestone_a_qa
+  BETTER_AUTH_SECRET: ci-only-placeholder-secret-not-used-anywhere-0123456789
+  BETTER_AUTH_URL: http://localhost:3197
+  BROWSER_CHANNEL: chrome
+  EMAIL_TRANSPORT: outbox
+  EMAIL_OUTBOX_DIR: ${{ github.workspace }}/email-outbox
+
+jobs:
+  journey:
+    name: Fresh learner reaches milestone A on live data
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Require the FMP key
+        run: |
+          if [ -z "$FMP_API_KEY" ]; then
+            echo "::error title=FMP_API_KEY is missing::Add the repository secret FMP_API_KEY. The live Milestone A journey cannot run on deterministic data (docs/issue-477-blocker.md)."
+            exit 1
+          fi
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/prepare-app
+        with:
+          databases: investi_milestone_a_qa
+      - name: Start production server
+        run: .github/scripts/start-server.sh 3197
+      - name: Milestone A journey
+        run: npm run test:milestone-a-live
+        env:
+          MILESTONE_A_QA_DISPOSABLE: "1"
+          MILESTONE_A_TEST_URL: http://localhost:3197

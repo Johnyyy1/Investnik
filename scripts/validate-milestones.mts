@@ -19,6 +19,10 @@ import { recordSkillAttempt } from "../src/features/mastery/repository";
 import { skillItems } from "../src/features/learning/curriculum";
 import { lessonSteps } from "../src/features/progress/transition";
 import { completeLesson } from "../src/features/progress/repository";
+import { exampleIps } from "../src/features/ips/test-fixtures";
+import { executeTrade, reviewTrade } from "../src/features/portfolio/repository";
+import { appendTrainingAction, startTrainingSession } from "../src/features/training/repository";
+import { modelSeries } from "../src/features/training/scenarios";
 
 assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(new URL(process.env.DATABASE_URL!).hostname), "Requires a disposable local DB.");
 assert.equal(process.env.MILESTONES_QA_DISPOSABLE, "1");
@@ -125,10 +129,10 @@ try {
   const skillsA = [...new Set(skillItems.map((item) => item.skillId))];
   const achievements = (userId: string) => db.select().from(milestoneAchievement).where(eq(milestoneAchievement.userId, userId));
   const firstDay = new Date(Date.UTC(2026, 9, 1, 10));
-  async function seed(userId: string, { skipLesson, skipSkill }: { skipLesson?: string; skipSkill?: string } = {}) {
+  async function seed(userId: string, { skipLesson, skipSkill, capstone = true }: { skipLesson?: string; skipSkill?: string; capstone?: boolean } = {}) {
     await db.insert(lessonProgress).values(reachedA.lessons.filter((lesson) => lesson.id !== skipLesson).map((lesson) => ({ userId, lessonId: lesson.id, status: "completed" as const, lastPosition: 0, completedAt: firstDay, updatedAt: firstDay })));
     await db.insert(skillAttempt).values(skillsA.filter((skillId) => skillId !== skipSkill).map((skillId) => ({ userId, requestId: randomUUID(), skillId, itemId: skillItems.find((item) => item.skillId === skillId)!.id, correct: true, context: "checkpoint" as const, attemptedAt: firstDay })));
-    await db.insert(capstoneSubmission).values({ id: randomUUID(), userId, capstoneId: "capstone-a-v1", version: 1, requestId: randomUUID(), artifactRefs: {}, submittedAt: firstDay, selfAssessment: rated("capstone-a-v1"), autoCriteria: {
+    if (capstone) await db.insert(capstoneSubmission).values({ id: randomUUID(), userId, capstoneId: "capstone-a-v1", version: 1, requestId: randomUUID(), artifactRefs: {}, submittedAt: firstDay, selfAssessment: rated("capstone-a-v1"), autoCriteria: {
       "ips-alignment": ipsAlignmentCheck({ value: "100", threshold: null, status: "information", lines: [] }),
       diversification: diversifiedCoreCheck({ valuationComplete: true, holdings: [{ assetType: "etf", portfolioWeightBasisPoints: "9000" }] }),
       crisis: crisisPlanCheck({ finished: true, sellsOutsidePlan: 0 }) } });
@@ -193,6 +197,33 @@ try {
   await submitCapstone(byCapstone, { capstoneId: "capstone-a-v1", requestId: randomUUID(), selfAssessment: rated("capstone-a-v1", 4) });
   assert.equal((await achievements(byCapstone)).length, 0);
   console.log("PASS: a capstone that does not pass records nothing.");
+
+  // A passing capstone completes A and records it inside submitCapstone's own transaction (#477): real Lab, IPS and
+  // drill evidence through the application repositories, then racing submissions and no page read before the check.
+  const byPassing = await identity("account");
+  await seed(byPassing, { capstone: false });
+  await db.insert(progressionUnlock).values({ userId: byPassing, unlockId: PORTFOLIO_LAB_UNLOCK_ID, practiceCapitalMinor: 500_000n, reason: "learning_requirements", unlockedAt: new Date() });
+  await saveLearnerArtifact(byPassing, { consent: true, requestId: randomUUID(), sourceLessonId: null, content: { kind: "investment_plan", payload: {
+    ...exampleIps, allocation: { lines: [{ instrumentId: "SAMPLE-XNAS:CVETF", weightBps: 10_000 }], cashBps: 0 } } } });
+  // About 97 % of the 5 000 Kč grant, so cash stays within the 5 p. b. IPS tolerance.
+  const unitCost = -BigInt((await reviewTrade(byPassing, { instrumentId: "SAMPLE-XNAS:CVETF", quantity: "1", side: "BUY" })).cashDeltaBaseMinor);
+  await executeTrade(byPassing, { instrumentId: "SAMPLE-XNAS:CVETF", side: "BUY", quantity: (Number(485_000n * 10_000n / unitCost) / 10_000).toFixed(4), clientIdempotencyKey: randomUUID() });
+  const { sessionId: drill } = await startTrainingSession(byPassing, { scenarioId: "model-crisis-v1", requestId: randomUUID(), series: modelSeries() });
+  // Waiting through every month is keeping the plan: no sell, so no sell outside it.
+  for (let month = 0; month < modelSeries().points.length - 1; month++) await appendTrainingAction(byPassing, { sessionId: drill, expectedMonth: month, clientIdempotencyKey: randomUUID(), action: { kind: "advance" } });
+  const awardsBeforePass = await db.select().from(lessonAward).where(eq(lessonAward.userId, byPassing));
+  const passing = await Promise.all(Array.from({ length: 3 }, () => submitCapstone(byPassing, { capstoneId: "capstone-a-v1", requestId: randomUUID(), selfAssessment: rated("capstone-a-v1") })));
+  for (const submission of passing) {
+    assert.equal(submission.outcome.passed, true);
+    assert.deepEqual(Object.values(submission.autoCriteria as Record<string, { status: string }>).map((check) => check.status), ["pass", "pass", "pass"]);
+  }
+  const firstPass = passing.reduce((first, submission) => submission.version < first.version ? submission : first);
+  const [viaCapstone, ...extraCapstoneRows] = await achievements(byPassing);
+  assert.equal(extraCapstoneRows.length, 0, "racing passing submissions record A once");
+  assert.deepEqual([viaCapstone.milestoneId, viaCapstone.scopeVersion, viaCapstone.achievedAt.getTime()], ["A", reachedA.scopeVersion, firstPass.submittedAt.getTime()]);
+  assert.deepEqual(await db.select().from(lessonAward).where(eq(lessonAward.userId, byPassing)), awardsBeforePass, "the milestone adds no reward receipt");
+  assert.equal((await loadMilestones(byPassing))[0].status, "achieved");
+  console.log("PASS: a passing capstone records milestone A once within its own transaction, dated by the first passing submission.");
 
   const achievementExport = JSON.parse(serializeAccountExport(buildAccountExport((await readAccountExportRows(db, bySkill))!)));
   assert.deepEqual(achievementExport.milestoneAchievements, [{ milestoneId: "A", scopeVersion: recorded.scopeVersion, achievedAt: recorded.achievedAt.toISOString() }]);
