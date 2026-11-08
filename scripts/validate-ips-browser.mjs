@@ -43,6 +43,8 @@ try {
   await page.getByRole('combobox', { name: 'Přidat konkrétní instrument' }).fill('VWCE');
   await page.getByRole('option').filter({ hasText: 'VWCE' }).waitFor();
   await page.getByRole('combobox', { name: 'Přidat konkrétní instrument' }).focus(); await page.keyboard.press('Enter');
+  // The line shows the type only after the server verified it from metadata.
+  await page.getByRole('heading', { name: 'VWCE · Vanguard FTSE All-World UCITS ETF · ETF', exact: true }).waitFor();
   await page.getByLabel('Váha položky 1 v %', { exact: true }).fill('80');
   await page.getByLabel('Cílová hotovost v %', { exact: true }).fill('20');
   await page.getByLabel('Zvolené nástroje a proč (jeden na řádek)', { exact: true }).fill('Široké ETF pro můj dlouhodobý cíl');

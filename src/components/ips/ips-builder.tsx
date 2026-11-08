@@ -2,11 +2,12 @@
 import { cloneElement, useEffect, useId, useRef, useState, useTransition, type ReactElement } from "react";
 import { z } from "zod";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { InstrumentSearch } from "@/components/lab/portfolio/instrument-search";
+import { InstrumentSearch, typeLabel } from "@/components/lab/portfolio/instrument-search";
 import { deleteArtifact, saveArtifact } from "@/features/artifacts/actions";
 import { artifactConsentText } from "@/features/artifacts/presentation";
 import type { LearnerArtifact } from "@/features/artifacts/schemas";
-import { applyIpsTargetAction, searchIpsInstrumentsAction } from "@/features/ips/actions";
+import type { InstrumentSearchResult } from "@/features/market-data/contracts";
+import { applyIpsTargetAction, checkIpsInstrumentAction, searchIpsInstrumentsAction } from "@/features/ips/actions";
 import { actionLabels, assetLabels, debtLabels, decimalToBps, draftFromPlan, frequencyLabels, ipsDate, monthLabel, newIpsDraft, percentText, planFromDraft, priorityLabels, purposeLabels, reserveLabels, type IpsDraft } from "@/features/ips/presentation";
 import type { IpsPlan } from "@/features/ips/schema";
 import { IpsSummary } from "./ips-summary";
@@ -34,6 +35,7 @@ export function IpsBuilder({ history, goals, foundation, portfolioId, sample, su
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [checking, setChecking] = useState(false);
   const errorRef = useRef<HTMLParagraphElement>(null);
   const deleteRef = useRef<HTMLButtonElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -41,7 +43,23 @@ export function IpsBuilder({ history, goals, foundation, portfolioId, sample, su
   const saveRequest = useRef<{ fingerprint: string; id: string; plan: IpsPlan } | null>(null);
   const applyRequest = useRef<{ artifactId: string; portfolioId: string; requestId: string } | null>(null);
   useEffect(() => { if (message && !message.ok) errorRef.current?.focus(); }, [message]);
-  function update(patch: Partial<IpsDraft>) { if (lock.current) return; setDraft((old) => ({ ...old, ...patch, ...(!dirty && current && !("reason" in patch) ? { reason: "" } : {}) })); setDirty(true); setMessage(null); }
+  function update(patch: Partial<IpsDraft> | ((old: IpsDraft) => Partial<IpsDraft>)) {
+    if (lock.current) return;
+    setDraft((old) => { const next = typeof patch === "function" ? patch(old) : patch; return { ...old, ...next, ...(!dirty && current && !("reason" in next) ? { reason: "" } : {}) }; });
+    setDirty(true); setMessage(null);
+  }
+  /** Search results may carry no type (FMP). The server checks the type from metadata before the line enters the draft. */
+  async function addInstrument(result: InstrumentSearchResult) {
+    if (lock.current || checking || draft.lines.some((line) => line.instrumentId === result.instrumentId)) return;
+    setChecking(true); setMessage(null);
+    try {
+      const checked = await checkIpsInstrumentAction(result.instrumentId);
+      if (!checked.ok) { setMessage({ ok: false, text: `${result.symbol}: ${checked.message}` }); return; }
+      const { instrumentId, symbol, name, assetType } = checked.instrument;
+      update((old) => old.lines.length >= 12 || old.lines.some((line) => line.instrumentId === instrumentId) ? {} : { lines: [...old.lines, { type: "instrument", instrumentId, label: `${symbol} · ${name} · ${typeLabel(assetType)}`, weight: "" }] });
+    } catch { setMessage({ ok: false, text: "Připojení se nepodařilo. Zkus nástroj vybrat znovu." }); }
+    finally { setChecking(false); }
+  }
   function cancelDelete() { if (lock.current) return; setConfirmDelete(false); deleteRef.current?.focus(); }
   function run(task: () => Promise<void>) {
     if (lock.current) return;
@@ -49,7 +67,7 @@ export function IpsBuilder({ history, goals, foundation, portfolioId, sample, su
     start(async () => { try { await task(); } catch { setMessage({ ok: false, text: "Připojení se nepodařilo. Plán zůstává na této stránce. Zkus to znovu." }); } finally { lock.current = false; } });
   }
   function save() {
-    if (!consent) return;
+    if (!consent || checking) return;
     run(async () => {
       const fingerprint = JSON.stringify(draft);
       if (saveRequest.current?.fingerprint !== fingerprint) {
@@ -124,7 +142,7 @@ export function IpsBuilder({ history, goals, foundation, portfolioId, sample, su
           {!instrumentMode && <div className={styles.actions}><Button variant="secondary" size="compact" disabled={draft.lines.length >= 3} onClick={() => update({ lines: [...draft.lines, { type: (["equity", "bonds", "other"] as const).find((type) => !draft.lines.some((line) => line.type === type)) ?? "other", instrumentId: "", label: "", weight: "" }] })}>Přidat třídu aktiv</Button></div>}
           {!classMode && draft.lines.length < 12 && <div className={styles.entry}><InstrumentSearch id="ips-instrument" label="Přidat konkrétní instrument" sample={sample} searchAction={searchIpsInstrumentsAction}
             target={{ href: () => "", hint: "Vyhledej název nebo ticker. Výběrem přidáš nástroj do plánu bez nákupu.", opening: "Přidávám nástroj…" }}
-            onSelect={(result) => { if (!draft.lines.some((line) => line.instrumentId === result.instrumentId)) update({ lines: [...draft.lines, { type: "instrument", instrumentId: result.instrumentId, label: `${result.symbol} · ${result.name}`, weight: "" }] }); }} /></div>}
+            onSelect={addInstrument} />{checking && <p role="status" className={styles.hint}>Ověřuji typ nástroje…</p>}</div>}
           <Field label="Cílová hotovost v %"><input inputMode="decimal" value={draft.cash} onChange={(e) => update({ cash: e.target.value })} /></Field><p className={styles.total} aria-live="polite">{total}</p>
         </fieldset>
         <fieldset className={styles.section}><legend>Nástroje a platforma</legend><div className={styles.fields}>
@@ -156,7 +174,7 @@ export function IpsBuilder({ history, goals, foundation, portfolioId, sample, su
         <fieldset className={styles.section}><legend>Potvrzení verze</legend><div className={styles.fields}>
           <Field label="Proč tento plán ukládám nebo měním"><textarea maxLength={2000} value={draft.reason} onChange={(e) => update({ reason: e.target.value })} /></Field>
           <div className={styles.save}><label className={styles.consent}><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} /><span>Potvrzuji tento plán. {artifactConsentText}</span></label>
-            <div className={styles.actions}><Button type="submit" disabled={!consent} loading={pending}>Uložit verzi plánu</Button></div></div></div>
+            <div className={styles.actions}><Button type="submit" disabled={!consent || checking} loading={pending}>Uložit verzi plánu</Button></div></div></div>
         </fieldset>
       </fieldset>
     </form>

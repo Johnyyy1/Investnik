@@ -107,9 +107,13 @@ try {
       const option = tab.getByRole("option").filter({ has: tab.getByText(PLAN.symbol, { exact: true }) }).filter({ hasText: PLAN.exchangeMic });
       const none = tab.getByText("Nic jsme nenašli. Zkus jiný název nebo ticker.", { exact: true });
       await option.or(none).first().waitFor();
-      // Found on 2026-11-06: FMP search results have no asset type yet, and the IPS search keeps only typed results.
-      if (await none.isVisible()) throw new Error(`${where}: finding #477 — the IPS builder finds no concrete instrument on FMP (searchIpsInstrumentsAction drops results without an asset type), so no IPS can name the ETF that 2.5.3 and capstone A require.`);
+      if (await none.isVisible()) throw new Error(`${where}: finding #477 — the IPS builder found no ${PLAN.symbol} on ${PLAN.exchangeMic}, so no IPS can name the ETF that 2.5.3 and capstone A require.`);
       await option.click();
+      // FMP results are untyped; the server verifies the type from metadata before the line enters the plan.
+      const added = tab.getByRole("heading", { name: `${PLAN.symbol} · `, exact: false }).filter({ hasText: "· ETF" });
+      const rejected = tab.getByRole("alert");
+      await added.or(rejected).first().waitFor();
+      if (await rejected.isVisible()) throw new Error(`${where}: finding #477 — the server did not verify ${PLAN.symbol} as an IPS instrument: ${await rejected.innerText()}`);
       await tab.getByLabel("Váha položky 1 v %", { exact: true }).fill("100");
       await tab.getByLabel("Cílová hotovost v %", { exact: true }).fill("0");
       await tab.getByLabel("Zvolené nástroje a proč (jeden na řádek)", { exact: true }).fill("Široký akciový indexový fond s nízkými náklady");

@@ -10,6 +10,8 @@ import { applyIpsTarget, readIpsPortfolioId } from "../src/features/ips/reposito
 import { executeTrade, getOrCreateActivePortfolio, loadLatestAllocation, resetActivePortfolio } from "../src/features/portfolio/repository";
 import { loadPortfolioView } from "../src/features/portfolio/service";
 import { portfolioMarketData } from "../src/features/portfolio/environment";
+import { PortfolioInputError } from "../src/features/portfolio/decimal";
+import { MarketDataError } from "../src/features/market-data/errors";
 import { buildAccountExport, readAccountExportRows, serializeAccountExport } from "../src/features/account/export";
 
 const url = new URL(process.env.DATABASE_URL!);
@@ -90,10 +92,26 @@ try {
   assert.deepEqual((await protectedRows()).unlocks, before.unlocks); assert.deepEqual((await protectedRows()).awards, before.awards);
   console.log("PASS: exact target weights, server metadata, no price dependency, no trade/cash/performance mutation, owner/current-version validation, key provenance and concurrent ordinary trade.");
 
-  for (const allocation of [{ lines: [{ assetClass: "equity", weightBps: 8000 }], cashBps: 2000 }, { lines: [{ instrumentId: "NOT-A-SECURITY", weightBps: 8000 }], cashBps: 2000 }, { lines: [], cashBps: 10000 }, { lines: [{ instrumentId: "CASH:CZK", weightBps: 8000 }], cashBps: 2000 }, { lines: [{ instrumentId: "US-XCBO:SPX", weightBps: 8000 }], cashBps: 2000 }]) {
+  for (const allocation of [{ lines: [{ assetClass: "equity", weightBps: 8000 }], cashBps: 2000 }, { lines: [], cashBps: 10000 }]) {
     const plan = await savePlan(owner, { ...exampleIps, allocation });
     await assert.rejects(() => applyIpsTarget(owner, { artifactId: plan.id, portfolioId: generation.id, requestId: randomUUID() }));
   }
+  // Search may offer untyped results (FMP), so the server profile decides. Anything that is not equity/ETF/bond is refused clearly.
+  const notAnIpsInstrument = (error: unknown) => error instanceof PortfolioInputError && error.code === "InvalidInstrument" && error.message.includes("není akcie, ETF ani dluhopis");
+  const allocationsBefore = (await sql`select * from portfolio_allocation where portfolio_id=${generation.id}`).length;
+  for (const instrumentId of ["NOT-A-SECURITY", "CASH:CZK", "US-XCBO:SPX", "US-XNAS:VFIAX"]) {
+    const plan = await savePlan(owner, { ...exampleIps, allocation: { lines: [{ instrumentId, weightBps: 8000 }], cashBps: 2000 } });
+    const metadata = portfolioMarketData.service.getInstrumentMetadata;
+    // FMP refuses a mutual-fund profile with UnsupportedInstrument.
+    if (instrumentId === "US-XNAS:VFIAX") portfolioMarketData.service.getInstrumentMetadata = async (id) => { throw new MarketDataError("UnsupportedInstrument", "Mutual funds are not supported.", { instrumentId: id }); };
+    try { await assert.rejects(() => applyIpsTarget(owner, { artifactId: plan.id, portfolioId: generation.id, requestId: randomUUID() }), notAnIpsInstrument, instrumentId); }
+    finally { portfolioMarketData.service.getInstrumentMetadata = metadata; }
+  }
+  // A profile typed index by the provider is refused even when the plan names it next to a valid ETF.
+  const mixed = await savePlan(owner, { ...exampleIps, allocation: { lines: [{ instrumentId: "IE-XETR:VWCE", weightBps: 5000 }, { instrumentId: "US-XCBO:SPX", weightBps: 3000 }], cashBps: 2000 } });
+  await assert.rejects(() => applyIpsTarget(owner, { artifactId: mixed.id, portfolioId: generation.id, requestId: randomUUID() }), notAnIpsInstrument);
+  assert.equal((await sql`select * from portfolio_allocation where portfolio_id=${generation.id}`).length, allocationsBefore, "a refused plan writes no target");
+  console.log("PASS: the server profile decides the IPS type; index, cash, unknown and mutual-fund profiles are refused with a clear message.");
   const last = await savePlan(owner, exampleIps);
   const oldAllocations = await sql`select * from portfolio_allocation where portfolio_id=${generation.id} order by created_at`;
   await resetActivePortfolio(owner, randomUUID());
