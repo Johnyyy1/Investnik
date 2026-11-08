@@ -34,3 +34,5 @@ Following the founder decision of 2026-11-06, `npm run test:milestone-a-live` wa
 - **Not observed yet:** live Lab purchases, the capstone checks with FMP valuations, and the rest of the run after 2.5.1. Lab orders need a fresh quote, so they are possible only during regular NYSE hours. The workflow is therefore scheduled at 15:30 UTC on weekdays, not at night.
 
 No criteria, labels, providers or production code were changed to get past this. Fixing the IPS search (for example by resolving the instrument metadata of an untyped result) needs a separate decision.
+
+**Update 2026-11-08 (founder decision):** the IPS search now behaves like the Lab search. It drops only known cash and index results and keeps untyped ones. When the learner picks a result, the server checks its type in the instrument metadata. It checks it again when the IPS target is saved, and it refuses anything that is not an equity, ETF or bond. The live journey has not yet been rerun after this fix.

@@ -7,8 +7,20 @@ import { isGuestIdentity } from "@/features/guest/identity";
 import { portfolioMarketData } from "@/features/portfolio/environment";
 import { PortfolioInputError } from "@/features/portfolio/decimal";
 import { artifactContentSchema } from "@/features/artifacts/schemas";
+import { isMarketDataError } from "@/features/market-data/errors";
 import { ipsTargetAllocation } from "./allocation";
 import { ipsSchema } from "./schema";
+
+/** Search results can be untyped (FMP), so the IPS trusts only the type from server metadata. Null means "not an IPS instrument". */
+export async function loadIpsInstrument(instrumentId: string) {
+  try {
+    const instrument = await portfolioMarketData.service.getInstrumentMetadata(instrumentId);
+    return instrument && instrument.instrumentId === instrumentId && ["equity", "etf", "bond"].includes(instrument.assetType) ? instrument : null;
+  } catch (error) {
+    if (isMarketDataError(error) && (error.code === "UnsupportedInstrument" || error.code === "InstrumentNotFound")) return null;
+    throw error;
+  }
+}
 
 export async function readIpsPortfolioId(userId: string) {
   const [current] = await db.select({ id: portfolio.id }).from(portfolio).where(and(eq(portfolio.userId, userId), isNull(portfolio.closedAt)));
@@ -36,8 +48,8 @@ export async function applyIpsTarget(userId: string, input: { artifactId: string
       return { allocationId: retry.id, duplicate: true };
     }
     // Metadata only: a target is valid even when the market is closed or a price is unavailable.
-    const instruments = await Promise.all(allocation.lines.map(({ instrumentId }) => portfolioMarketData.service.getInstrumentMetadata(instrumentId)));
-    if (instruments.some((instrument, i) => !instrument || instrument.instrumentId !== allocation.lines[i].instrumentId || !["equity", "etf", "bond"].includes(instrument.assetType))) throw new PortfolioInputError("InvalidInstrument", "Pro jeden z nástrojů chybí ověřené údaje. Vyber dostupné akcie, ETF nebo dluhopisy v Labu.");
+    const instruments = await Promise.all(allocation.lines.map(({ instrumentId }) => loadIpsInstrument(instrumentId)));
+    if (instruments.some((instrument) => !instrument)) throw new PortfolioInputError("InvalidInstrument", "Jeden z nástrojů v plánu podle ověřených údajů není akcie, ETF ani dluhopis. Odeber ho, ulož novou verzi plánu a zkus to znovu.");
     const [previous] = await tx.select({ createdAt: portfolioAllocation.createdAt }).from(portfolioAllocation).where(eq(portfolioAllocation.portfolioId, current.id)).orderBy(desc(portfolioAllocation.createdAt)).limit(1);
     const createdAt = new Date(Math.max(Date.now(), (previous?.createdAt.getTime() ?? 0) + 1));
     const allocationId = randomUUID();

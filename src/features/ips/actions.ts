@@ -11,7 +11,8 @@ import { isMarketDataError } from "@/features/market-data/errors";
 import { logUnexpectedError } from "@/lib/server-errors";
 import { portfolioMarketData } from "@/features/portfolio/environment";
 import { PortfolioInputError } from "@/features/portfolio/decimal";
-import { applyIpsTarget } from "./repository";
+import { instrumentIdSchema } from "@/features/portfolio/input";
+import { applyIpsTarget, loadIpsInstrument } from "./repository";
 
 const applySchema = z.strictObject({ artifactId: z.uuid(), portfolioId: z.uuid(), requestId: z.uuid() });
 export async function applyIpsTargetAction(input: unknown) {
@@ -40,9 +41,26 @@ export async function searchIpsInstrumentsAction(query: string) {
     const parsed = z.string().trim().min(2).max(80).parse(query);
     await enforceMarketDataBudget(owner.id, "search");
     const results = await portfolioMarketData.service.searchInstruments(parsed);
-    return { ok: true as const, results: results.filter(({ assetType }) => assetType === "equity" || assetType === "etf" || assetType === "bond") };
+    // Same rule as the Lab search: FMP results are untyped (null), so drop only known non-IPS types and verify on selection.
+    return { ok: true as const, results: results.filter(({ assetType }) => assetType !== "cash" && assetType !== "index") };
   } catch (error) {
     if (!(error instanceof z.ZodError || isRequestRateLimitedError(error) || (isMarketDataError(error) && error.code === "InvalidSearchQuery"))) logUnexpectedError("ips", "search instruments", error);
     return { ok: false as const, results: [], message: "Hledání se nepodařilo. Zkus jiný název nebo to zkus později." };
+  }
+}
+
+/** Verifies a chosen search result from server metadata before it enters the plan draft. */
+export async function checkIpsInstrumentAction(instrumentId: string) {
+  try {
+    const owner = await getCurrentUser();
+    if (!owner || isGuestIdentity(owner)) return { ok: false as const, message: "Pro výběr nástrojů se přihlas." };
+    const id = instrumentIdSchema.parse(instrumentId);
+    await enforceMarketDataBudget(owner.id, "instrument-preview");
+    const instrument = await loadIpsInstrument(id);
+    if (!instrument) return { ok: false as const, message: "Tento nástroj podle ověřených údajů není akcie, ETF ani dluhopis, takže do plánu nepatří. Vyber jiný." };
+    return { ok: true as const, instrument: { instrumentId: instrument.instrumentId, symbol: instrument.symbol, name: instrument.name, assetType: instrument.assetType } };
+  } catch (error) {
+    if (!(error instanceof z.ZodError || isRequestRateLimitedError(error))) logUnexpectedError("ips", "check instrument", error);
+    return { ok: false as const, message: "Typ nástroje se teď nepodařilo ověřit. Zkus ho vybrat znovu za chvíli." };
   }
 }

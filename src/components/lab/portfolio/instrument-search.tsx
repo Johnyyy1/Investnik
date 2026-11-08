@@ -11,7 +11,7 @@ import lab from "./portfolio-lab.module.css";
 
 type SearchState = "idle" | "loading" | "results" | "empty" | "error";
 
-const typeLabel = (assetType: string | null) => assetType === "equity" ? "Akcie" : assetType === "etf" ? "ETF" : assetType === "bond" ? "Dluhopis" : "Typ se ověřuje";
+export const typeLabel = (assetType: string | null) => assetType === "equity" ? "Akcie" : assetType === "etf" ? "ETF" : assetType === "bond" ? "Dluhopis" : "Typ se ověřuje";
 
 /** Where a chosen result leads, and how the field says so. */
 export type InstrumentSearchTarget = { href: (instrumentId: string) => string; hint: string; opening: string };
