@@ -10,15 +10,17 @@ Run `npm run build`, including on Vercel. It runs Next and then
 exact inline script bytes and local external script files, and adds integrity
 attributes to scripts and script preloads. It replaces the fail-closed public CSP
 rules in `.next/routes-manifest.json`, consumed by Next start and Vercel's Next
-builder. No source hashes or generated assets are committed. Do not deploy a bare
+builder. Deployment-versioned `?dpl=` URLs retain their query while hashing the local asset.
+No source hashes or generated assets are committed. Do not deploy a bare
 `next build` output: its public policies intentionally block bootstrap scripts.
 
 Security review: the public policy preserves `strict-dynamic`, object, frame,
 base, form and connection restrictions. It permits neither inline script nor eval
 exceptions. Only exact build script bytes bootstrap trust; same-origin arbitrary
 script URLs are not trusted by CSP3 browsers. JSON-LD is escaped as before. Auth,
-session, API, financial data and persistence contracts are unchanged. Hashes must
-never be reused for ISR, personalized HTML or runtime-injected scripts. The
+session, API, financial data and persistence contracts are unchanged. Personalization
+invalidates only the app and onboarding layouts; invalidating the root layout would regenerate public HTML without its build-time integrity attributes.
+Hashes must never be reused for ISR, personalized HTML or runtime-injected scripts. The
 finalizer rejects nonces, unknown script sources, traversal and changed manifest
 versions. Next upgrades require reviewing this build artifact integration.
 

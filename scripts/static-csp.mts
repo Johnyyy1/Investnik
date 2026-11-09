@@ -6,6 +6,12 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { contentSecurityPolicy, contentSecurityPolicyHeaderName } from "../src/lib/security-headers";
 
+function assetPath(url: string) {
+  assert.match(url, /^\/_next\/static\/[\w./-]+\.js(?:\?dpl=[\w-]+)?$/, "Only local build scripts may be hash-authorized");
+  assert.ok(!url.includes(".."), "Asset traversal is forbidden");
+  return url.split("?")[0];
+}
+
 const digest = (content: string | Buffer) => `sha256-${createHash("sha256").update(content).digest("base64")}`;
 
 export async function hashDocument(html: string, loadAsset: (url: string) => Promise<Buffer>) {
@@ -17,9 +23,7 @@ export async function hashDocument(html: string, loadAsset: (url: string) => Pro
     assert.ok(!/\bnonce=/.test(attributes), "Static HTML must never contain a nonce");
     const src = attributes.match(/\bsrc="([^"]+)"/);
     if (src) {
-      assert.match(src[1], /^\/_next\/static\/[\w./-]+\.js$/, "Only local build scripts may be hash-authorized");
-      assert.ok(!src[1].includes(".."), "Asset traversal is forbidden");
-      const hash = digest(await loadAsset(src[1]));
+      const hash = digest(await loadAsset(assetPath(src[1])));
       hashes.add(hash);
       const cleanTag = tag.replace(/ integrity="[^"]*"/g, "");
       html = html.replace(tag, cleanTag.replace("<script", `<script integrity="${hash}"`));
@@ -29,9 +33,7 @@ export async function hashDocument(html: string, loadAsset: (url: string) => Pro
   }
   // Script preloads undergo the same CSP check as their eventual script element.
   for (const [tag, url] of html.matchAll(/<link\b[^>]*\bas="script"[^>]*\bhref="([^"]+)"[^>]*>/g)) {
-    assert.match(url, /^\/_next\/static\/[\w./-]+\.js$/);
-    assert.ok(!url.includes(".."));
-    const hash = digest(await loadAsset(url));
+    const hash = digest(await loadAsset(assetPath(url)));
     hashes.add(hash);
     const cleanTag = tag.replace(/ integrity="[^"]*"/g, "");
     html = html.replace(tag, cleanTag.replace("<link", `<link integrity="${hash}"`));
