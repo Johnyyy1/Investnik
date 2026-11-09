@@ -2,6 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { contentSecurityPolicy, contentSecurityPolicyHeaderName, createNonce } from "@/lib/security-headers";
 
 export function proxy(request: NextRequest) {
+  if (process.env.NODE_ENV !== "development" && ["/", "/privacy", "/terms"].includes(request.nextUrl.pathname.replace(/\/$/, "") || "/")) {
+    return NextResponse.next();
+  }
   const nonce = createNonce();
   const policy = contentSecurityPolicy({ nonce, development: process.env.NODE_ENV === "development" });
 
@@ -18,7 +21,7 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // API routes get a static policy from next.config.ts; build assets need none.
+      // Public static documents get build-generated hash policies; auth/app keep nonces.
       source: "/((?!api/|_next/static|_next/image|favicon.ico).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
