@@ -2,8 +2,8 @@
  * HTTP security headers.
  *
  * The static set is attached to every response in next.config.ts. The Content-Security-Policy
- * needs a fresh nonce per document, so src/proxy.ts builds it per request; Next.js reads the
- * nonce from the request header and attaches it to its own scripts.
+ * uses per-request nonces on dynamic pages and build-generated hashes on public static pages.
+ * Next.js reads the nonce from the request header and attaches it to its own scripts.
  */
 
 export type SecurityHeader = { key: string; value: string };
@@ -27,11 +27,11 @@ export function createNonce(): string {
   return btoa(crypto.randomUUID());
 }
 
-export function contentSecurityPolicy({ nonce, development }: { nonce: string; development: boolean }): string {
+export function contentSecurityPolicy({ nonce, development, hashes = [] }: { nonce?: string; development: boolean; hashes?: string[] }): string {
   return [
     "default-src 'self'",
-    // 'strict-dynamic' lets the nonced Next.js runtime load its chunks. React needs eval only in development.
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ""}`,
+    // 'strict-dynamic' lets the authorized Next.js runtime load its chunks. React needs eval only in development.
+    `script-src 'self' ${nonce ? `'nonce-${nonce}'` : hashes.map(hash => `'${hash}'`).join(" ")} 'strict-dynamic'${development ? " 'unsafe-eval'" : ""}`,
     // Style attributes from React, Motion, Recharts and KaTeX markup cannot carry a nonce.
     // A nonce here would also make browsers ignore 'unsafe-inline'.
     "style-src 'self' 'unsafe-inline'",

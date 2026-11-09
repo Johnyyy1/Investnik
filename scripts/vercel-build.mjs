@@ -26,4 +26,4 @@ if (process.env.VERCEL_ENV === "production") {
   console.log(`vercel-build: skipping migrations and curriculum seed (VERCEL_ENV=${process.env.VERCEL_ENV ?? "unset"})`);
 }
 
-run("npx", ["next", "build"]);
+run("npm", ["run", "build"]);

@@ -10,7 +10,9 @@ async function save(name: string, input: unknown, operation: (userId: string, in
     const user = await getCurrentUser();
     if (!user) return { ok: false as const, message: "Přihlas se znovu a ulož své předvolby.", signIn: true };
     await operation(user.id, input);
-    revalidatePath("/", "layout");
+    // Public build-hashed documents must stay immutable when learner preferences change.
+    revalidatePath("/(app)", "layout");
+    revalidatePath("/onboarding", "layout");
     return { ok: true as const };
   } catch (error) {
     // Answers that fail validation are the learner's to fix; anything else is a failure.
