@@ -67,12 +67,12 @@ try {
       for (const width of [320, 390, 1440]) {
         await page.setViewportSize({ width, height: 1000 });
         assert.equal(await noOverflow(page), true, `No overflow at ${width}`);
-        await page.screenshot({ path: `${screenshots}/calculator-${width}.png`, fullPage: true, animations: "disabled", timeout: 30_000 });
+        await page.screenshot({ path: `${screenshots}/calculator-${width}.png`, fullPage: true });
       }
       await page.setViewportSize({ width: 320, height: 1000 });
       await page.addStyleTag({ content: "html { font-size: 200% !important; }" });
       assert.equal(await noOverflow(page), true, "No overflow at 200% text");
-      await page.screenshot({ path: `${screenshots}/calculator-320-text-200.png`, fullPage: true, animations: "disabled", timeout: 30_000 });
+      await page.screenshot({ path: `${screenshots}/calculator-320-text-200.png`, fullPage: true });
       await page.evaluate(() => document.querySelectorAll("style").forEach((node) => { if (node.textContent.includes("200% !important")) node.remove(); }));
     }
     if (step === 9) await choice("Odpočet snižuje základ daně; úspora je odpočet krát sazba daně.");
