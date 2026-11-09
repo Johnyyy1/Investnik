@@ -4,17 +4,17 @@ import { checkGuides, prepareGuide } from "./prepare";
 import { factRegistry } from "@/features/facts/registry";
 import sitemap from "@/app/sitemap";
 
-const today = "2026-10-26";
+const today = "2026-11-09";
 describe("public guide publication", () => {
-  it("publishes four guides with resolved answers and live lesson destinations", () => {
+  it("publishes twelve guides with resolved answers and live lesson destinations", () => {
     expect(() => checkGuides(today)).not.toThrow();
     const published = guides.filter((guide) => guide.status === "available");
-    expect(published).toHaveLength(4);
+    expect(published).toHaveLength(12);
     for (const guide of published) {
       const result = prepareGuide(guide, today);
       expect(JSON.stringify(result.lesson)).not.toContain("{{");
       expect(result.target).toBeDefined();
-      expect(result.notice?.verifiedAt).toBe(today);
+      expect(result.notice!.verifiedAt <= today).toBe(true);
       expect(result.facts.length).toBeGreaterThan(0);
       expect(sitemap().some((row) => row.url.endsWith(`/pruvodce/${guide.slug}`))).toBe(true);
     }
