@@ -10,6 +10,14 @@
 | `kolik-stoji-poplatky` | publikováno: obecný dopad nákladů a označený model | `plan.naklady_fondu@2026-10-26` | `foundations-funds` |
 | `co-je-etf` | publikováno: konstrukce fondu, žádná pravidla pro distribuci v EU ani daňové závěry | `plan.etf@2026-10-26` | `foundations-funds` |
 | `sporit-nebo-investovat` | publikováno: cíle a riziko, bez univerzálního horizontu nebo doporučeného produktu | `plan.horizont@2026-10-26` | `before-investing-goals` |
+| `spread-a-poplatek-za-obchod` | publikováno (#478): obecný princip, bez ceníků brokerů | `plan.spread@2026-11-09` | `costs-spread-and-fees` (2.2.2) |
+| `menova-konverze-a-menove-riziko` | publikováno (#478): princip převzatý z pohledu investora v USD, bez sazeb poskytovatelů | `plan.menova_konverze@2026-11-09` | `costs-currency-conversion` (2.2.3) |
+| `kolik-stoji-investovani-za-30-let` | publikováno (#478): modelová kalkulačka, bez předpovědi výnosu | `plan.naklady_30_let@2026-11-09` | `costs-over-30-years` (2.2.4) |
+| `investicni-plan-ips` | publikováno (#478): struktura plánu, bez předepsané alokace | `plan.ips@2026-11-09` | `first-plan-ips` (2.5.1) |
+| `pravidelna-investice` | publikováno (#478): bez slibu výnosu či ochrany před ztrátou | `plan.pravidelna_investice@2026-11-09` | `first-plan-automation` (2.5.2) |
+| `co-delat-kdyz-trh-spadne` | publikováno (#478): postup podle vlastního plánu, nikoli pokyn prodat/držet/koupit; 30 % je parametr modelového nácviku | `plan.propad_trhu@2026-11-09` | `behaviour-crisis-drill` (B.1.10) |
+| `proc-investori-vydelaji-mene-nez-fondy` | publikováno (#478): agregátní výzkum, nikoli důkaz chyby jednotlivce | `morningstar.investor_2025@2026-10-28`, `morningstar.fund_2025@2026-10-28`, `morningstar.gap@2026-10-28` | `behaviour-behaviour-gap` (B.1.1) |
+| `jak-vybrat-etf` | publikováno (#478): kritéria bez UCITS, sídla fondu a daní | `plan.vyber_etf@2026-11-09` | `etfs-selection-checklist` (2.3.6) |
 | `jak-funguje-dip` | planned: chybí odborná revize, blokovaný rozsah podmínek | `dip.podminky@2026-10-21` | plánovaná lekce `before-investing-retirement-products` |
 | `musim-danit-etf` | planned: chybí odborná revize, nedokončená evidence držby | `dan.limit_100k@2026-10-21`, `dan.casovy_test_cp@2026-10-21` | plánovaná `taxes-filing-obligation` |
 | `jak-overit-brokera` | planned: chybí odborná revize postupu | `cnb.jerrs@2026-10-21` | plánovaná `broker-platform-types` |

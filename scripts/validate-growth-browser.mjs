@@ -9,7 +9,7 @@ const page = await context.newPage();
 const errors = [];
 page.on("pageerror", (error) => errors.push(error.message));
 const axe = await readFile("node_modules/axe-core/axe.min.js", "utf8");
-const slugs = ["rozpocet-a-mira-uspor", "kolik-stoji-poplatky", "co-je-etf", "sporit-nebo-investovat"];
+const slugs = ["rozpocet-a-mira-uspor", "kolik-stoji-poplatky", "co-je-etf", "sporit-nebo-investovat", "spread-a-poplatek-za-obchod", "menova-konverze-a-menove-riziko", "kolik-stoji-investovani-za-30-let", "investicni-plan-ips", "pravidelna-investice", "co-delat-kdyz-trh-spadne", "proc-investori-vydelaji-mene-nez-fondy", "jak-vybrat-etf"];
 await mkdir("/tmp/investi-growth-captures", { recursive: true });
 try {
   for (const slug of slugs) {

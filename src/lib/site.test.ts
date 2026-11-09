@@ -56,6 +56,7 @@ describe("metadata routes", () => {
   it("lists only public pages on the canonical origin", () => {
     expect(sitemap().map(({ url }) => url).sort()).toEqual([
       "", "/privacy", "/terms", "/pro-instituce", "/pruvodce", "/pruvodce/rozpocet-a-mira-uspor", "/pruvodce/kolik-stoji-poplatky", "/pruvodce/co-je-etf", "/pruvodce/sporit-nebo-investovat",
+      "/pruvodce/spread-a-poplatek-za-obchod", "/pruvodce/menova-konverze-a-menove-riziko", "/pruvodce/kolik-stoji-investovani-za-30-let", "/pruvodce/investicni-plan-ips", "/pruvodce/pravidelna-investice", "/pruvodce/co-delat-kdyz-trh-spadne", "/pruvodce/proc-investori-vydelaji-mene-nez-fondy", "/pruvodce/jak-vybrat-etf",
     ].map((path) => `https://investnik.cz${path}`).sort());
   });
 
