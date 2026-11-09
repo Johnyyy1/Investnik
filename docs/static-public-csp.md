@@ -11,6 +11,8 @@ exact inline script bytes and local external script files, and adds integrity
 attributes to scripts and script preloads. It replaces the fail-closed public CSP
 rules in `.next/routes-manifest.json`, consumed by Next start and Vercel's Next
 builder. Deployment-versioned `?dpl=` URLs retain their query while hashing the local asset.
+HTML is located through the App route manifest and Next response-cache keys, covering
+standalone seed files and scoped adapter artifacts. If both exist, they must match.
 No source hashes or generated assets are committed. Do not deploy a bare
 `next build` output: its public policies intentionally block bootstrap scripts.
 

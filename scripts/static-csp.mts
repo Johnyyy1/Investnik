@@ -4,6 +4,8 @@ import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { getRouteCacheKey } from "next/dist/server/lib/route-cache-key";
+import type { RouteKind } from "next/dist/server/route-kind";
 import { contentSecurityPolicy, contentSecurityPolicyHeaderName } from "../src/lib/security-headers";
 
 function assetPath(url: string) {
@@ -46,14 +48,28 @@ export async function finalizeStaticCsp(dist = ".next") {
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
   assert.equal(manifest.version, 3, "Review CSP finalization when Next changes manifest format");
   const prerender = JSON.parse(await readFile(resolve(dist, "prerender-manifest.json"), "utf8"));
+  const appRoutes: Record<string, string> = JSON.parse(await readFile(resolve(dist, "app-path-routes-manifest.json"), "utf8"));
   for (const route of ["/", "/privacy", "/terms"]) {
     assert.equal(prerender.routes[route]?.initialRevalidateSeconds, false, `${route} must be immutable static HTML`);
-    const path = resolve(dist, `server/app/${route === "/" ? "index" : route.slice(1)}.html`);
-    const result = await hashDocument(await readFile(path, "utf8"), url => readFile(resolve(dist, url.slice("/_next/".length))));
+    const sources = Object.entries(appRoutes).filter(([source, pathname]) => pathname === route && source.endsWith("/page"));
+    assert.equal(sources.length, 1, `Expected one App Page source for ${route}`);
+    const scopedKey = getRouteCacheKey(route, { kind: "APP_PAGE" as RouteKind.APP_PAGE, sourceRoute: sources[0][0] });
+    // Adapters emit scoped artifacts; standalone Next builds may also retain the public seed.
+    const candidates = [resolve(dist, `server/app/${route === "/" ? "index" : route.slice(1)}.html`), resolve(dist, `server${scopedKey}.html`)];
+    const documents = (await Promise.all(candidates.map(async path => {
+      try { return { path, html: await readFile(path, "utf8") }; }
+      catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+        throw error;
+      }
+    }))).filter(document => document !== null);
+    assert.ok(documents.length, `Missing prerendered HTML for ${route}`);
+    assert.ok(documents.every(document => document.html === documents[0].html), `Conflicting prerendered HTML for ${route}`);
+    const result = await hashDocument(documents[0].html, url => readFile(resolve(dist, url.slice("/_next/".length))));
     const rule = manifest.headers.find((rule: { source: string }) => rule.source === route);
     assert.ok(rule, `Missing fail-closed CSP rule for ${route}`);
     rule.headers = [{ key: contentSecurityPolicyHeaderName(process.env.CSP_REPORT_ONLY), value: contentSecurityPolicy({ hashes: result.hashes, development: false }) }];
-    await writeFile(path, result.html);
+    for (const document of documents) await writeFile(document.path, result.html);
     console.log(`Static CSP: ${route} (${result.hashes.length} script hashes)`);
   }
   // Next start and Vercel's Next builder both consume custom headers from this manifest.
