@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "npm run check:facts",
-    "build": "next build",
+    "build": "next build && tsx scripts/static-csp.mts",
     "check:facts": "tsx scripts/check-facts.mts",
     "check:lesson-bundle": "tsx scripts/check-lesson-bundle.mts",
     "test:facts-browser": "node scripts/validate-facts.mjs",
@@ -35,6 +35,7 @@
     "test:curriculum-compatibility": "tsx --tsconfig scripts/tsconfig.persistence.json scripts/validate-curriculum-compatibility.mts",
     "test:product": "node scripts/validate-product-shell.mjs",
     "test:progress-browser": "node scripts/validate-progress.mjs",
+    "test:static-csp-browser": "node scripts/validate-static-csp.mjs",
     "test:marketing-browser": "node scripts/validate-marketing.mjs",
     "test:design-system-browser": "node scripts/validate-design-system.mjs",
     "test:backtesting-browser": "node scripts/validate-backtesting.mjs",

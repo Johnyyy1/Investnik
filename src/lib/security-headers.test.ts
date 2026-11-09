@@ -37,6 +37,11 @@ describe("contentSecurityPolicy", () => {
   });
 });
 
+it("hash policies keep strict dynamic and never allow unsafe script execution", () => {
+  const scripts = directives(contentSecurityPolicy({ hashes: ["sha256-abc="], development: false })).get("script-src");
+  expect(scripts).toEqual(["'self'", "'sha256-abc='", "'strict-dynamic'"]);
+});
+
 describe("createNonce", () => {
   it("is unique per call and safe inside a CSP source expression", () => {
     const nonces = new Set(Array.from({ length: 100 }, createNonce));
@@ -55,13 +60,23 @@ describe("contentSecurityPolicyHeaderName", () => {
 });
 
 describe("proxy", () => {
+  it("leaves static public documents to their build-generated hash policies", () => {
+    for (const path of ["/", "/privacy", "/terms", "/privacy/"]) {
+      const response = proxy(new NextRequest(`https://investnik.test${path}`));
+      expect(response.headers.get("Content-Security-Policy")).toBeNull();
+      expect(response.headers.get("x-middleware-request-x-nonce")).toBeNull();
+    }
+    for (const path of ["/sign-in", "/sign-up", "/learn", "/privacy/unknown"]) {
+      expect(proxy(new NextRequest(`https://investnik.test${path}`)).headers.get("Content-Security-Policy")).toContain("nonce-");
+    }
+  });
   it("sends a fresh nonce policy on every page response and forwards it to rendering", () => {
     const policies = [0, 1].map(() => proxy(new NextRequest("https://investnik.test/learn")).headers.get("Content-Security-Policy"));
     expect(policies[0]).toMatch(/script-src 'self' 'nonce-[^']+' 'strict-dynamic'/);
     expect(policies[0]).toContain("frame-ancestors 'none'");
     expect(policies[0]).not.toBe(policies[1]);
 
-    const response = proxy(new NextRequest("https://investnik.test/"));
+    const response = proxy(new NextRequest("https://investnik.test/sign-in"));
     const nonce = response.headers.get("Content-Security-Policy")?.match(/'nonce-([^']+)'/)?.[1];
     expect(response.headers.get("x-middleware-request-x-nonce")).toBe(nonce);
     expect(response.headers.get("x-middleware-request-content-security-policy")).toBe(response.headers.get("Content-Security-Policy"));

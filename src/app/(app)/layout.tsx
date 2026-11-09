@@ -45,3 +45,6 @@ async function renderApplicationLayout(children: React.ReactNode) {
     <Suspense fallback={<AppRouteFallback />}>{children}</Suspense>
   </AppShell>;
 }
+
+// Nonce CSP requires request-time rendering, including routes without session reads.
+export const dynamic = "force-dynamic";
