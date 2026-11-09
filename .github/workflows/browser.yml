@@ -194,11 +194,6 @@ jobs:
         env:
           NOT_FOUND_TEST_URL: ${{ env.APP_URL }}
           NOT_FOUND_SCREENSHOT_DIR: ${{ env.SCREENSHOTS }}/not-found
-      - name: Static public CSP
-        if: ${{ !cancelled() }}
-        run: npm run test:static-csp-browser
-        env:
-          STATIC_CSP_TEST_URL: ${{ env.APP_URL }}
       - name: Marketing
         if: ${{ !cancelled() }}
         run: .github/scripts/clear-rate-limits.sh && npm run test:marketing-browser

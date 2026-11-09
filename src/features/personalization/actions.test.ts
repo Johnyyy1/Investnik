@@ -16,7 +16,7 @@ describe("personalization authority", () => {
   it.each(actions)("derives owner from session and revalidates after saving", async (action, operation) => {
     expect(await action({})).toEqual({ ok: true });
     expect(operation).toHaveBeenCalledWith("owner", {});
-    expect(mocks.revalidate.mock.calls).toEqual([["/(app)", "layout"], ["/onboarding", "layout"]]);
+    expect(mocks.revalidate).toHaveBeenCalledWith("/", "layout");
   });
   it("normalizes a failed session lookup without writing", async () => {
     mocks.user.mockRejectedValue(new Error("private session database information"));

@@ -1,6 +1,3 @@
-// Fail the build if a public document starts depending on request data.
-export const dynamic = "error";
-
 import type { Metadata } from "next";
 import { LandingViewBeacon } from "@/components/marketing/landing-view-beacon";
 import { PenLanding } from "@/components/marketing/pen-landing";

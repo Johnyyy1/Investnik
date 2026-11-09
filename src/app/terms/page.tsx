@@ -1,6 +1,3 @@
-// Fail the build if a public document starts depending on request data.
-export const dynamic = "error";
-
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, legalOperator, type LegalSection } from "@/components/legal/legal-page";

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { connection } from "next/server";
 import { fontVariables } from "@/styles/fonts";
 import { BRAND_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
@@ -23,6 +24,8 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: dark)", color: "#171717" },
   ],
 };
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // The CSP nonce is per request, so no page may be prerendered with nonce-less scripts.
+  await connection();
   return <html lang="cs" className={fontVariables}><body><div className="investi-theme min-h-screen">{children}</div></body></html>;
 }

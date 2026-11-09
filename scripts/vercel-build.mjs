@@ -4,7 +4,6 @@
 // lesson that has no `lesson` row (progress and awards reference it). The seed fails the build
 // when any catalog lesson is still missing afterwards. Preview deploys skip both because
 // unmerged branches must not change the shared database.
-import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 function run(command, args) {
@@ -27,9 +26,4 @@ if (process.env.VERCEL_ENV === "production") {
   console.log(`vercel-build: skipping migrations and curriculum seed (VERCEL_ENV=${process.env.VERCEL_ENV ?? "unset"})`);
 }
 
-// Next adapters package routes before postbuild commands run.
-if (process.env.NEXT_ADAPTER_PATH) {
-  process.env.INVESTI_PLATFORM_ADAPTER = process.env.NEXT_ADAPTER_PATH;
-  process.env.NEXT_ADAPTER_PATH = fileURLToPath(new URL("./static-csp-adapter.mjs", import.meta.url));
-}
-run("npm", ["run", "build"]);
+run("npx", ["next", "build"]);
