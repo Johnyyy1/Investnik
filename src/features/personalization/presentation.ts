@@ -20,6 +20,7 @@ export const sessionLabels = { 5: "5 minut", 10: "10 minut", 20: "15–20 minut"
 export const questionTitles = ["Co se chceš naučit?", "Co tě zajímá nejvíc?", "Jaké máš zkušenosti s investováním?", "Kolik času chceš učení běžně věnovat?"];
 export const reasonLabels: Record<ReasonCode, string> = {
   CHECKUP_READINESS: "Podle uloženého check-upu se vyplatí vrátit k finančnímu základu. Jde o doporučení, žádný obsah se nezamyká.",
+  ENTRY_TEST_PLAN: "Podle vstupního testu přeskočíš lekce, které už umíš. Začni první lekcí, kterou test nepokryl. Přeskočené lekce zůstávají otevřené, jen se nepočítají jako dokončené.",
   BUDGET_READINESS: "Rozpočet ti pomůže ověřit, kolik můžeš pravidelně odkládat.",
   BROKER_FEES_AFTER_MARKETS: "Víš, jak se na burze nakupuje. Teď v ceníku brokera najdeš, kolik zaplatíš za samotný nákup.",
   PLAN_AFTER_COSTS: "Víš, kolik tě plán bude stát. Teď si ho sepíšeš i s pravidly pro propad, dokud je klid.",

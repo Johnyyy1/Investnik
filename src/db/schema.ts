@@ -1,4 +1,4 @@
-import type { DiagnosticResult } from "../features/personalization/diagnostic";
+import type { StoredDiagnostic } from "../features/personalization/diagnostic";
 import { artifactKinds, type ArtifactContent } from "../features/artifacts/schemas";
 import { sql } from "drizzle-orm";
 import { experienceValues, goalValues, interestValues } from "../features/onboarding/domain";
@@ -182,7 +182,7 @@ export const learningProfile = pgTable("learning_profile", {
   recommendedStart: recommendedStartEnum("recommended_start"),
   onboardingStep: integer("onboarding_step").notNull().default(0),
   brokerFeeProfileId: text("broker_fee_profile_id"),
-  diagnosticResult: jsonb("diagnostic_result").$type<DiagnosticResult>(),
+  diagnosticResult: jsonb("diagnostic_result").$type<StoredDiagnostic>(),
   personalizedOnboardingCompletedAt: timestamp("personalized_onboarding_completed_at", { withTimezone: true }),
   onboardingCompletedAt: timestamp("onboarding_completed_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

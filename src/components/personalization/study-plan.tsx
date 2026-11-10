@@ -1,8 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, Check, ChevronDown, Circle, Flag, Timer, Waypoints } from "lucide-react";
+import { ArrowRight, Check, CheckCheck, ChevronDown, Circle, Flag, Timer, Waypoints } from "lucide-react";
 import { availableLessons, getModuleLessons, moduleCatalog } from "@/features/learning/catalog";
 import type { LearnerProfile } from "@/features/personalization/profile";
 import type { LearningRecommendation } from "@/features/personalization/recommendation";
+import { DIAGNOSTIC_V2 } from "@/features/personalization/diagnostic-v2";
+import { getLessonPlacement } from "@/features/learning/curriculum";
+import { czechPlural } from "@/lib/formatters";
 import { contextLabels, goalLabels, presentRecommendation, scaffoldLabels, sessionLabels } from "@/features/personalization/presentation";
 import { OnboardingGuide, OnboardingHeader } from "./onboarding-frame";
 import styles from "./personalization-flow.module.css";
@@ -16,6 +19,9 @@ export function StudyPlan({ profile, recommendation, states }: {
   const completed = new Set(states.filter((state) => state.status === "completed").map((state) => state.lessonId));
   const session = recommendation.sessionLessonIds.flatMap((id) => availableLessons.find((lesson) => lesson.id === id) ?? []);
   const complete = recommendation.reasonCode === "CURRICULUM_COMPLETE";
+  // Proven by the entry test: skipped in the plan, never shown or counted as completed.
+  const provenIds = profile.diagnostic?.version === DIAGNOSTIC_V2 ? profile.diagnostic.provenLessonIds : [];
+  const proven = availableLessons.filter((lesson) => provenIds.includes(lesson.id) && !completed.has(lesson.id));
   const scaffoldTitle = { guided: "Klidně od základů", standard: "Krok za krokem", compact: "Svižné zopakování" }[recommendation.scaffoldLevel];
   return <main className={styles.flow}>
     <OnboardingHeader progress={1} back="/settings" trailing={<Link className={styles.quiet} href="/learn">Do Učení</Link>} />
@@ -31,6 +37,14 @@ export function StudyPlan({ profile, recommendation, states }: {
         {view.lesson && <p className={styles.lessonSummary}>{view.lesson.summary}</p>}
         <Link className={cn(buttonVariants(), styles.primary)} href={view.href ?? "/learn#curriculum"}>{view.href ? "Začít doporučenou lekci" : "Zobrazit celé učení"}<ArrowRight size={18} aria-hidden="true" /></Link>
       </section>
+      {proven.length > 0 && <section className={styles.because} aria-labelledby="plan-proven">
+        <h2 id="plan-proven" className={styles.eyebrow}>Co už umíš podle vstupního testu</h2>
+        <ul className={styles.reasonList}><li><CheckCheck size={18} aria-hidden="true" /><div>
+          <p className={styles.reasonTitle}>Přeskočíš {proven.length} {czechPlural(proven.length, ["lekci", "lekce", "lekcí"])}</p>
+          <p>{proven.map((lesson) => `${getLessonPlacement(lesson.id)?.displayCode} ${lesson.title}`).join(" · ")}</p>
+          <p>Přeskočené lekce nejsou dokončené: nezískáš za ně XP ani cvičný kapitál a kdykoli je můžeš projít.</p>
+        </div></li></ul>
+      </section>}
       <section className={styles.because} aria-labelledby="plan-reasons">
         <h2 id="plan-reasons" className={styles.eyebrow}>Proč zrovna takhle</h2>
         <ul className={styles.reasonList}>
@@ -51,12 +65,12 @@ export function StudyPlan({ profile, recommendation, states }: {
             <ol className={styles.lessonList}>{lessons.map((lesson) => {
               const done = completed.has(lesson.id);
               const next = lesson.id === recommendation.nextLessonId;
-              return <li key={lesson.id} data-next={next}><Link href={`/learn/${lesson.moduleSlug}/${lesson.slug}`} aria-current={next ? "step" : undefined}>{done ? <Check size={16} aria-hidden="true" /> : <Circle size={16} aria-hidden="true" />}<span>{lesson.title}</span><span className={styles.rowMeta}>{done ? "Hotovo" : next ? "Tvůj start" : `≈ ${lesson.estimatedMinutes} min`}</span></Link></li>;
+              return <li key={lesson.id} data-next={next}><Link href={`/learn/${lesson.moduleSlug}/${lesson.slug}`} aria-current={next ? "step" : undefined}>{done ? <Check size={16} aria-hidden="true" /> : <Circle size={16} aria-hidden="true" />}<span>{lesson.title}</span><span className={styles.rowMeta}>{done ? "Hotovo" : next ? "Tvůj start" : provenIds.includes(lesson.id) ? "Prokázáno testem" : `≈ ${lesson.estimatedMinutes} min`}</span></Link></li>;
             })}</ol>
           </details> : <div key={module.slug} className={styles.plannedChapter}><span className={styles.chapterNumber}>{String(index + 1).padStart(2, "0")}</span><strong>{module.title}</strong><span>Připravujeme</span></div>;
         })}
       </section>
-      <div className={styles.planFooter}><Link className={styles.textLink} href="/learn">Zobrazit celé učení</Link><Link className={styles.textLink} href="/settings">Upravit předvolby</Link></div>
+      <div className={styles.planFooter}><Link className={styles.textLink} href="/learn">Zobrazit celé učení</Link><Link className={styles.textLink} href="/onboarding/entry-test">{profile.diagnostic?.version === DIAGNOSTIC_V2 ? "Vstupní test" : "Část už umíš? Vstupní test"}</Link><Link className={styles.textLink} href="/settings">Upravit předvolby</Link></div>
       <p className={styles.disclosure}>Vzdělávání, ne investiční doporučení.</p>
     </div>
   </main>;

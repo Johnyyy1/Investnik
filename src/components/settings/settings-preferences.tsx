@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Info } from "lucide-react";
 import { updatePersonalizedPreferencesAction } from "@/features/personalization/actions";
-import { personalizedPreferencesSchema, type PersonalizedPreferences } from "@/features/personalization/profile";
+import { personalizedPreferencesSchema, type PersonalizedPreferences } from "@/features/personalization/preferences";
 import { experienceLabels, goalLabels, interestLabels, sessionLabels } from "@/features/personalization/presentation";
 import { Button } from "@/components/ui/button";
 import styles from "./settings.module.css";
