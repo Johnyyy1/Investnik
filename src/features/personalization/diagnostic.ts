@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DIAGNOSTIC_V2, readDiagnosticV2, type DiagnosticV2Result } from "./diagnostic-v2";
 
 export const FOUNDATIONS_DIAGNOSTIC_V1 = "FOUNDATIONS_DIAGNOSTIC_V1" as const;
 /** Stable question/option identifiers. Keep V1 interpretable when a future version is added. */
@@ -37,9 +38,13 @@ export function evaluateDiagnostic(input: unknown): DiagnosticResult {
   return { ...submission, evidence, correctCount, level: correctCount <= 1 ? "foundations_needed" : correctCount <= 3 ? "partial_foundations" : "strong_foundations" };
 }
 
+/** Any version the `diagnostic_result` column may hold. V1 and V2 coexist; the latest saved one wins. */
+export type StoredDiagnostic = DiagnosticResult | DiagnosticV2Result;
+
 /** Stored derived fields are a convenience, not authority; recompute from versioned answers. */
-export function readDiagnostic(input: unknown): DiagnosticResult | null {
+export function readDiagnostic(input: unknown): StoredDiagnostic | null {
   if (!input || typeof input !== "object") return null;
+  if ((input as { version?: unknown }).version === DIAGNOSTIC_V2) return readDiagnosticV2(input);
   const value = input as Partial<DiagnosticResult>;
   const parsed = diagnosticSubmissionSchema.safeParse({ version: value.version, answers: value.answers });
   return parsed.success ? evaluateDiagnostic(parsed.data) : null;

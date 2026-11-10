@@ -3,7 +3,8 @@ import { availableLessons, curriculumLessons } from "@/features/learning/catalog
 import { evaluateDiagnostic } from "./diagnostic";
 import { defaultPreferences, readLearnerProfile, type LearnerProfile } from "./profile";
 import { recommendLearning } from "./recommendation";
-import { diagnosticWithCorrectCount } from "./test-fixtures";
+import { evaluateDiagnosticV2 } from "./diagnostic-v2";
+import { diagnosticV2Submission, diagnosticWithCorrectCount } from "./test-fixtures";
 
 const foundationsDone = availableLessons.filter((lesson) => lesson.moduleSlug === "investing-foundations").map((lesson) => ({ lessonId: lesson.id, status: "completed" }));
 const profile: LearnerProfile = { ...defaultPreferences, diagnostic: null, personalized: false };
@@ -101,5 +102,28 @@ describe("deterministic recommendations", () => {
     expect(input).toEqual(before);
     expect(recommendLearning(input)).not.toHaveProperty("xp");
     expect(recommendLearning(input)).not.toHaveProperty("unlocked");
+  });
+});
+
+describe("V2 entry test plan", () => {
+  const withV2 = (knows: (lessonId: string) => boolean) => ({ ...profile, diagnostic: evaluateDiagnosticV2(diagnosticV2Submission(knows), new Date("2026-11-09T10:00:00.000Z")) });
+  it("starts at the first lesson the test did not prove and plans only unproven lessons", () => {
+    const known = new Set(["before-investing-budget", "before-investing-debt", "foundations-why-invest", "foundations-stocks"]);
+    const recommendation = recommendLearning({ profile: withV2((id) => known.has(id)) });
+    expect(recommendation).toMatchObject({ nextLessonId: "foundations-etfs-indexes", reasonCode: "ENTRY_TEST_PLAN" });
+    expect(recommendation.sessionLessonIds.some((id) => known.has(id))).toBe(false);
+  });
+  it("treats proven lessons as met prerequisites, so a fully proven level 1 leads to its checkpoint", () => {
+    expect(recommendLearning({ profile: withV2(() => true) })).toMatchObject({ nextLessonId: "foundations-checkpoint", reasonCode: "ENTRY_TEST_PLAN", scaffoldLevel: "compact" });
+  });
+  it("keeps the normal start and guided pace when nothing was proven", () => {
+    expect(recommendLearning({ profile: withV2(() => false) })).toMatchObject({ nextLessonId: "foundations-why-invest", reasonCode: "DIAGNOSTIC_REMEDIATION", scaffoldLevel: "guided" });
+  });
+  it("never counts proven lessons as completed and offers them when nothing else is left", () => {
+    const input = withV2(() => true);
+    const progress = availableLessons.filter((lesson) => !input.diagnostic.provenLessonIds.includes(lesson.id)).map((lesson) => ({ lessonId: lesson.id, status: "completed" }));
+    const recommendation = recommendLearning({ profile: input, progress });
+    expect(recommendation.reasonCode).not.toBe("CURRICULUM_COMPLETE");
+    expect(input.diagnostic.provenLessonIds).toContain(recommendation.nextLessonId);
   });
 });

@@ -153,6 +153,43 @@ try {
   await a.page.goto(`${baseURL}/lab/portfolio`); await a.page.getByText(/0 \/ 420 XP/).waitFor();
   console.log("PASS A: beginner, refresh/back recovery, result, recommended lesson, no award/unlock; responsive matrix.");
 
+  // V2 entry test (#124): knows level 0, answers "Nevím" otherwise; the test stops levels 1 and 2 after two misses each.
+  const beforeEntryTest = await snapshot(a.id);
+  await a.page.goto(`${baseURL}/onboarding/plan`);
+  await a.page.getByRole("link", { name: "Část už umíš? Vstupní test", exact: true }).click();
+  await a.page.waitForURL("**/onboarding/entry-test");
+  assert.ok(!(await (await a.page.request.get(`${baseURL}/onboarding/entry-test`)).text()).includes("correctAnswer"));
+  await a.page.getByRole("heading", { name: "Ukaž, co už umíš", exact: true }).waitFor();
+  await matrix(a.page, "13-entry-test-intro");
+  await a.page.getByRole("button", { name: "Začít test", exact: true }).click();
+  const known = { "budget-savings-rate": "fifteen", "budget-irregular": "monthly_share", "debt-card-first": "repay", "debt-order": "consumer" };
+  const asked = [];
+  // The last item is the second level-2 miss; the server then reports the test complete.
+  while (asked.at(-1) !== "td-calculation" && asked.length < 30) {
+    const radio = a.page.locator('input[type="radio"]').first();
+    await radio.waitFor();
+    const id = await radio.getAttribute("name");
+    asked.push(id);
+    if (asked.length === 1) await matrix(a.page, "14-entry-test-question");
+    if (asked.length === 3) { await a.page.reload(); await a.page.locator(`input[name="${id}"]`).first().waitFor(); }
+    // "Nevím" is always the last option; Big Three items keep their checkpoint option ID.
+    await (known[id] ? a.page.locator(`input[name="${id}"][value="${known[id]}"]`) : a.page.locator(`input[name="${id}"]`).last()).check();
+    assert.equal(await a.page.getByText("Správná odpověď", { exact: true }).count(), 0);
+    await next(a.page);
+    if (id !== "td-calculation") await a.page.locator(`input[name="${id}"]`).first().waitFor({ state: "detached" });
+  }
+  await a.page.waitForURL("**/onboarding/plan");
+  assert.deepEqual(asked, ["budget-savings-rate", "budget-irregular", "debt-card-first", "debt-order", "big-three-inflation", "stocks-position-value", "fee-minimum", "td-calculation"]);
+  await a.page.getByRole("heading", { name: "Co už umíš podle vstupního testu", exact: true }).waitFor();
+  await a.page.getByText("Přeskočíš 2 lekce", { exact: true }).waitFor();
+  const [entryProfile] = await sql`select diagnostic_result from learning_profile where user_id = ${a.id}`;
+  assert.equal(entryProfile.diagnostic_result.version, "DIAGNOSTIC_V2");
+  assert.deepEqual(entryProfile.diagnostic_result.provenLessonIds, ["before-investing-budget", "before-investing-debt"]);
+  assert.deepEqual(await snapshot(a.id), beforeEntryTest, "the entry test writes no progress, XP, receipt, unlock or portfolio");
+  await a.page.goto(`${baseURL}/onboarding/entry-test`);
+  await a.page.getByRole("heading", { name: /^Vstupní test můžeš zopakovat od / }).waitFor();
+  console.log("PASS A2: entry test V2 adaptive stop, draft recovery, proven lessons in plan, no rewards, 30-day lock.");
+
   for (const [label, answers, expected] of [["B", weak, "foundations_needed"], ["C", correct, "strong_foundations"]]) {
     const c = await account(); await c.page.goto(`${baseURL}/onboarding`);
     await preferences(c.page, { experience: "INVESTOR" }); await diagnostic(c.page, answers);

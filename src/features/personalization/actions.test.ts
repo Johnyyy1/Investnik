@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import { z } from "zod";
-const mocks = vi.hoisted(() => ({ user: vi.fn(), complete: vi.fn(), update: vi.fn(), retake: vi.fn(), skip: vi.fn(), revalidate: vi.fn() }));
+const mocks = vi.hoisted(() => ({ user: vi.fn(), complete: vi.fn(), update: vi.fn(), retake: vi.fn(), skip: vi.fn(), saveV2: vi.fn(), revalidate: vi.fn(), Unavailable: class extends Error {} }));
 vi.mock("@/lib/session", () => ({ getCurrentUser: mocks.user }));
-vi.mock("./repository", () => ({ completePersonalization: mocks.complete, updatePersonalizedPreferences: mocks.update, retakeDiagnostic: mocks.retake, skipPersonalization: mocks.skip }));
+vi.mock("./repository", () => ({ completePersonalization: mocks.complete, updatePersonalizedPreferences: mocks.update, retakeDiagnostic: mocks.retake, skipPersonalization: mocks.skip, saveDiagnosticV2: mocks.saveV2, EntryTestUnavailableError: mocks.Unavailable }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
-import { completePersonalizationAction, updatePersonalizedPreferencesAction, retakeDiagnosticAction, skipPersonalizationAction } from "./actions";
-const actions = [[completePersonalizationAction, mocks.complete], [updatePersonalizedPreferencesAction, mocks.update], [retakeDiagnosticAction, mocks.retake], [skipPersonalizationAction, mocks.skip]] as const;
+import { completePersonalizationAction, updatePersonalizedPreferencesAction, retakeDiagnosticAction, skipPersonalizationAction, submitEntryTestAction, nextEntryTestQuestionAction } from "./actions";
+const actions = [[completePersonalizationAction, mocks.complete], [updatePersonalizedPreferencesAction, mocks.update], [retakeDiagnosticAction, mocks.retake], [skipPersonalizationAction, mocks.skip], [submitEntryTestAction, mocks.saveV2]] as const;
 describe("personalization authority", () => {
   beforeEach(() => { vi.resetAllMocks(); mocks.user.mockResolvedValue({ id: "owner" }); });
   it.each(actions)("requires an authenticated session", async (action, operation) => {
@@ -49,6 +49,25 @@ describe("personalization failure logging", () => {
   it("does not log answers that fail validation", async () => {
     mocks.complete.mockImplementation(async (_owner: string, input: unknown) => { z.object({ goal: z.string() }).parse(input); });
     expect(await completePersonalizationAction({})).toMatchObject({ ok: false });
+    expect(log).not.toHaveBeenCalled();
+  });
+});
+
+describe("entry test actions", () => {
+  let log: MockInstance<typeof console.error>;
+  beforeEach(() => { vi.resetAllMocks(); mocks.user.mockResolvedValue({ id: "owner" }); log = vi.spyOn(console, "error").mockImplementation(() => {}); });
+  afterEach(() => log.mockRestore());
+
+  it("returns the 30-day lock message without logging it as a failure", async () => {
+    mocks.saveV2.mockRejectedValue(new mocks.Unavailable("Zopakovat ho můžeš 30 dní po posledním pokusu."));
+    expect(await submitEntryTestAction({})).toEqual({ ok: false, message: "Zopakovat ho můžeš 30 dní po posledním pokusu." });
+    expect(log).not.toHaveBeenCalled();
+  });
+  it("serves the next public question only to a signed-in learner and rejects a tampered sequence", async () => {
+    expect(await nextEntryTestQuestionAction([])).toMatchObject({ ok: true, progress: 0, question: { id: "budget-savings-rate" } });
+    expect(await nextEntryTestQuestionAction([{ itemId: "big-three-inflation", optionId: "less" }])).toMatchObject({ ok: false });
+    mocks.user.mockResolvedValue(null);
+    expect(await nextEntryTestQuestionAction([])).toMatchObject({ ok: false });
     expect(log).not.toHaveBeenCalled();
   });
 });

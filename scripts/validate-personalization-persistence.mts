@@ -42,7 +42,7 @@ try {
   await migrate(drizzle(sql), { migrationsFolder: "drizzle" });
   execFileSync("npm", ["run", "db:seed"], { stdio: "pipe", env: process.env });
   const [legacyAfter] = await sql`select * from learning_profile where user_id = 'profile-legacy'`;
-  assert.deepEqual(legacyAfter, { ...legacyBefore, diagnostic_result: null, personalized_onboarding_completed_at: null });
+  assert.deepEqual(legacyAfter, { ...legacyBefore, broker_fee_profile_id: null, diagnostic_result: null, personalized_onboarding_completed_at: null });
   assert.deepEqual(await sql`select * from lesson_progress order by user_id, lesson_id`, progressBefore);
   const { completePersonalization, updatePersonalizedPreferences, skipPersonalization, retakeDiagnostic } = await import("../src/features/personalization/repository");
   const { getLearningProfile, hasLearningHistory, updatePreferences, quickStart } = await import("../src/features/onboarding/repository");
@@ -55,7 +55,7 @@ try {
   const submission = { preferences: { ...defaultPreferences, primaryGoal: "LONG_TERM_ETF", interests: ["ETFS", "DATA"] }, diagnostic: diagnosticWithCorrectCount(5) };
   await Promise.all([completePersonalization("profile-fresh", submission), completePersonalization("profile-fresh", submission)]);
   const fresh = await getLearningProfile("profile-fresh");
-  assert.equal(fresh?.diagnosticResult?.correctCount, 5);
+  assert.equal(fresh?.diagnosticResult && "correctCount" in fresh.diagnosticResult && fresh.diagnosticResult.correctCount, 5);
   assert.ok(fresh?.personalizedOnboardingCompletedAt);
   assert.equal(recommendLearning({ profile: readLearnerProfile(fresh) }).nextLessonId, "foundations-why-invest");
   assert.equal(recommendLearning({ profile: readLearnerProfile(fresh) }).scaffoldLevel, "compact");
@@ -71,7 +71,7 @@ try {
   assert.deepEqual(await getLearningProfile("profile-fresh"), fresh, "stale skip is a no-op");
   await retakeDiagnostic("profile-fresh", diagnosticWithCorrectCount(1));
   const retaken = await getLearningProfile("profile-fresh");
-  assert.equal(retaken?.diagnosticResult?.correctCount, 1);
+  assert.equal(retaken?.diagnosticResult && "correctCount" in retaken.diagnosticResult && retaken.diagnosticResult.correctCount, 1);
   assert.deepEqual(retaken?.personalizedOnboardingCompletedAt, fresh?.personalizedOnboardingCompletedAt);
   assert.equal(recommendLearning({ profile: readLearnerProfile(retaken) }).scaffoldLevel, "guided");
   await skipPersonalization("profile-skipped", {});
@@ -104,7 +104,7 @@ try {
     };
   }
   const before = await state();
-  assert.equal(before.awards.reduce((sum, award) => sum + award.xp, 0), 420);
+  assert.equal(before.awards.reduce((sum, award) => sum + award.xp, 0), 60 * foundationsLessons.filter((lesson) => lesson.status === "available").length);
   assert.equal(String(before.unlock[0].practice_capital_minor), "500000");
   assert.equal(before.trades.length, 1);
   await completePersonalization("profile-legacy", submission);
@@ -117,6 +117,27 @@ try {
   const edited = await getLearningProfile("profile-legacy");
   assert.deepEqual(edited?.diagnosticResult, personalized?.diagnosticResult);
   assert.equal(recommendLearning({ profile: readLearnerProfile(edited), progress: before.progress.map((row) => ({ lessonId: row.lesson_id, status: row.status })) }).reasonCode, "RETURNS_FOR_QUANT_PATH");
+  // V2 entry test (#124): server replay, one winner per 30 days, plan-only effect, mastery capped at Známé.
+  const { saveDiagnosticV2, EntryTestUnavailableError } = await import("../src/features/personalization/repository");
+  const { DIAGNOSTIC_V2, diagnosticV2Probes } = await import("../src/features/personalization/diagnostic-v2");
+  const { diagnosticV2Submission } = await import("../src/features/personalization/test-fixtures");
+  const { loadSkillLevels } = await import("../src/features/mastery/repository");
+  const v2 = diagnosticV2Submission();
+  const raced = await Promise.allSettled([saveDiagnosticV2("profile-legacy", v2), saveDiagnosticV2("profile-legacy", v2)]);
+  assert.equal(raced.filter((entry) => entry.status === "fulfilled").length, 1, "parallel entry tests save once");
+  assert.ok(raced.some((entry) => entry.status === "rejected" && entry.reason instanceof EntryTestUnavailableError));
+  const tested = readLearnerProfile(await getLearningProfile("profile-legacy")).diagnostic;
+  assert.equal(tested?.version, DIAGNOSTIC_V2);
+  assert.equal(tested?.version === DIAGNOSTIC_V2 && tested.provenLessonIds.length, diagnosticV2Probes.length);
+  assert.equal((await loadSkillLevels("profile-legacy"))["savings-rate"], 2, "a proven skill is Známé, never higher");
+  await assert.rejects(() => saveDiagnosticV2("profile-legacy", diagnosticV2Submission(() => false)), EntryTestUnavailableError);
+  await sql`update learning_profile set diagnostic_result = jsonb_set(diagnostic_result, '{completedAt}', to_jsonb((now() - interval '31 days')::text)) where user_id = 'profile-legacy'`;
+  await saveDiagnosticV2("profile-legacy", diagnosticV2Submission(() => false));
+  const retested = readLearnerProfile(await getLearningProfile("profile-legacy")).diagnostic;
+  assert.deepEqual(retested?.version === DIAGNOSTIC_V2 && retested.provenLessonIds, [], "retake allowed after 30 days");
+  assert.equal((await loadSkillLevels("profile-legacy"))["savings-rate"], 0, "Známé from the test follows the latest result");
+  await assert.rejects(() => saveDiagnosticV2("profile-portfolio-only", v2), EntryTestUnavailableError, "entry test requires a completed onboarding profile");
+  await assert.rejects(() => saveDiagnosticV2("profile-skipped", { ...v2, provenLessonIds: ["foundations-why-invest"] }), "client outcomes are rejected");
   await retakeDiagnostic("profile-legacy", diagnosticWithCorrectCount(0));
   await quickStart("profile-legacy", { experienceLevel: "BEGINNER", timeZone: "UTC" });
   await skipPersonalization("profile-legacy", {});
@@ -126,7 +147,7 @@ try {
   assert.equal(requiresInitialOnboarding(await getLearningProfile("profile-portfolio-only"), await hasLearningHistory("profile-portfolio-only")), false);
   await sql`delete from "user" where id = 'profile-fresh'`;
   assert.equal(await getLearningProfile("profile-fresh"), undefined, "profile cascades with account deletion");
-  console.log("PASS: fresh + upgrade migrations, migration rerun, canonical seed, legacy/null/draft profiles, strict validation, idempotent completion, retake, skip, recommendation recomputation, cascade, and unchanged 420 XP / 5,000 Kč / trades.");
+  console.log("PASS: fresh + upgrade migrations, migration rerun, canonical seed, legacy/null/draft profiles, strict validation, idempotent completion, retake, skip, V2 entry test (single winner, 30-day lock, Známé cap), recommendation recomputation, cascade, and unchanged Foundations XP / 5,000 Kč / trades.");
 } finally {
   await sql.end();
   const client = (globalThis as unknown as { client?: { end: () => Promise<void> } }).client;

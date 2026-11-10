@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { diagnosticQuestions, evaluateDiagnostic, FOUNDATIONS_DIAGNOSTIC_V1, readDiagnostic } from "./diagnostic";
+import { diagnosticQuestions, evaluateDiagnostic, FOUNDATIONS_DIAGNOSTIC_V1, readDiagnostic, type DiagnosticResult } from "./diagnostic";
 
 import { diagnosticWithCorrectCount } from "./test-fixtures";
 describe("Foundations diagnostic V1", () => {
@@ -25,7 +25,7 @@ describe("Foundations diagnostic V1", () => {
     }
   });
   it("recomputes derived fields and safely handles unknown stored versions", () => {
-    expect(readDiagnostic({ ...evaluateDiagnostic(diagnosticWithCorrectCount(0)), correctCount: 5, level: "strong_foundations" })?.correctCount).toBe(0);
+    expect((readDiagnostic({ ...evaluateDiagnostic(diagnosticWithCorrectCount(0)), correctCount: 5, level: "strong_foundations" }) as DiagnosticResult).correctCount).toBe(0);
     expect(readDiagnostic({ ...diagnosticWithCorrectCount(5), version: "OLD_VERSION" })).toBeNull();
     expect(readDiagnostic(null)).toBeNull();
   });
