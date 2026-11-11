@@ -6,7 +6,8 @@ import { db } from "@/db";
 import { learnerArtifact, missionAttempt, portfolio, portfolioTrade, user } from "@/db/schema";
 import { readPracticeCapitalEntitlementMinor } from "@/features/rewards/repository";
 import { ipsSchema } from "@/features/ips/schema";
-import { readTrainingSessions, trainingSetup } from "@/features/training/repository";
+import { trainingSetup } from "@/features/training/domain";
+import { readTrainingSessions } from "@/features/training/repository";
 import { checkIpsPurchase, checkPlannedIpsPurchase, checkScenario, contributionMonthsWithBuy, completedHistoricalReplays, finishedModelDrill } from "./checks";
 import { getMission, isExerciseMission } from "./registry";
 

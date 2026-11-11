@@ -1,11 +1,15 @@
 import "server-only";
 import { acquisitionSource } from "./acquisition";
-import { sql } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
-  analyticsAcquisitionDay, analyticsEarlyReturn, analyticsLandingViewDay, learnerArtifact, learningProfile, lessonAward, lessonProgress, milestoneAchievement, portfolio, portfolioTrade, user,
+  analyticsAcquisitionDay, analyticsEarlyReturn, analyticsLandingViewDay, learnerArtifact, learningProfile, lessonAward, lessonProgress, milestoneAchievement, portfolio, portfolioTrade,
+  skillAttempt, trainingAction, trainingSession, user,
 } from "@/db/schema";
+import { diagnosticV2Probes, readDiagnosticV2 } from "@/features/personalization/diagnostic-v2";
+import { actionFromRow, replayTraining, trainingSetup } from "@/features/training/domain";
 import { analyticsDate, isEarlyReturnDay, type LearnerFacts, type LessonProgressFact } from "./funnel";
+import { drillFacts, type EntryAnswer, type OutcomeAttempt, type OutcomeLearner } from "./outcomes";
 
 type Database = Pick<PostgresJsDatabase<Record<string, unknown>>, "execute">;
 
@@ -85,5 +89,39 @@ export async function loadFunnelFacts(database: Database) {
     progress: [...progress].map((row): LessonProgressFact => ({ key: row.key, lessonId: row.lesson_id, completedAt: toDate(row.completed_at), updatedAt: new Date(row.updated_at) })),
     acquisition: [...acquisition].map((row) => ({ day: row.day, source: row.source, views: Number(row.views) })),
     visits: [...visits].map((row) => ({ day: row.day, views: Number(row.views) })),
+  };
+}
+
+const correctAnswers = new Map(diagnosticV2Probes.flatMap((probe) => probe.items.map((item) => [item.id, item.correctAnswer] as const)));
+
+/**
+ * Everything the learning-outcome report (#130) needs, read from existing append-only records: milestone A
+ * achievements, skill attempts, the latest entry-test answers and replayed crisis drills. Learners only (no demos);
+ * user IDs serve as opaque keys and no name, e-mail or free-text answer is selected.
+ */
+export async function loadOutcomeFacts(database: Pick<PostgresJsDatabase<Record<string, unknown>>, "select">) {
+  // shortcut: reads every learner's rows into memory; fine at S1 scale (~1 000 learners), stream or aggregate in SQL beyond that.
+  const [learners, attempts, profiles, sessions, actions] = await Promise.all([
+    database.select({ key: user.id, guest: user.isAnonymous, milestoneAAt: milestoneAchievement.achievedAt }).from(user)
+      .leftJoin(milestoneAchievement, sql`${milestoneAchievement.userId} = ${user.id} and ${milestoneAchievement.milestoneId} = 'A'`).where(isLearner),
+    database.select({ key: skillAttempt.userId, skillId: skillAttempt.skillId, itemId: skillAttempt.itemId, correct: skillAttempt.correct, context: skillAttempt.context, attemptedAt: skillAttempt.attemptedAt })
+      .from(skillAttempt).innerJoin(user, eq(user.id, skillAttempt.userId)).where(isLearner),
+    database.select({ key: learningProfile.userId, diagnosticResult: learningProfile.diagnosticResult })
+      .from(learningProfile).innerJoin(user, eq(user.id, learningProfile.userId)).where(isLearner),
+    database.select({ session: trainingSession }).from(trainingSession).innerJoin(user, eq(user.id, trainingSession.userId)).where(isLearner),
+    database.select({ sessionId: trainingAction.sessionId, kind: trainingAction.kind, amountMinor: trainingAction.amountMinor, quantity: trainingAction.quantity })
+      .from(trainingAction).innerJoin(trainingSession, eq(trainingSession.id, trainingAction.sessionId)).innerJoin(user, eq(user.id, trainingSession.userId))
+      .where(isLearner).orderBy(asc(trainingAction.sessionId), asc(trainingAction.sequence)),
+  ]);
+  const actionsBySession = Map.groupBy(actions, (row) => row.sessionId);
+  return {
+    learners: learners.map((row): OutcomeLearner => ({ key: row.key, kind: row.guest ? "guest" : "account", milestoneAAt: row.milestoneAAt })),
+    attempts: attempts satisfies OutcomeAttempt[],
+    entry: profiles.flatMap(({ key, diagnosticResult }): EntryAnswer[] =>
+      (readDiagnosticV2(diagnosticResult)?.answers ?? []).map((answer) => ({ key, itemId: answer.itemId, correct: correctAnswers.get(answer.itemId) === answer.optionId }))),
+    drills: sessions.map(({ session }) => {
+      const setup = trainingSetup(session);
+      return drillFacts(session.userId, session.startedAt, setup, replayTraining(setup, (actionsBySession.get(session.id) ?? []).map(actionFromRow)));
+    }),
   };
 }

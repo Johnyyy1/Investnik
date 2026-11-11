@@ -1,6 +1,7 @@
+import type { trainingAction, trainingSession } from "@/db/schema";
 import type { IpsPlan } from "@/features/ips/schema";
-import { computeTradeCost, type BrokerFeeProfile } from "@/features/portfolio/costs";
-import { FX_SCALE, grossBaseMinor, PRICE_SCALE, QUANTITY_SCALE, roundDivide } from "@/features/portfolio/decimal";
+import { brokerFeeProfile, computeTradeCost, type BrokerFeeProfile } from "@/features/portfolio/costs";
+import { decimalToPriceUnits, decimalToQuantityUnits, FX_SCALE, grossBaseMinor, PRICE_SCALE, QUANTITY_SCALE, roundDivide } from "@/features/portfolio/decimal";
 import { moneyWeightedReturn, PERFORMANCE_DAY_MS, timeWeightedReturn, type PerformanceMetric } from "@/features/portfolio/performance";
 
 /** Fictional training money, separate from Practice Capital: 100 000 Kč at the start of every session. */
@@ -35,6 +36,20 @@ export interface TrainingSetup {
 }
 
 export type TrainingAction = { kind: "buy"; amountMinor: bigint } | { kind: "sell"; quantityUnits: bigint } | { kind: "advance" };
+
+/** A stored session as replay input. Pure, so read-only reports can replay drills without the app's database client. */
+export function trainingSetup(row: Pick<typeof trainingSession.$inferSelect, "series" | "initialCapitalMinor" | "plan" | "feeProfileId">): TrainingSetup {
+  return {
+    dates: row.series.points.map(({ date }) => date), prices: row.series.points.map(({ price }) => decimalToPriceUnits(price)),
+    initialCapitalMinor: row.initialCapitalMinor, plan: row.plan, feeProfile: brokerFeeProfile(row.feeProfileId),
+  };
+}
+
+export function actionFromRow(row: Pick<typeof trainingAction.$inferSelect, "kind" | "amountMinor" | "quantity">): TrainingAction {
+  if (row.kind === "buy") return { kind: "buy", amountMinor: row.amountMinor! };
+  if (row.kind === "sell") return { kind: "sell", quantityUnits: decimalToQuantityUnits(row.quantity!) };
+  return { kind: "advance" };
+}
 
 export class TrainingActionError extends Error {
   constructor(readonly code: "Finished" | "InvalidAmount" | "InsufficientCash" | "Oversell", message: string) {

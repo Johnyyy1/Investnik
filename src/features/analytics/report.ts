@@ -3,6 +3,10 @@ import {
   analyticsDate, buildFunnel, buildLessonDropOff, buildMilestoneAGate, buildWeeklyCohorts, EARLY_RETURN_DAYS, INACTIVE_AFTER_DAYS,
   type LearnerFacts, type LessonProgressFact,
 } from "./funnel";
+import {
+  bigThreeKnowledge, drillBehaviour, DRAWDOWN_SELL_BPS, masteredSkillCounts, masteredSkills, northStar, retention,
+  type DrillFacts, type EntryAnswer, type OutcomeAttempt, type OutcomeLearner,
+} from "./outcomes";
 
 /** The windows the issue asks for: the last 7 and the last 30 days. */
 export const FUNNEL_WINDOWS = [7, 30] as const;
@@ -71,4 +75,71 @@ export function formatFunnelReport(report: FunnelReport) {
   sections.push("## Příchody podle kanálu (zobrazení, nikoli lidé ani přiřazené registrace)");
   for (const window of report.acquisition) sections.push(`Posledních ${window.days} dní\n` + table(["Zdroj", "Zobrazení"], window.sources.map((row) => [row.source, String(row.views)])));
   return sections.join("\n\n");
+}
+
+export type OutcomeFacts = { learners: readonly OutcomeLearner[]; attempts: readonly OutcomeAttempt[]; entry: readonly EntryAnswer[]; drills: readonly DrillFacts[] };
+
+/** Layers the report cannot measure yet, named so a missing number is never read as zero. */
+const unavailableOutcomes = [
+  "HHI, hotovost nad plánem a soulad s IPS v osobním portfoliu: počítají se každému v Labu z aktuálních cen, report čte jen databázi.",
+  "PGR/PLR (prodej ziskových vs. ztrátových pozic): kniha obchodů nemá ceny neprodaných pozic v den prodeje a nácvik má jediný index.",
+  "Dotazník reálných kroků 3 a 12 měsíců po milníku A: zatím neexistuje.",
+  "A/B testy karet a variant lekcí: zatím neběží žádný experiment.",
+];
+
+const bigThreeLabels: Record<string, string> = { "big-three-compounding": "Složené úročení", "big-three-inflation": "Inflace", "big-three-diversification": "Diverzifikace" };
+
+/** All-time learning outcomes (#130): aggregate counts only, JSON-safe. */
+export function buildOutcomesReport(facts: OutcomeFacts, now: Date) {
+  const counts = masteredSkillCounts(facts.attempts);
+  const achievers = facts.learners.filter((learner) => learner.milestoneAAt !== null).map((learner) => learner.key);
+  return {
+    generatedAt: now.toISOString(),
+    northStar: northStar(facts.learners, facts.drills),
+    masteredSkills: { milestoneA: masteredSkills(achievers, counts), allLearners: masteredSkills(facts.learners.map((learner) => learner.key), counts) },
+    bigThree: bigThreeKnowledge(facts.entry, facts.attempts),
+    retention: retention(facts.attempts),
+    drill: drillBehaviour(facts.drills),
+    unavailable: unavailableOutcomes,
+  };
+}
+
+export type OutcomesReport = ReturnType<typeof buildOutcomesReport>;
+
+const fraction = (count: number, base: number) => `${count} z ${base} (${share(base ? count / base : null)})`;
+const count = new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 1 });
+const medianCount = (value: number | null) => value === null ? "–" : count.format(value);
+const basisPoints = (value: number | null) => value === null ? "–" : `${percent.format(value / 10_000)}`;
+
+export function formatOutcomesReport(report: OutcomesReport) {
+  const star = report.northStar, drill = report.drill;
+  return [
+    `Výsledky učení · vytvořeno ${report.generatedAt}`,
+    "Jen souhrnné počty za celou dobu. Smazané účty a hosté v datech nejsou, demo účty se nepočítají.",
+    [
+      "## Severka: dodrželi svůj IPS v krizovém nácviku",
+      `Splnili milník A: ${star.achievers} · s dokončeným nácvikem: ${star.withDrill} · bez prodeje mimo plán: ${star.keptPlan} (${share(star.share)})`,
+      "Počítá se první dokončený nácvik; opakovaný už průběh krize zná. Bez dokončeného nácviku se nepočítá jako neúspěch.",
+      `Dovednosti Zvládnuté a výš, medián: milník A ${medianCount(report.masteredSkills.milestoneA.median)} (${report.masteredSkills.milestoneA.learners}) · všichni ${medianCount(report.masteredSkills.allLearners.median)} (${report.masteredSkills.allLearners.learners})`,
+    ].join("\n"),
+    [
+      "## Znalosti: Big Three",
+      table(["Otázka", "Vstupní test", "Kontrolní bod Foundations (1. pokus)"], report.bigThree.map((row) => [bigThreeLabels[row.itemId] ?? row.itemId, fraction(row.entry.correct, row.entry.answered), fraction(row.checkpoint.correct, row.checkpoint.answered)])),
+      "Skupiny se liší, proto nejde o změřený účinek výuky. Vstupní test je poslední, který učící se vyplnil.",
+    ].join("\n"),
+    [
+      "## Retence: první opakování ve smíšeném kontrolním bodě nebo opakování",
+      table(["Od prvního správného", "Ověřeno", "Správně"], report.retention.map((row) => [`po ${row.weeks} týdnech a déle`, String(row.checked), share(row.share)])),
+    ].join("\n"),
+    [
+      "## Chování v krizovém nácviku (první dokončený nácvik)",
+      `Učících se: ${drill.learners}`,
+      `Bez prodeje mimo plán: ${fraction(drill.keptPlan, drill.learners)}`,
+      `Prodali při propadu indexu o ${Number(DRAWDOWN_SELL_BPS) / 100} % a víc: ${fraction(drill.soldInDrawdown, drill.learners)}`,
+      `Na konci v pásmu IPS (jen plány s pásmem): ${fraction(drill.allocationWithinPlan.learners, drill.allocationWithinPlan.base)}`,
+      `Obrat, medián: ${basisPoints(drill.medianTurnoverBps)} · MWR − TWR, medián: ${basisPoints(drill.medianReturnGapBps)}`,
+      "Rozdíl MWR − TWR ukazuje vliv načasování vkladů, sám o sobě nedokazuje chybu v chování.",
+    ].join("\n"),
+    ["## Zatím neměřeno", ...report.unavailable.map((line) => `* ${line}`)].join("\n"),
+  ].join("\n\n");
 }
