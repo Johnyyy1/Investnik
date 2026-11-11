@@ -3,6 +3,7 @@ import { factToday, resolveFact } from "./resolve";
 import type { FactVersion } from "./types";
 import { guideFacts } from "./guide-facts";
 import { research134Facts } from "./research-134";
+import { indexFactsheetFacts } from "./index-factsheets";
 
 const checkedAt = "2026-10-21";
 const reviewed134 = { checkedAt: "2026-10-22", verifiedAt: "2026-10-22", nextReviewAt: "2027-01-15" } as const;
@@ -94,6 +95,7 @@ export const factRegistry = [
   fact({ ...odean, key: "odean.plr", label: "Odean — podíl realizovaných ztrát (PLR)", value: { amount: 9.8, unit: "%" } }),
   ...research134Facts,
   ...behaviourGapFacts.map((entry) => fact(entry)),
+  ...indexFactsheetFacts.map((entry) => fact(entry)),
 ] as const;
 
 export type FactKey = (typeof factRegistry)[number]["key"];

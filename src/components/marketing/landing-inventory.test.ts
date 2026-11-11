@@ -12,8 +12,8 @@ describe("landing page inventory", () => {
     const landing = readFileSync("src/components/marketing/pen-landing.tsx", "utf8");
     expect(landing).toContain('["Srovnání nákladů", "Dostupné", true]');
   });
-  it("publishes the fee-schedule, TER, trading-cost, currency, 30-year cost, broker-comparison, ETF-checklist, IPS, automation, first-purchase and capstone A lessons in level 2", () => {
-    expect(placed("2.").filter((id) => published.has(id))).toEqual(["broker-fee-schedule", "costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "costs-ter-tracking-difference", "etfs-selection-checklist", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "first-plan-capstone-a"]);
+  it("publishes the fee-schedule, TER, trading-cost, currency, 30-year cost, broker-comparison, replication-and-indexes, ETF-checklist, IPS, automation, first-purchase and capstone A lessons in level 2", () => {
+    expect(placed("2.").filter((id) => published.has(id))).toEqual(["broker-fee-schedule", "costs-spread-and-fees", "costs-currency-conversion", "costs-over-30-years", "costs-broker-comparison", "costs-ter-tracking-difference", "etfs-replication-and-indexes", "etfs-selection-checklist", "first-plan-ips", "first-plan-automation", "first-plan-first-purchase", "first-plan-capstone-a"]);
   });
 
   it("still lists the reserve, pension and scams lessons as drafts", () => {
