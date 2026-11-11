@@ -166,6 +166,7 @@ Every suite below is an npm script in `package.json` unless it is written as `no
 | --- | --- |
 | `demo:cleanup` | Dry run of the anonymous identity cleanup; `-- --apply` applies it |
 | `analytics:funnel` | Read-only funnel to milestone A: last 7 and 30 days, weekly cohorts, lesson drop-off; `-- --json` for JSON (see [product analytics](docs/product-analytics.md)) |
+| `analytics:outcomes` | Read-only learning outcomes: north star (IPS kept in the crisis drill), mastery, Big Three, retention, drill behaviour; `-- --json` for JSON (see [product analytics](docs/product-analytics.md#learning-outcomes-130)) |
 | `smoke:fmp` | Manual smoke test of the live FMP market-data adapter |
 | `smoke:fmp-fundamentals` | Manual smoke test of live FMP equity fundamentals and their cache |
 | `bench:navigation` | Client navigation benchmark (see [performance baseline](docs/performance-baseline.md)) |

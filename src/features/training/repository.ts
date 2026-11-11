@@ -5,10 +5,9 @@ import { db } from "@/db";
 import { learnerArtifact, trainingAction, trainingSession, user } from "@/db/schema";
 import { isGuestIdentity } from "@/features/guest/identity";
 import { ipsSchema } from "@/features/ips/schema";
-import { brokerFeeProfile } from "@/features/portfolio/costs";
-import { decimalToPriceUnits, decimalToQuantityUnits, quantityToDecimal } from "@/features/portfolio/decimal";
+import { decimalToQuantityUnits, quantityToDecimal } from "@/features/portfolio/decimal";
 import { readBrokerFeeProfile } from "@/features/portfolio/repository";
-import { replayTraining, TRAINING_INITIAL_CAPITAL_MINOR, trainingPlanFromIps, type TrainingAction, type TrainingSetup } from "./domain";
+import { actionFromRow, replayTraining, TRAINING_INITIAL_CAPITAL_MINOR, trainingPlanFromIps, trainingSetup, type TrainingAction } from "./domain";
 import type { TrainingSeries } from "./scenarios";
 
 export class TrainingSessionError extends Error {
@@ -18,22 +17,8 @@ export class TrainingSessionError extends Error {
   }
 }
 
-type SessionRow = typeof trainingSession.$inferSelect;
 type ActionRow = typeof trainingAction.$inferSelect;
 type Reader = Pick<typeof db, "select">;
-
-export function trainingSetup(row: SessionRow): TrainingSetup {
-  return {
-    dates: row.series.points.map(({ date }) => date), prices: row.series.points.map(({ price }) => decimalToPriceUnits(price)),
-    initialCapitalMinor: row.initialCapitalMinor, plan: row.plan, feeProfile: brokerFeeProfile(row.feeProfileId),
-  };
-}
-
-function actionFromRow(row: Pick<ActionRow, "kind" | "amountMinor" | "quantity">): TrainingAction {
-  if (row.kind === "buy") return { kind: "buy", amountMinor: row.amountMinor! };
-  if (row.kind === "sell") return { kind: "sell", quantityUnits: decimalToQuantityUnits(row.quantity!) };
-  return { kind: "advance" };
-}
 
 /** The latest IPS revision as a training plan, or why it cannot be used. */
 async function readPlan(reader: Reader, userId: string) {
