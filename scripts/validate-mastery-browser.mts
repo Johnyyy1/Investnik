@@ -117,7 +117,7 @@ try {
   await page.goto(`${baseURL}/learn`);
   await page.getByRole("heading", { name: "Co ti zbývá do milníku A", level: 1 }).waitFor();
   assert.equal(await page.getByRole("link", { name: "Pokračovat", exact: true }).getAttribute("href"), "/learn/checkpoint/1.1");
-  for (const code of ["1.1", "2.2", "2.5"] as const) for (const item of mixedCheckpoint(code, "milestone-qa")) {
+  for (const code of ["1.1", "2.2", "2.3", "2.5"] as const) for (const item of mixedCheckpoint(code, "milestone-qa")) {
     assert.ok(skillItems.some((entry) => entry.id === item.id));
     await sql`insert into skill_attempt(user_id,request_id,skill_id,item_id,correct,context,attempted_at) values (${owner.id},${randomUUID()},${item.skillId},${item.id},true,'checkpoint',now())`;
   }

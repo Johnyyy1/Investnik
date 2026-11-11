@@ -319,7 +319,7 @@ try {
     await page.getByText(`Správně ${items.length} z ${items.length}.`).waitFor();
     console.log(`✓ mixed checkpoint ${code} (${items.length} questions)`);
   }
-  assert.deepEqual(visited, ["1.1", "2.2", "2.5"], "Learn asked for exactly the 1.1, 2.2 and 2.5 mixed checkpoints");
+  assert.deepEqual(visited, ["1.1", "2.2", "2.3", "2.5"], "Learn asked for exactly the 1.1, 2.2, 2.3 and 2.5 mixed checkpoints");
 
   where = "milestone A";
   await page.getByRole("heading", { name: "Milník A splněn", level: 1 }).waitFor();
