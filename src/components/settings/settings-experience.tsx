@@ -4,6 +4,7 @@ import { GuideImage } from "@/components/guide-image";
 import { AppLink as Link } from "@/components/shell/app-link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useSheetSwipeDismiss } from "@/components/ui/sheet-swipe";
 import { ArrowLeft, ArrowRight, ChevronRight, Info, LogOut } from "lucide-react";
 import { AccountSecurity } from "@/components/auth/account-security";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -38,6 +39,7 @@ export function SettingsExperience(props: Props) {
   const [signOutError, setSignOutError] = useState<string>();
   const signOutLock = useRef(false);
   const signOutDialog = useRef<HTMLDialogElement>(null);
+  useSheetSwipeDismiss(signOutDialog, "y");
   const signOutTrigger = useRef<HTMLElement | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const lastSection = useRef(section);

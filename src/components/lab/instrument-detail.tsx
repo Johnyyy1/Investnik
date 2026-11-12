@@ -4,6 +4,7 @@ import { AppLink as Link } from "@/components/shell/app-link";
 import { Check, ChevronRight, GitCompareArrows, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useTransition, type MouseEvent } from "react";
+import { useSheetSwipeDismiss } from "@/components/ui/sheet-swipe";
 import { BuyReview } from "@/components/lab/buy-review";
 import { loadDecisionCardPreferences, saveDecisionCardPreferences } from "@/components/lab/decision-card";
 import { InstrumentPriceChart } from "@/components/lab/instrument-price-chart";
@@ -106,6 +107,7 @@ export function InstrumentDetailView({ instrument, quote, quoteMessage, points: 
   const [loadingPreview, startPreview] = useTransition();
   const [pending, startTrade] = useTransition();
   const dialog = useRef<HTMLDialogElement>(null);
+  useSheetSwipeDismiss(dialog, "x");
   const trigger = useRef<HTMLButtonElement | null>(null);
   const orderHeading = useRef<HTMLHeadingElement>(null);
   const tradeKey = useRef<string | null>(null);

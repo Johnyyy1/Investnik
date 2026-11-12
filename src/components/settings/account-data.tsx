@@ -2,6 +2,7 @@
 
 import { AppLink as Link } from "@/components/shell/app-link";
 import { useEffect, useRef, useState } from "react";
+import { useSheetSwipeDismiss } from "@/components/ui/sheet-swipe";
 import { Download } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { accountDeletionErrorMessage } from "@/features/account/deletion";
@@ -73,6 +74,7 @@ function DeletionUnavailable() {
 
 function AccountDeletion({ hasPassword, fresh: initiallyFresh, reopenDeletion, accounts, providers }: Props & { hasPassword: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  useSheetSwipeDismiss(dialog, "y");
   const trigger = useRef<HTMLButtonElement>(null);
   const passwordInput = useRef<HTMLInputElement>(null);
   const lock = useRef(false);
