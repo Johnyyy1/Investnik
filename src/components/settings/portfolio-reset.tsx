@@ -1,6 +1,7 @@
 "use client";
 import { AppLink as Link } from "@/components/shell/app-link";
 import { useRef, useState, useTransition } from "react";
+import { useSheetSwipeDismiss } from "@/components/ui/sheet-swipe";
 import { useRouter } from "next/navigation";
 import { resetPortfolioAction } from "@/features/portfolio/actions";
 import { formatPracticeCapitalMinor } from "@/features/rewards/presentation";
@@ -10,6 +11,7 @@ import styles from "./settings.module.css";
 export function PortfolioReset({ unlocked, earnedCapital }: { unlocked: boolean; earnedCapital: string }) {
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
+  useSheetSwipeDismiss(dialog, "y");
   const trigger = useRef<HTMLButtonElement>(null);
   const idempotencyKey = useRef<string | null>(null);
   const lock = useRef(false);

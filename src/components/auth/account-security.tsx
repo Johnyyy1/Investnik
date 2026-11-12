@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSheetSwipeDismiss } from "@/components/ui/sheet-swipe";
 import { Button } from "@/components/ui/button";
 import { EmailVerification, PasswordChange } from "./account-credentials";
 import type { AuthProviderAvailability } from "@/lib/auth-providers";
@@ -45,6 +46,7 @@ export function AccountSecurity({ providers, initialError, initialAccounts, emai
   const [pending, setPending] = useState<"load" | SocialProvider | `unlink-${SocialProvider}` | undefined>(initialAccounts ? undefined : "load");
   const lock = useRef(false);
   const dialog = useRef<HTMLDialogElement>(null);
+  useSheetSwipeDismiss(dialog, "y");
   const disconnectTrigger = useRef<HTMLButtonElement | null>(null);
   const [disconnecting, setDisconnecting] = useState<SocialProvider>();
 
