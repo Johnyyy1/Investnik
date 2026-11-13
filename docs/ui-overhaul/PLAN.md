@@ -2,6 +2,8 @@
 
 This plan turns the findings in [AUDIT.md](AUDIT.md) (stamped at `origin/main` 37c412b, 2026-11-12) into ordered, independently shippable work. It designs nothing new. Each work package names the audit IDs it closes, the files to touch, the exact target, its guardrails and how to verify it.
 
+**Status (2026-11-13).** The founder approved direction **D „Studijní pracoviště“** for `/learn` (decision F1). [Learn: direction D](#learn-direction-d-approved-2026-11-13) below replaces the Learn half of WP-06 with WP-17 to WP-22. Direction **C „Cesta k plánu“** is not used for `/learn`. It remains the candidate structure for `/progress` (WP-06, D4). Nothing here authorizes a merge or a deploy. Every PR stays in review until the founder merges it.
+
 ## Ground rules for every package
 
 - **One package = one issue = one worktree = one PR** ([WORKTREES.md](../../WORKTREES.md)). Read `docs/agents/ui-and-design.md`, `DESIGN.md` and `docs/design-system.md` before starting.
@@ -20,8 +22,14 @@ This plan turns the findings in [AUDIT.md](AUDIT.md) (stamped at `origin/main` 3
 | D1 | Gender-neutral name for milestone A („Připraven/a začít“ breaks the `PRODUCT.md` voice rule, but `docs/agents/product-and-curriculum.md` uses it) | WP-03 | „Připraveno k začátku“ · „Start s plánem“ · keep it (and amend `PRODUCT.md`) |
 | D2 | Mascot scope: `ui-and-design.md` §7 says onboarding, completion, milestone and empty states; `DESIGN.md` adds welcome and continuation | WP-09 | Strict §7 · §7 + Learn continuation · status quo (amend §7) |
 | D3 | The landing lesson demo: keep a read-only illustration with honest copy, or make it a real local-state choice | WP-05 | (a) interactive · (b) copy-only |
-| D4 | What Progress is for once the curriculum map moves out | WP-06 | Milestone-first (recommended) · mastery-first |
+| D4 | What Progress is for once the curriculum map moves out | WP-06 | Milestone-first, built on direction C (recommended) · mastery-first |
 | D5 | Single term for the mixed checkpoint | WP-03 | „Smíšená kontrola“ (recommended: Czech, already in milestone copy) · „Checkpoint“ |
+| D6 | Where the rail sends a learner: straight to the lesson route, or to an in-page lesson preview (`/learn?lesson=…`, as in the prototype) | WP-20 | Straight to the lesson (recommended: every lesson is open, and the lesson route already has its own intro) · in-page preview |
+
+**Decided.**
+- **F1 (2026-11-13): `/learn` follows direction D.** The brief and the prototype are `docs/ui-overhaul/LEARN-VARIANTS.md` and `/dev/learn-variants/d`. Both are uncommitted in the `design-foundation` and `learn-variant-d` worktrees and land with WP-00.
+- **F4, rail rows only:** 44 px (`min-h-control-sm`) at every width. The prototype's 36 px pointer rows are dropped (see [Resolved conflicts](#resolved-conflicts)). F4 for Lab and Settings stays open.
+- **D2 is narrowed by F1:** D removes the guide illustration from `/learn`. D2 still decides the other screens.
 
 ## Phases and sequence
 
@@ -35,6 +43,14 @@ Phase 0 (foundations, 1–2 d) ─► Phase 1 (shell & states, 2–3 d) ─► P
 ```
 
 WP-01 lands first because almost every later package touches type sizes. WP-04 lands before any shell work. WP-06, WP-12 and WP-15 share the curriculum registry, so serialize them.
+
+The Learn track (WP-17 to WP-22) runs inside Phase 2:
+
+```
+WP-17 recap leak ── ships alone, first
+WP-00 design foundation ─► WP-18 heading cascade ─► WP-19 Learn model ─► WP-20 rail + question ─► WP-21 /learn cutover ─► WP-22 cleanup
+                       └─► WP-01 type & radius ──────────────────────────────────────────────────┘        └─► WP-06 Progress (C)
+```
 
 ## Work packages
 
@@ -90,15 +106,18 @@ WP-01 lands first because almost every later package touches type sizes. WP-04 l
 - **Guardrails:** Keep „Ukázka bez zápisu“; no persistence and no XP. Respect `ANIMATIONS.md` and update it.
 - **Verify:** `test:marketing-browser`, the `test:product` landing axe step, and a manual click test with reduced motion on and off.
 
-### WP-06 ⚑ · Give Learn and Progress one job each (P1-01, P2-10, P2-11)
+### WP-06 ⚑ · Progress gets its own job: direction C (P1-01, P2-10, P2-11)
 
-- **Change (D4 = milestone-first):**
-  - **Learn** keeps the continue card and `CurriculumMap` (without the milestone prose) plus a compact „Milník A · 1 z 3 splněno → další krok“ line.
-  - **Progress** removes `CurriculumMap`. Its order becomes: hero stats → `MilestoneCard` A (requirements as a checklist with written status and one next action), then B–D collapsed → key ideas („Klíčové myšlenky z lekcí“) → mastery by module with a fixed status column (`grid-template-columns: minmax(0,1fr) auto`) → completed lessons with review links.
-  - Build `MilestoneCard` from the existing `MilestoneState`. Do not compute anything new.
+The Learn half of this package is now direction D (WP-17 to WP-22). Once WP-21 lands, `/learn` no longer renders `CurriculumMap`, so P1-01 is half closed. This package closes the rest on `/progress`.
+
+- **Change (D4 = milestone-first, using direction C's checklist):**
+  - **Progress** removes `CurriculumMap`. Its order becomes: hero stats → `MilestoneCard` A (requirements as a checklist with written status and one next action; done items collapse to a dated line; capstone parts link to IPS, Portfolio Lab and the crisis exercise), then B–D collapsed → key ideas („Klíčové myšlenky z lekcí“) → mastery by module with a fixed status column (`grid-template-columns: minmax(0,1fr) auto`) → completed lessons with review links.
+  - Build `MilestoneCard` from the existing `MilestoneState`. Do not compute anything new. The milestone row on `/learn` (WP-21) links here.
+  - `CurriculumMap` then has no consumer. Delete it and `curriculum-map.module.css`, keeping `curriculum-map-model.ts`, which feeds the rail.
+- **Depends on:** WP-21 (Learn no longer needs the map) and D4.
 - **Guardrails:** Milestones count only published content and never imply completion (`docs/milestones.md`). Keep every review link reachable. Mastery labels stay text plus icon.
-- **Target:** `/progress` at 390 ≤ 6,000 px (today 11,389). `/learn` at 1440 ≤ 3,800 px (today 4,960).
-- **Verify:** `test:progress-browser`, `test:studovna`, `test:mastery-browser`, `test:milestones-persistence`, `test:progression-browser`.
+- **Target:** `/progress` at 390 ≤ 6,000 px (today 11,389).
+- **Verify:** `test:progress-browser`, `test:mastery-browser`, `test:milestones-persistence`, `test:progression-browser`, and `test:milestone-a-live` (live FMP; run when credentials are available).
 
 ### WP-07 · One state component for errors and empty states (P1-08)
 
@@ -195,6 +214,140 @@ WP-01 lands first because almost every later package touches type sizes. WP-04 l
 - P3-07: Settings section labels.
 - P3-04 is **domain** (demo seed with a non-executable quote) and goes in a separate issue, not this sweep.
 
+## Learn: direction D (approved 2026-11-13)
+
+D keeps B's curriculum as a compact rail and puts A's single task in the main pane. The prototype is presentation over a fixed demo learner: it grades in the browser and saves nothing. Production keeps every existing data source, action and server check, and changes only what the learner sees.
+
+### How D maps onto production
+
+| D region | Production source (unchanged) | Notes |
+| --- | --- | --- |
+| Rail: levels, modules, lessons, status | `curriculumMapModel()` over `loadLearner()` (`src/components/learning/curriculum-map-model.ts`) | Registry-driven, 52 published lessons. Only the continuation level is open. Its finished lessons fold into one row, and levels 4–6 and V share one „Prohloubení“ disclosure. No lesson codes in the rail |
+| Eyebrow, lesson `h1`, summary, step meter | `studovnaLesson(summary)`, `summary.position`, `summary.stepCount`, `lesson.estimatedMinutes` | The step number is stated once (P2-01) |
+| Inline question | `StudovnaQuestion` + `saveLessonPositionAction` | Generalize it from multiple choice to `numericQuestion`. The server already re-grades both through `evaluateQuestion` with the same `answers.answer` key. A correct answer saves `position + 1` and opens the lesson, as today. No completion, receipt or reward on `/learn` |
+| Recap „Co už víš“ | `studovnaLesson().recap` | Empty on any step with a graded question (WP-17). On other steps it renders as today |
+| „Potom …“ line | The next unfinished lesson after the continuation in registry order, outside L4–L6 and V | Compute it in the WP-19 model, not in the component |
+| Milestone row | `loadMilestones()` → `MilestoneState` A, `milestoneANextStep()` | Counts published content only. Never implies completion. Links to `/progress` |
+| Portfolio Lab row | `loadPortfolioLabUnlockStatus` + `loadPortfolioCardView`, streamed in its own `Suspense` | Three written states: locked („Jak odemknout Portfolio Lab“), unavailable (no number, never 0) and unlocked (practice capital, `tabular-nums`). It must not block the lesson content (perf issues #401–#406) |
+| Complete states | `summary.allComplete`, Milestone A `lessons` requirement and `status` | The main pane shows the next Milestone A requirement (the same copy as today's complete card) instead of a lesson |
+| Shell | `AppShell`, unchanged top navigation (F2 stays „top nav“) | The rail lives inside the `/learn` page, not in the shell. Lessons stay full-screen without it |
+
+**Regions that leave `/learn`, and where each one goes.** None is dropped without a home.
+- **Guide illustration:** removed from `/learn` (F1 narrows D2).
+- **Portfolio composition donut:** already on `/lab/portfolio`.
+- **Backtesting link:** the Lab hub (WP-12).
+- **Separate Progress card:** the milestone row.
+- **Greeting:** merges into the eyebrow, with no invented name (WP-14).
+- **Personalization prompt:** has no other home in production. It stays on `/learn` as one quiet row under the Lab row, shown only while `personalizedOnboardingCompletedAt` is empty. It moves only when Settings gains an entry for it.
+
+### Resolved conflicts
+
+| Conflict | Resolution | Why |
+| --- | --- | --- |
+| **Rail row height.** The prototype uses 36 px pointer rows (`min-h-9`); `DESIGN.md` sets 44 px (`control-sm`) as the floor | 44 px (`min-h-control-sm`) for every rail row and disclosure summary at every width. Rows use `min-height`, so two-line titles grow | 36 px clears WCAG 2.5.8 (24 px) but breaks the documented floor. Folding (one open level, finished lessons in one row) already keeps the rail short. Keeping 36 px would be a second row height on one screen and would need its own entry in `DESIGN.md`. Nothing justifies that exception |
+| **Heading styles beat utilities.** `.investi-theme :where(h1, h2, h3, h4)` (`src/styles/tokens.css:138`) is unlayered. Tailwind v4 utilities live in `@layer utilities`, and an unlayered rule wins over any layered one whatever its specificity. So `text-label`, `font-sans` or `tracking-label` on a heading are silently ignored, and the prototype fell back to `<p>` for real headings (the rail title, the module names and the recap title) | WP-18 moves the rule into `@layer base`. In the same PR it deletes the 35 `font-bold` and 15 arbitrary `tracking-[…]` utilities on `h1`–`h4` that render as no-ops today, so the rendered result stays the same. D then uses real heading elements | Fix the cascade once instead of avoiding headings. CSS modules are unlayered and still win, as they do today |
+| **Recap leak.** `studovnaLesson` takes the last two descriptive blocks of earlier steps. In `foundations-risk-reward` step 5 says „…dává 96“, which is step 6's answer, and `/learn` showed it beside the open question | WP-17: no recap while the saved step holds a graded question | A structural rule: content scanning cannot guarantee that no answer leaks |
+| **Pre-answer hint leak.** The prototype's „Potřebuješ nápovědu?“ shows the authored `incorrectExplanation` before any attempt. 13 of 227 graded questions state the answer there, e.g. `returns-compounding` step 4: „Faktor je 0,96“ | Drop the pre-answer hint. `incorrectExplanation` appears only after an incorrect attempt, as in the lesson player. A hint returns only with an authored `hint` field, which is content work under the lesson standard and outside this track | The prototype's claim that the hint „never states the result“ is false for 6 % of questions |
+| **Post-correct recap.** The prototype reveals the recap after a correct answer | Delete it. In production a correct answer saves and navigates, so that state is never visible | Nothing to build |
+| **Duplicate sheet.** `CurriculumSheet` is a second bespoke `<dialog>` with a fixed id (`b-sheet-title`) | Reuse the shipped edge-attached sheet (`src/components/ui/sheet-swipe.ts`, PR #499) and `useId` | One sheet implementation, swipe-to-dismiss included |
+| **Rail edge versus header edge.** The workspace uses `max-w-shell` (90rem) while the header container is `max-w-6xl` (72rem) | WP-20 aligns both to one width token. Decide on screenshots at 1280 and 1440, and change the header only if the shell's width must change | One leading edge from the wordmark down |
+| **Truncated „Potom“ title** (`truncate`) | Let it wrap (`text-pretty`) | The full title must stay readable without the rail |
+
+### Work packages
+
+#### WP-17 · Withhold the Learn recap while a question is open (shipped as its own PR first)
+
+- **Change:** `studovnaLesson()` returns `recap: []` when the saved step contains any graded block (`isQuestion`). The page falls back to its existing lesson context („Co tě čeká v lekci“).
+- **Status:** implemented on branch `fix/learn-recap-answer-leak` (commit f81c5a2), not yet pushed.
+- **Guardrails:** Grading, completion, progression and persisted lesson state are unchanged.
+- **Verify:** The regression tests in `studovna-model.test.ts` failed before the fix. `test:studovna`. A catalog probe of all 227 graded steps finds no correct option label or numeric answer in the recap or in the step preview text.
+
+#### WP-00 · Land the design foundation (prerequisite)
+
+- **Change:** Commit the uncommitted `design-foundation` worktree as its own PR, by its owner: the token additions (`control-sm/control/control-lg`, `max-w-reading…shell`, `size-icon-*`, type roles including `label` and `chart`), `DESIGN.md` „Quiet precision“, the decisions table with F1 recorded as D and F4 for rail rows, and `docs/ui-overhaul/LEARN-VARIANTS.md`. D uses all of these tokens.
+- **Guardrails:** Nobody else edits that worktree or `learn-variant-d`. The `/dev/learn-variants` prototype route may land as a development-only reference (it returns 404 outside `next dev`) or stay local. Its owner decides.
+- **Verify:** The standard gates and `tokens.test.ts`.
+
+#### WP-18 · Heading cascade: utilities can style headings
+
+- **Change:**
+  - Wrap the `.investi-theme :where(h1, h2, h3, h4)` rule in `@layer base`.
+  - Delete the heading utilities that are no-ops today: `font-bold` (35 headings), arbitrary `tracking-[…]` (15) and `tracking-normal` (1). `font-semibold` and `font-display` match the base rule and can stay.
+  - Add a `tokens.test.ts` assertion that `tokens.css` declares no unlayered element selectors.
+- **Depends on:** WP-00 (both edit `tokens.css`).
+- **Guardrails:** No visual change. Any heading that changes is a bug in this PR.
+- **Verify:** A computed-style snapshot (`font-family`, `font-weight`, `letter-spacing`, `font-size`, `line-height`) of every `h1`–`h4` on the 27 audit routes at 1440 and 390, before and after, must be identical. Run `test:design-system-browser`, `test:product` and `test:marketing-browser`.
+
+#### WP-19 · Learn workspace model (no UI change)
+
+- **Change:** A pure server function, `learnWorkspaceModel(summary, milestones)`. It builds the rail (open level, folded-done counts, the „Prohloubení“ group, status per lesson), the continuation (lesson, step, meter, minutes left, question kind), „Potom“, the milestone row and the complete states from the builders listed above. It reuses `curriculumMapModel`, `studovnaLesson` and `milestoneANextStep`, and computes nothing new about progress.
+- **Verify:** Unit tests for a new learner (position 0), in progress (the demo profile), a saved step with a question, a saved step without one, Milestone A lessons done, Milestone A achieved, all complete, and a learner with Lab locked. The rail contains every published lesson exactly once.
+
+#### WP-20 · Rail, sheet and inline question components
+
+- **Change:**
+  - `LearnRail`: a sticky desktop `aside` from 1024 px (`lg`, a rem breakpoint, so 200 % text switches to the sheet), 17rem wide, collapsible to 3.5rem. The swap is instant, because navigation never animates. Rows are `min-h-control-sm`. Status is an icon plus sr-only text, and the continuation link carries `aria-current="step"`. Below 1024 px the same tree opens in the shipped sheet from a „Kurikulum“ button.
+  - Generalize `StudovnaQuestion` to `multipleChoiceQuestion` and `numericQuestion`. For numeric input, reuse `parseNumericAnswer` from `src/features/finance/numeric-input`, a labelled input with `inputmode="decimal"`, validation on submit and a stable `role="status"` region. Other question kinds show the step and the CTA to the lesson.
+  - Real headings throughout (needs WP-18).
+  - The step meter keeps `role="progressbar"` and adds `aria-valuetext="Krok N z M"`.
+  - No collapse persistence until someone asks for it.
+- **Depends on:** WP-18, WP-19 and D6.
+- **Guardrails:** Client components import no lesson content. Only the serialized question block crosses the boundary (`check:lesson-bundle`). The server stays the grader.
+- **Verify:** Component tests for the question (correct, incorrect, empty input, save failure keeps the cursor). Keyboard: Tab reaches the rail toggle, then rail rows, then the main CTA. Escape closes the sheet and focus returns to „Kurikulum“.
+
+#### WP-21 · `/learn` cutover
+
+- **Change:** `StudovnaPage` renders the D composition from the WP-19 model: rail, then one raised surface (the active step) in `max-w-reading`, then the „Potom“ line, then quiet milestone, Lab and personalization rows. Remove the guide illustration, the donut, the Backtesting link and the `CurriculumMap` mount from `/learn` (`/progress` keeps the map until WP-06).
+- **Depends on:** WP-20, plus WP-14 for the greeting identity (or the eyebrow carries no name until WP-14 lands).
+- **Guardrails:** Every lesson stays open. Practice Capital and XP stay secondary. One filled action per view. Old lesson routes and saved cursors are untouched.
+- **Browser suites to update to the approved semantics** (one PR, so they stay green together):
+  - `scripts/onboarding-helper.mjs`, which many suites share.
+  - `validate-studovna.mjs`. Its counts change: the rail shows one open level and folded rows, not 52 visible links.
+  - `validate-product-shell.mjs`, `validate-progress.mjs`, `validate-milestone-a-journey.mts`, `validate-lesson-walkthrough.mts`.
+  - `validate-personalization-browser.mjs`, `validate-personalization-compatibility.mjs`, `validate-goals.mjs`, `validate-budget.mjs`, `validate-returns-flow.mjs`, `validate-volatility.mjs`, `validate-correlation-diversification.mjs`.
+  - Scope every Learn locator to `:visible`, because the previous route stays mounted hidden.
+- **Target:** `/learn` at 1440 ≤ 3,800 px (today 4,960). At 390, the CTA is in the first viewport.
+
+#### WP-22 · Cleanup
+
+- **Change:** Delete what the cutover left unused in `studovna-page.tsx` and `studovna-page.module.css` (guide wrap, donut, side column) and the prototype-only components. Update `LEARN-VARIANTS.md` to mark D as shipped. Record the result in this folder.
+- **Verify:** `npm run knip` reports nothing new. The standard gates.
+
+### Regression risks
+
+| Risk | Where | Guard |
+| --- | --- | --- |
+| Browser suites tied to the old Learn DOM | 13 scripts (WP-21 list) | Update them in the cutover PR. Run the full Browser workflow (`workflow_dispatch`) on the PR head, not only the subset |
+| Duplicate links: the desktop rail and the sheet tree both in the DOM | `/learn` | The closed `<dialog>` and the `hidden` aside are out of the accessibility tree. Tests count links within the visible container only |
+| A pending or failed portfolio blocks or zeroes the page | Lab row | Keep the separate `Suspense`. „Nedostupné“ copy, never 0. Check with a forced loader failure |
+| Lab-locked learners see a capital figure or a broken link | Lab row | Locked state from `loadPortfolioLabUnlockStatus`. A browser check with a fresh account |
+| Answer leaks through new text paths | Recap, step preview, hint | WP-17's catalog test. No pre-answer hint. Re-run the catalog probe whenever a text path is added |
+| The inline question double-saves or skips a step | `StudovnaQuestion` | Keep the `busy` ref and the server move validation. `test:studovna` covers wrong answers, retry, save errors and reload |
+| The heading change restyles headings app-wide | Every route | WP-18's computed-style snapshot must be identical |
+| Focus hidden under the sticky header or in the sticky rail (WCAG 2.4.11) | `/learn` ≥ 1024 | The rail's sticky offset follows the real header height. Keyboard walk at 1024 and 1440 |
+| Header growth at 125–175 % text pushes the rail under the header | `/learn` ≥ 1024 | Check at 150 % and 175 % text, not only 200 % |
+| Milestone copy implies completion | Milestone row | Status from `MilestoneState` only; `test:milestones-persistence` |
+| Lesson text enters client JS | Rail, question | `check:lesson-bundle` |
+| A logical conflict with parallel PRs on the curriculum registry | WP-12, WP-15, lesson PRs | Serialize with WP-12 and WP-15. Rebase before the cutover and re-run the suites |
+
+### Verification gates (every Learn PR)
+
+1. **Static:**
+   ```bash
+   npx next typegen && npm run lint && npm run knip && npm run typecheck && npm test && npm run build && npm run check:lesson-bundle
+   ```
+2. **Browser:** `test:studovna` plus the suites the package touches, against a fresh `next start` on a disposable migrated and seeded database. For WP-21, the whole Browser workflow on the PR head.
+3. **Widths:** 1440, 1280, 1024, 768, 390, 375 and 320, with 0 horizontal overflow. Screenshots of every state from WP-19.
+4. **Mobile:** 390 and 320 in Chrome, plus one physical iPhone in Safari. The sheet opens, scrolls with `overscroll-behavior: contain`, swipes closed and respects the safe area. The CTA is full width and above the tab bar.
+5. **Text zoom:** 200 % text (browser font size 32 px, not page zoom) at 1440 and 390, plus 150 % at 1440. No clipping, and the rail swaps to the sheet at 200 %.
+6. **Accessibility:**
+   - axe-core with `wcag2a, wcag2aa, wcag21aa, wcag22aa` at 1440, 1024 and 390: 0 violations.
+   - Keyboard walk: skip link, rail, CTA, question, sheet, with Escape and focus return.
+   - VoiceOver spot check of the question feedback and the rail status.
+   - Reduced motion emulated.
+7. **Motion:** D adds no motion. The rail collapse, disclosures and chevrons stay instant. Sheet entry follows WP-10, and the feedback entrance follows WP-13, when those land. If a reviewer adds motion, check it at 10 % speed in the Animations panel.
+8. **Handover:** The PR stays open for founder review, with screenshots and results in its body. No automatic merge or deploy.
+
 ## Implementation checklist
 
 Tick in the PR that closes each item.
@@ -205,6 +358,8 @@ Tick in the PR that closes each item.
 - [ ] D3 landing demo interactive vs copy-only
 - [ ] D4 Progress purpose
 - [ ] D5 checkpoint term
+- [ ] D6 rail target (lesson route or in-page preview)
+- [x] F1 `/learn` layout direction: D „Studijní pracoviště“ (2026-11-13)
 
 **Phase 0: foundations**
 - [ ] WP-01 type tokens applied, chart role added, radius tokens applied
@@ -220,7 +375,14 @@ Tick in the PR that closes each item.
 - [ ] WP-14 one display identity across chip, menu, greeting and settings
 
 **Phase 2: IA and hierarchy**
-- [ ] WP-06 Progress without the curriculum map; MilestoneCard; mastery status column; unique h2
+- [ ] WP-17 Learn recap withheld on question steps (branch `fix/learn-recap-answer-leak`)
+- [ ] WP-00 design foundation landed; F1 and F4 (rail rows) recorded in `DESIGN.md`
+- [ ] WP-18 heading rule in `@layer base`; heading no-op utilities removed; computed styles unchanged
+- [ ] WP-19 Learn workspace model with state tests
+- [ ] WP-20 rail (44 px rows), sheet reuse, numeric and choice inline question, no pre-answer hint
+- [ ] WP-21 `/learn` cutover; 13 browser suites updated; `/learn` at 1440 ≤ 3,800 px
+- [ ] WP-22 dead Studovna code and prototype removed
+- [ ] WP-06 Progress on direction C without the curriculum map; MilestoneCard; mastery status column; unique h2
 - [ ] WP-08 process-first Portfolio Lab; IPS prompt at top; neutral P&L color; one formatter
 - [ ] WP-12 Lab hub „Tvůj plán“ row; Backtesting demoted
 - [ ] WP-15 registry display codes in the player and Lab; title collision resolved
