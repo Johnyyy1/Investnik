@@ -1,4 +1,7 @@
 import type { loadLearner } from "@/features/learning/load-learner";
+import { prepareLessonFacts } from "@/features/facts/lesson-facts";
+import { factRegistry } from "@/features/facts/registry";
+import { factToday } from "@/features/facts/resolve";
 import { getAuthoredLesson } from "@/features/lessons/registry";
 import { isQuestion } from "@/features/lessons/question-evaluation";
 import { getGuidedSteps } from "@/features/lessons/steps";
@@ -19,9 +22,10 @@ export function blockDescription(block: LessonBlock): string | undefined {
   return undefined;
 }
 
-/** The preview is always the persisted cursor, never a later exercise. */
-export function studovnaLesson(summary: Pick<LearnerSummary, "next" | "position">) {
-  const lesson = getAuthoredLesson(summary.next.moduleSlug, summary.next.slug)!;
+/** The preview is always the persisted cursor, never a later exercise. Facts resolve exactly as on the lesson route,
+ * so no raw {{token}} reaches /learn and both pages agree on the date. */
+export function studovnaLesson(summary: Pick<LearnerSummary, "next" | "position">, today = factToday()) {
+  const { lesson } = prepareLessonFacts(getAuthoredLesson(summary.next.moduleSlug, summary.next.slug)!, factRegistry, { today, published: true });
   const steps = getGuidedSteps(lesson);
   const step = steps[summary.position];
   const question = step.blocks.find((block) => block.type === "multipleChoiceQuestion");

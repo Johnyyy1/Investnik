@@ -3,17 +3,23 @@ import { availableLessons } from "@/features/learning/catalog";
 import { getGuidedSteps } from "@/features/lessons/steps";
 import { getAuthoredLesson } from "@/features/lessons/registry";
 import { isQuestion } from "@/features/lessons/question-evaluation";
+import { prepareLessonFacts } from "@/features/facts/lesson-facts";
+import { factRegistry } from "@/features/facts/registry";
 import { portfolioComposition, studovnaLesson } from "./studovna-model";
+
+const today = "2026-11-13";
 import type { PortfolioView } from "@/features/portfolio/service";
 
 describe("Studovna persisted lesson preview", () => {
   it("previews the exact saved step across the entire published catalog", () => {
     for (const next of availableLessons) {
-      const authored = getAuthoredLesson(next.moduleSlug, next.slug)!;
-      const steps = getGuidedSteps(authored);
+      const { lesson } = prepareLessonFacts(getAuthoredLesson(next.moduleSlug, next.slug)!, factRegistry, { today, published: true });
+      const steps = getGuidedSteps(lesson);
       steps.forEach((step, position) => {
-        const preview = studovnaLesson({ next, position });
+        const preview = studovnaLesson({ next, position }, today);
         expect(preview.step).toEqual(step);
+        // Facts resolve as on the lesson route: no raw {{token}} in anything /learn can show.
+        expect(JSON.stringify(preview), `${next.id} step ${position + 1}`).not.toContain("{{");
         expect(preview.question).toEqual(step.blocks.find((block) => block.type === "multipleChoiceQuestion"));
       });
     }
