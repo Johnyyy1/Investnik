@@ -106,7 +106,7 @@ export function InstrumentPriceChart({ range, onRangeChange, points, bounds, cov
   return <section aria-labelledby="price-history-heading" className="min-w-0">
     <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
       <div className="min-w-0">
-        <h2 id="price-history-heading" className="text-section-title font-bold">Jak se cena vyvíjela</h2>
+        <h2 id="price-history-heading" className="text-section-title">Jak se cena vyvíjela</h2>
         <p className="mt-1 text-small text-secondary">{period ? `${showingCandles ? intervalCopy.bars : "Denní zavírací ceny"} · ${formatChartDate(period.start.date)} – ${formatChartDate(period.end.date)} · v ${currency} · jen cena, bez dividend` : `Denní zavírací ceny · ${currency} · jen cena, bez dividend`}</p>
       </div>
       <div className="flex min-w-0 max-w-full flex-wrap items-center gap-x-3 gap-y-2">

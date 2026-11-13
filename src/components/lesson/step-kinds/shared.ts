@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 export const eyebrow = "text-[11px] font-semibold tracking-[0.9px] uppercase md:text-xs md:tracking-[1px]";
-export const cardTitle = "text-[19px]/6 font-semibold tracking-[-0.3px] md:text-[22px]/7";
+export const cardTitle = "text-[19px]/6 font-semibold md:text-[22px]/7";
 
 /** The question card surface: mastery steps sit on the calmer practice surface, like GuidedQuestion. */
 export function questionCard(mastery: boolean, className?: string) {

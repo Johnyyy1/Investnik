@@ -31,7 +31,7 @@ export function EmailVerification({ email, verified }: { email: string; verified
   }
 
   return <div className="mt-8">
-    <h3 className="text-card-title font-bold">E-mail</h3>
+    <h3 className="text-card-title">E-mail</h3>
     <div className="mt-3 flex flex-col gap-3 border-y border-border py-4 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
       <div className="min-w-0"><p className="text-body font-semibold [overflow-wrap:anywhere]">{email}</p><p className={`mt-1 text-small ${verified ? "text-success-ink" : "text-secondary"}`}>{verified ? "Ověřený" : "Zatím neověřený. Ověření potvrdí, že adresa patří tobě."}</p></div>
       {!verified && <Button variant="secondary" size="compact" loading={pending} onClick={() => void send()}>{pending ? "Odesílám…" : "Poslat ověřovací odkaz"}</Button>}
@@ -89,7 +89,7 @@ export function PasswordChange({ hasPassword }: { hasPassword: boolean }) {
   }
 
   return <div className="mt-8">
-    <h3 className="text-card-title font-bold">Heslo</h3>
+    <h3 className="text-card-title">Heslo</h3>
     {!hasPassword ? <div className="mt-3 border-y border-border py-4">
       <p className="text-small text-secondary">K účtu zatím nemáš heslo. Nastavíš si ho přes odkaz, který ti pošleme e-mailem.</p>
       <Link href="/forgot-password" className={buttonVariants({ variant: "secondary", size: "compact", className: "mt-3" })}>Nastavit heslo</Link>

@@ -62,7 +62,7 @@ export function QuestionFeedback({ id, verdict, misconception, detail, children 
     {verdict === undefined ? null : <div className={cn("-mt-px flex flex-col gap-1.5 border-t px-[18px] pt-3.5 pb-4 md:px-7 md:pt-[18px] md:pb-5", verdict ? "border-primary/20 bg-primary-soft" : "border-danger/20 bg-surface")}>
       <div className="flex items-center gap-2">
         {verdict ? <CircleCheck aria-hidden="true" className="size-5 shrink-0 text-primary" /> : <RotateCcw aria-hidden="true" className="size-5 shrink-0 text-danger" />}
-        <h4 className={cn("text-[19px]/6 font-semibold tracking-[-0.3px] md:text-[21px]/[27px]", verdict ? "text-primary" : "text-danger")}>{verdict ? "Správně" : "Zkus to ještě jednou"}</h4>
+        <h4 className={cn("text-[19px]/6 font-semibold md:text-[21px]/[27px]", verdict ? "text-primary" : "text-danger")}>{verdict ? "Správně" : "Zkus to ještě jednou"}</h4>
       </div>
       {!verdict && (misconception || detail) ? <p className="text-[13px]/[19px] font-semibold text-secondary">{misconception ? `Častá záměna: ${misconception}` : detail}</p> : null}
       <p className="text-[15px]/[23px] text-foreground">{children}</p>

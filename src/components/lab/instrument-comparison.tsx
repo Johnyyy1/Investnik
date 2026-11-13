@@ -51,7 +51,7 @@ export function InstrumentComparisonView({ data, sample }: { data: InstrumentCom
   return <>
     <header className="mt-3 pb-6 sm:mt-5 sm:pb-7">
       <div className="flex flex-wrap items-center gap-3"><p className="text-microcopy font-bold uppercase tracking-[0.12em] text-primary-hover">Srovnání instrumentů</p><span className="rounded-control border border-border bg-surface-muted px-2.5 py-1 text-microcopy font-semibold text-secondary">{dataLabel}</span></div>
-      <h1 className="mt-2 min-w-0 wrap-anywhere text-page-title font-bold tracking-[-0.025em]">{symbolOf(first)} a {symbolOf(second)}</h1>
+      <h1 className="mt-2 min-w-0 wrap-anywhere text-page-title">{symbolOf(first)} a {symbolOf(second)}</h1>
       <ul aria-label="Srovnávané instrumenty" className="mt-4 grid gap-3 text-small sm:grid-cols-2">
         {instruments.map((side, index) => <li key={letters[index]} className="flex min-w-0 items-start gap-3">
           <span className="mt-1.5"><SeriesSwatch series={seriesKeys[index]} /></span>
@@ -68,7 +68,7 @@ export function InstrumentComparisonView({ data, sample }: { data: InstrumentCom
     {period && comparison?.shorterThanRange ? <Feedback state="warning" role="status" className="mt-5">Obě řady mají společná data jen od {dateLabel(period.startDate)} do {dateLabel(period.endDate)}, takže srovnání je kratší než zvolené období. Všechna čísla níže platí jen pro tyto společné dny.</Feedback> : null}
 
     <section aria-labelledby="comparison-chart-heading" className="mt-6 rounded-panel border border-border bg-surface p-5 shadow-elevation-1 sm:p-6">
-      <h2 id="comparison-chart-heading" className="wrap-anywhere text-section-title font-bold">Vývoj ceny, přepočtený na 100</h2>
+      <h2 id="comparison-chart-heading" className="wrap-anywhere text-section-title">Vývoj ceny, přepočtený na 100</h2>
       <p className="mt-1 text-small text-secondary">{period ? `Dny, kdy se obchodovaly oba · ${dateLabel(period.startDate)} – ${dateLabel(period.endDate)} · ` : ""}každý ve své měně · jen cena, bez dividend</p>
       {points.length > 1 && end ? <>
         <dl className="mt-5 grid gap-x-8 gap-y-3 border-y border-border py-4 text-small sm:grid-cols-2">
@@ -87,7 +87,7 @@ export function InstrumentComparisonView({ data, sample }: { data: InstrumentCom
     </section>
 
     <section aria-labelledby="comparison-metrics-heading" className="mt-6">
-      <h2 id="comparison-metrics-heading" className="wrap-anywhere text-section-title font-bold">Co říkají čísla</h2>
+      <h2 id="comparison-metrics-heading" className="wrap-anywhere text-section-title">Co říkají čísla</h2>
       <p className="mt-1 text-small text-secondary">{period ? `${dateLabel(period.startDate)} – ${dateLabel(period.endDate)} · ` : ""}ze společných denních zavíracích cen · každý ve své měně · bez dividend</p>
       <table className="mt-5 hidden w-full table-fixed border-collapse text-left text-small md:table">
         <caption className="sr-only">Ukazatele A a B za společné období</caption>
@@ -111,7 +111,7 @@ export function InstrumentComparisonView({ data, sample }: { data: InstrumentCom
 
     <section aria-labelledby="comparison-correlation-heading" className="mt-8 grid gap-6 border-t border-border pt-7 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="min-w-0">
-        <h2 id="comparison-correlation-heading" className="wrap-anywhere text-section-title font-bold">Korelace A ↔ B</h2>
+        <h2 id="comparison-correlation-heading" className="wrap-anywhere text-section-title">Korelace A ↔ B</h2>
         {correlation.status === "ok" ? <>
           <p className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1"><span className="text-[clamp(1.75rem,3vw,2.25rem)] leading-none font-bold tabular-nums">{correlation.value}</span><span className="text-card-title font-bold">{correlation.label}</span></p>
           <p className="mt-3 text-small leading-relaxed">{correlation.meaning}</p>
@@ -121,14 +121,14 @@ export function InstrumentComparisonView({ data, sample }: { data: InstrumentCom
         <MetricHelp id="correlation" help={metricExplanation("correlation", "instrument")} lesson={metricLessonLink("correlation")} />
       </div>
       <div className="min-w-0 self-start rounded-panel bg-surface-muted p-5">
-        <h3 className="text-card-title font-bold">Férové srovnání</h3>
+        <h3 className="text-card-title">Férové srovnání</h3>
         <p className="mt-2 text-small leading-relaxed">Obě řady začínají ve stejný den a ukazují jen cenu. Dividendy chybí, takže u instrumentu, který je vyplácí, je skutečný výsledek investora vyšší. Minulý vývoj nepředpovídá ten budoucí.</p>
         <Link href="/learn/returns/comparing-investments" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-control font-semibold text-primary-hover focus-visible:outline-2 focus-visible:outline-primary">Lekce: Cenový a celkový výnos <ChevronRight aria-hidden="true" className="size-4" /></Link>
       </div>
     </section>
 
     <section aria-labelledby="comparison-change-heading" className="mt-8 border-t border-border pt-7">
-      <h2 id="comparison-change-heading" className="wrap-anywhere text-card-title font-bold">Porovnat {symbolOf(first)} s něčím jiným</h2>
+      <h2 id="comparison-change-heading" className="wrap-anywhere text-card-title">Porovnat {symbolOf(first)} s něčím jiným</h2>
       <div className="mt-4 max-w-xl"><ComparePicker id="compare-change-search" label="Vyměnit instrument B" first={first.instrumentId} range={range} sample={sample} /></div>
     </section>
   </>;

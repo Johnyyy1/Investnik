@@ -51,7 +51,7 @@ export function PersonaDecision({ block }: { block: Block }) {
       </div>
       <div role="status" aria-live="polite">
         {option ? <div className="flex flex-col gap-3 border-t border-divider bg-surface-sunken px-[18px] pt-4 pb-5 md:px-6">
-          <h4 className="flex items-center gap-2 text-[19px]/6 font-semibold tracking-[-0.3px] text-foreground"><Scale aria-hidden="true" className="size-5 shrink-0 text-primary" />{option.consequence.lead}</h4>
+          <h4 className="flex items-center gap-2 text-[19px]/6 font-semibold text-foreground"><Scale aria-hidden="true" className="size-5 shrink-0 text-primary" />{option.consequence.lead}</h4>
           <p className="text-[15px]/[23px] text-foreground">{option.consequence.content}</p>
           <dl className="flex flex-col gap-1">{option.consequence.rows.map((row) => <div key={row.label} className="flex items-baseline justify-between gap-3 rounded-md bg-surface px-3 py-2">
             <dt className="text-sm/5 text-secondary">{row.label}</dt><dd className="shrink-0 text-right text-[15px] font-semibold tabular-nums text-foreground">{row.value}</dd>

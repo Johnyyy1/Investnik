@@ -85,7 +85,7 @@ export function LabMission({ block, lessonId, onOutputReady }: { block: Block; l
       </aside>
       <section aria-labelledby={`${block.id}-explain`} className={cn(plainCard, "flex flex-col gap-2.5 p-[18px] md:px-6 md:py-5")}>
         <p className={cn(eyebrow, "text-primary")}>Vysvětli si to</p>
-        <h3 id={`${block.id}-explain`} className="text-[19px]/6 font-semibold tracking-[-0.3px]">{analysis.selfExplanationPrompt}</h3>
+        <h3 id={`${block.id}-explain`} className="text-[19px]/6 font-semibold">{analysis.selfExplanationPrompt}</h3>
         <label htmlFor={textareaId} className="text-sm font-semibold text-foreground">Jednou nebo dvěma větami</label>
         <textarea id={textareaId} rows={3} placeholder="Napiš to vlastními slovy…" className="min-h-24 w-full resize-y rounded-control border border-border-strong bg-surface px-3.5 py-3 text-base/6 text-foreground placeholder:text-muted focus-visible:border-primary focus-visible:outline-none focus-visible:ring-[0.5px] focus-visible:ring-primary" />
         <p className="text-[13px]/[19px] text-muted">Nehodnotí se a zatím se nikam neukládá.</p>

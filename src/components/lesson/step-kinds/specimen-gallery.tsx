@@ -27,7 +27,7 @@ export function StepSpecimenGallery() {
   return <main className="mx-auto flex max-w-[1312px] flex-col gap-16 px-5 py-10 md:px-8">
     <header className="flex flex-col gap-2">
       <p className="text-xs font-semibold tracking-[1px] text-muted uppercase">Investník · lekce · typy kroků</p>
-      <h1 className="text-[34px]/[40px] font-semibold tracking-[-1px]">Typy kroků lekce</h1>
+      <h1 className="text-[34px]/[40px] font-semibold">Typy kroků lekce</h1>
       <p className="max-w-[720px] text-base/[25px] text-secondary">Každý typ kroku na referenčním obsahu „Časový test“. Návrhy jsou v docs/design/lesson-steps, popis v docs/education/lesson-steps.md.</p>
     </header>
     {sections.map(({ kind, code, title }) => <Specimen key={kind} code={code} title={title} block={timeTestSpecimens[kind] as LessonBlock} />)}

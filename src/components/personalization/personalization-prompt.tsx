@@ -7,7 +7,7 @@ export function PersonalizationPrompt({ userId }: { userId: string }) {
   useEffect(() => { try { if (localStorage.getItem(key)) startTransition(() => setDismissed(true)); } catch { /* Optional UI preference. */ } }, [key]);
   if (dismissed) return null;
   return <section aria-labelledby="personalization-prompt" className="my-6 border-y border-border py-5">
-    <h2 id="personalization-prompt" className="text-card-title font-bold">Přizpůsobit učení</h2>
+    <h2 id="personalization-prompt" className="text-card-title">Přizpůsobit učení</h2>
     <p className="mt-2 text-small text-secondary">Řekni nám, co tě zajímá, a doporučení přizpůsobíme tvému cíli.</p>
     <div className="mt-3 flex flex-wrap gap-2"><ButtonLink variant="secondary" href="/onboarding?personalize=1">Přizpůsobit</ButtonLink><Button variant="ghost" onClick={() => { setDismissed(true); try { localStorage.setItem(key, "dismissed"); } catch { /* Dismiss for this visit. */ } }}>Teď ne</Button></div>
   </section>;

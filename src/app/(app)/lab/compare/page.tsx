@@ -49,7 +49,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
   const sample = marketDataMode(portfolioMarketData) === "sample";
 
   const budget = await rateLimiter.consume(marketDataBuckets(user.id, "instrument-compare"));
-  if (!budget.allowed) return <Frame><div className="mt-6"><h1 className="text-page-title font-bold">Srovnání teď nelze načíst</h1><Feedback state="warning" role="status" className="mt-5">{marketDataLimitMessage(budget)}</Feedback></div></Frame>;
+  if (!budget.allowed) return <Frame><div className="mt-6"><h1 className="text-page-title">Srovnání teď nelze načíst</h1><Feedback state="warning" role="status" className="mt-5">{marketDataLimitMessage(budget)}</Feedback></div></Frame>;
 
   if (first === null || second === null || first === second) {
     let firstName: string | null = null;
@@ -60,7 +60,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
     return <Frame>
       <header className="mt-3 max-w-2xl sm:mt-5">
         <p className="text-microcopy font-bold uppercase tracking-[0.12em] text-primary-hover">Srovnání instrumentů</p>
-        <h1 className="mt-2 wrap-anywhere text-page-title font-bold tracking-[-0.025em]">{first === null ? "Co chceš porovnat?" : `Porovnat ${firstName ?? first} s…`}</h1>
+        <h1 className="mt-2 wrap-anywhere text-page-title">{first === null ? "Co chceš porovnat?" : `Porovnat ${firstName ?? first} s…`}</h1>
         <p className="mt-3 text-small leading-relaxed text-secondary">Dva instrumenty srovnáš podle cenového výnosu, kolísání, největšího propadu a toho, jak spolu jejich ceny souvisely.</p>
       </header>
       {first !== null && first === second ? <Feedback state="warning" role="status" className="mt-5 max-w-2xl">Instrument nejde porovnat sám se sebou. Vyber jiný.</Feedback> : null}

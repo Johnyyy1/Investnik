@@ -29,7 +29,7 @@ export function GuidedQuestion({ block, answers, verdict, mastery, onAnswer }: {
   return <section aria-labelledby={`${block.id}-question`} aria-describedby={checked ? `${block.id}-feedback` : undefined} className={cn("overflow-hidden rounded-surface border", mastery ? "border-border bg-surface-practice" : "border-border-card bg-surface shadow-elevation-1")}>
     <div className="flex flex-col gap-3.5 p-[18px] md:gap-[18px] md:px-7 md:py-[26px]">
       {mastery ? null : <p className="text-[11px] font-semibold tracking-[0.9px] text-primary uppercase md:text-xs md:tracking-[1px]">Ověř si porozumění</p>}
-      <h3 id={`${block.id}-question`} className="text-[19px]/6 font-semibold tracking-[-0.3px] md:text-[22px]/7">{block.prompt}</h3>
+      <h3 id={`${block.id}-question`} className="text-[19px]/6 font-semibold md:text-[22px]/7">{block.prompt}</h3>
       {isExercise(block) ? <GuidedExercise block={block} answers={answers} verdict={verdict} onAnswer={onAnswer} /> : block.type === "multipleChoiceQuestion" ? <fieldset disabled={checked} className="flex flex-col gap-2 md:gap-2.5">
         <legend className="sr-only">Vyber odpověď</legend>
         {block.options.map((option, index) => <AnswerChoice key={option.id} name={block.id} value={option.id} letter={String.fromCharCode(65 + index)} checked={answers.answer === option.id} state={choiceState(option.id)} onChange={(value) => onAnswer("answer", value)}>{option.label}</AnswerChoice>)}

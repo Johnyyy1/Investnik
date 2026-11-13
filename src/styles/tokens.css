@@ -175,10 +175,13 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-.investi-theme :where(h1, h2, h3, h4) {
-  font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: var(--tracking-heading);
+/* Layered so utilities can restyle a heading (a label-style h2, a sans module name). CSS modules stay unlayered and still win. */
+@layer base {
+  .investi-theme :where(h1, h2, h3, h4) {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: var(--tracking-heading);
+  }
 }
 .investi-theme :focus-visible { outline: 3px solid var(--color-foreground); outline-offset: 4px; }
 .investi-theme ::selection { color: var(--color-foreground); background: var(--color-primary-soft); }

@@ -174,7 +174,7 @@ export function GuidedLesson({ lesson, moduleTitle, steps, factKeys, initialStat
           {review ? <p className="flex items-center gap-2 text-sm text-muted"><CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-primary" /><span>Lekce už je dokončena. Opakování uložený postup nezmění.</span></p> : null}
           <div className="flex flex-col gap-2 md:gap-2.5">
             {mastery ? <p className="flex w-fit items-center gap-1.5 rounded-full border border-border bg-surface-practice py-[5px] pr-2.5 pl-2 text-[13px] font-semibold text-primary"><Leaf aria-hidden="true" className="size-3.5" />Ověření znalostí · {masteryPosition} z {masterySteps.length}</p> : <p className="text-[11px] font-semibold tracking-[0.9px] text-primary uppercase md:text-xs md:tracking-[1px]">Krok {position + 1}</p>}
-            <h2 ref={headingRef} id="step-title" tabIndex={-1} lang="cs" className="scroll-mt-8 text-[28px]/8 font-semibold tracking-[-0.9px] [overflow-wrap:normal] md:text-[38px]/[44px] md:tracking-[-1.3px]">{step.title}</h2>
+            <h2 ref={headingRef} id="step-title" tabIndex={-1} lang="cs" className="scroll-mt-8 text-[28px]/8 font-semibold [overflow-wrap:normal] md:text-[38px]/[44px]">{step.title}</h2>
             {mastery ? <p className="text-sm/5 text-muted">Bez časového limitu. Když odpověď nevyjde, ukážeme proč a zkusíš to znovu.</p> : null}
             {position === 0 && factKeys.length ? <LessonFactChip factKeys={factKeys} /> : null}
           </div>

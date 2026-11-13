@@ -70,7 +70,7 @@ export function MixedCheckpoint({ code, title, items }: { code: string; title: s
         </div> : <article key={index} className="flex min-w-0 flex-col gap-5 md:gap-7" aria-labelledby="step-title">
           <div className="flex flex-col gap-2 md:gap-2.5">
             <p className="flex w-fit items-center gap-1.5 rounded-full border border-border bg-surface-practice py-[5px] pr-2.5 pl-2 text-[13px] font-semibold text-primary"><Leaf aria-hidden="true" className="size-3.5" />Otázka {index + 1} z {items.length}</p>
-            <h2 ref={headingRef} id="step-title" tabIndex={-1} lang="cs" className="scroll-mt-8 text-[28px]/8 font-semibold tracking-[-0.9px] md:text-[38px]/[44px] md:tracking-[-1.3px]">Z lekce {item.lessonTitle}</h2>
+            <h2 ref={headingRef} id="step-title" tabIndex={-1} lang="cs" className="scroll-mt-8 text-[28px]/8 font-semibold md:text-[38px]/[44px]">Z lekce {item.lessonTitle}</h2>
             <p className="text-sm/5 text-muted">Bez časového limitu. Každá otázka má jeden pokus, vysvětlení uvidíš hned.</p>
           </div>
           <GuidedQuestion block={item.block} answers={answers} verdict={verdict} mastery onAnswer={(id, value) => { requestId.current = undefined; setAnswers((current) => ({ ...current, [id]: value })); }} />

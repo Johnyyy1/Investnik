@@ -101,6 +101,13 @@ describe("Investník design tokens", () => {
     expect(resolve("font-display")).toMatch(/^var\(--font-investi-manrope\)/);
   });
 
+  it("keeps element defaults in @layer base so utilities can restyle a heading", () => {
+    // An unlayered rule beats every Tailwind utility, whatever its specificity: text-label on an h2 would be ignored.
+    const unlayered = tokens.replace(/\/\*[\s\S]*?\*\//g, "").replace(/@layer base\s*\{(?:[^{}]|\{[^{}]*\})*\}/g, "");
+    expect(unlayered).not.toMatch(/(^|[\s,(])h[1-6]\b[^{;]*\{/m);
+    expect(tokens).toMatch(/@layer base\s*\{\s*\.investi-theme :where\(h1, h2, h3, h4\)/);
+  });
+
   it("has no legacy aliases or second palette", () => {
     expect(Object.keys(declarations).filter((name) => /(^|-)ql-|investi-(blue|navy|green)|paper|action|teal|butter|font-learning/.test(name))).toEqual([]);
   });

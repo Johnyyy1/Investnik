@@ -19,7 +19,7 @@ export function FactNotice({ id, factKeys }: { id: string; factKeys: readonly Fa
   const sources = [...new Set(state.sources.map((source) => source.title.split(": ")[0]))].join(", ");
   return <div className="flex flex-col gap-4">
     <section aria-labelledby={`${id}-facts`} className={cn(plainCard, "flex flex-col gap-2 p-4 md:px-5")}>
-      <h3 id={`${id}-facts`} className={cn(eyebrow, "flex items-center gap-1.5 text-muted")}><Database aria-hidden="true" className="size-3.5" />Čísla v této lekci</h3>
+      <h3 id={`${id}-facts`} className={cn(eyebrow, "flex items-center gap-1.5 text-muted tracking-heading md:tracking-heading")}><Database aria-hidden="true" className="size-3.5" />Čísla v této lekci</h3>
       <dl className="flex flex-col gap-1.5">{factKeys.map((key) => {
         const fact = getFact(key);
         const expanded = open === key;

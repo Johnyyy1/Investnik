@@ -122,11 +122,11 @@ export function AccountSecurity({ providers, initialError, initialAccounts, emai
   }
 
   return <section className={styles.security} aria-labelledby="account-security-title">
-    <h2 id="account-security-title" className="text-section-title font-bold">Přihlášení a zabezpečení</h2>
+    <h2 id="account-security-title" className="text-section-title">Přihlášení a zabezpečení</h2>
     <p className="mt-2 max-w-2xl text-body text-secondary">Spravuj způsoby, kterými se přihlašuješ do svého účtu.</p>
     {error ? <p className="mt-5 rounded-control border border-danger-ink/20 bg-surface p-4 text-small text-danger-ink" role="alert">{error}</p> : null}
     <div className="mt-6" aria-busy={pending === "load"}>
-      <h3 className="text-card-title font-bold">Způsoby přihlášení</h3>
+      <h3 className="text-card-title">Způsoby přihlášení</h3>
       {accounts ? <div className="mt-3 divide-y divide-border border-y border-border">
         <AccountRow label="E-mail a heslo" connected={Boolean(accounts.credential)} />
         {(["google", "facebook"] as const).map((provider) => <AccountRow key={provider} label={providerLabels[provider]} connected={Boolean(accounts[provider])} available={providers[provider]} disabled={Boolean(pending)} pending={pending === provider || pending === `unlink-${provider}`} onConnect={() => void connect(provider)} onDisconnect={(event) => { disconnectTrigger.current = event.currentTarget; setDisconnecting(provider); setError(undefined); dialog.current?.showModal(); }} />)}

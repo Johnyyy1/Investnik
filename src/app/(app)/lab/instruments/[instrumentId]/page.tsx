@@ -39,7 +39,7 @@ export default async function InstrumentPage({ params, searchParams }: { params:
   const budget = await rateLimiter.consume(marketDataBuckets(user.id, "instrument-detail"));
   if (!budget.allowed) return <PageFrame width="data" className="pt-6 pb-28 sm:pt-7 sm:pb-10 lg:pt-8">
     <Link href="/lab/portfolio" className="inline-flex min-h-11 items-center text-small font-semibold text-primary-hover">← Portfolio Lab</Link>
-    <div className="mt-6"><h1 className="text-page-title font-bold">Instrument teď nelze načíst</h1><Feedback state="warning" role="status" className="mt-5">{marketDataLimitMessage(budget)}</Feedback></div>
+    <div className="mt-6"><h1 className="text-page-title">Instrument teď nelze načíst</h1><Feedback state="warning" role="status" className="mt-5">{marketDataLimitMessage(budget)}</Feedback></div>
   </PageFrame>;
   const [detail, portfolio] = await Promise.all([
     loadInstrumentDetail(portfolioMarketData.service, instrumentId, env.MARKET_DATA_PROVIDER === "deterministic" ? new Date(env.DETERMINISTIC_MARKET_NOW ?? FIXTURE_RETRIEVED_AT) : new Date()),
@@ -54,6 +54,6 @@ export default async function InstrumentPage({ params, searchParams }: { params:
       status: detail.quote.usability.status,
       marketState: detail.quote.usability.marketState,
     } : null} quoteMessage={detail.quoteMessage} historyMessage={detail.historyMessage} points={chartPayload(detail.points)} historyPartial={detail.historyPartial} homeCurrency={detail.homeCurrency} homeCurrencyMessage={detail.homeCurrencyMessage} fundamentals={detail.fundamentals} fundamentalsMessage={detail.fundamentalsMessage} etfAnalytics={detail.etfAnalytics} etfAnalyticsMessage={detail.etfAnalyticsMessage} initialRange={range} chartType={parseChartType(query.chart)} asOf={detail.endDate} portfolio={portfolio} metricFormulas={metricFormulas(priceMetricIds)} />
-      : <div className="mt-6"><h1 className="text-page-title font-bold">Instrument není dostupný</h1><Feedback state="warning" role="status" className="mt-5">{detail.metadataMessage}</Feedback></div>}
+      : <div className="mt-6"><h1 className="text-page-title">Instrument není dostupný</h1><Feedback state="warning" role="status" className="mt-5">{detail.metadataMessage}</Feedback></div>}
   </PageFrame>;
 }

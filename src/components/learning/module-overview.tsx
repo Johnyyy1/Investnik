@@ -30,7 +30,7 @@ export function ModuleOverview({ slug, items, completedLessons, portfolioUnlock 
         <p><span className="block text-microcopy font-bold tracking-[0.06em] text-secondary uppercase">Portfolio Lab</span><strong className="mt-1 block">{portfolioUnlock.unlocked ? "Odemčen" : "Zamčeno · dokonči základy"}</strong></p>
       </div> : null}
     </section>
-    <section className="mt-10 max-w-2xl" aria-labelledby="module-path-title"><p className="text-microcopy font-extrabold tracking-[0.08em] text-primary-hover uppercase">Pořadí lekcí</p><h2 id="module-path-title" className="mt-1 mb-8 text-section-title font-bold">Tvoje studijní cesta</h2>
+    <section className="mt-10 max-w-2xl" aria-labelledby="module-path-title"><p className="text-microcopy font-extrabold tracking-[0.08em] text-primary-hover uppercase">Pořadí lekcí</p><h2 id="module-path-title" className="mt-1 mb-8 text-section-title">Tvoje studijní cesta</h2>
       <ModulePath items={displayItems} onOpen={(id) => { const lesson = available.find((item) => item.id === id); if (lesson) router.push(`/learn/${slug}/${lesson.slug}`); }} />
     </section>
   </PageFrame>;

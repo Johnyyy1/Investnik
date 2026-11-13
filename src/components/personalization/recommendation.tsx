@@ -6,7 +6,7 @@ export function Recommendation({ recommendation, plan = false }: { recommendatio
   const view = presentRecommendation(recommendation);
   return <section aria-label="Doporučeno pro tebe" className="min-w-0 rounded-panel border border-primary/30 bg-surface p-5 shadow-elevation-1 sm:p-8">
     <p className="text-small font-bold text-primary-hover">{plan ? "Doporučený začátek" : "Doporučeno pro tebe"}</p>
-    <h2 className="mt-2 text-section-title font-bold [overflow-wrap:anywhere]">{view.lesson?.title ?? (recommendation.reasonCode === "CURRICULUM_COMPLETE" ? "Všechny lekce máš hotové" : "Doporučení není dostupné")}</h2>
+    <h2 className="mt-2 text-section-title [overflow-wrap:anywhere]">{view.lesson?.title ?? (recommendation.reasonCode === "CURRICULUM_COMPLETE" ? "Všechny lekce máš hotové" : "Doporučení není dostupné")}</h2>
     {view.lesson && <p className="mt-2 text-small text-secondary">{view.moduleTitle} · přibližně {view.lesson.estimatedMinutes} min</p>}
     <p className="mt-4 text-body">{view.reason}</p>
     {view.lesson && <>

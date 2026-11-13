@@ -9,7 +9,7 @@ import type { MetricFormulas } from "./metric-formula";
 export function InstrumentReturnAnalytics({ metrics, currency, formulas = {} }: { metrics: PriceMetrics | null; currency: Currency; formulas?: MetricFormulas }) {
   return <section aria-labelledby="return-analytics-heading" className="rounded-panel border border-border bg-surface p-5 shadow-elevation-1 sm:p-6">
     <div className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2">
-      <div className="min-w-0"><h2 id="return-analytics-heading" className="text-section-title font-bold">Co říkají čísla</h2><p className="mt-1 text-small text-secondary">{metrics ? `${dateLabel(metrics.startDate)} – ${dateLabel(metrics.endDate)}` : "Období bez dostatku dat"} · z denních zavíracích cen v {currency} · bez dividend</p></div>
+      <div className="min-w-0"><h2 id="return-analytics-heading" className="text-section-title">Co říkají čísla</h2><p className="mt-1 text-small text-secondary">{metrics ? `${dateLabel(metrics.startDate)} – ${dateLabel(metrics.endDate)}` : "Období bez dostatku dat"} · z denních zavíracích cen v {currency} · bez dividend</p></div>
       <p className="text-microcopy text-secondary">Přepočítá se, když v grafu změníš období.</p>
     </div>
     {metrics ? <dl className="mt-6 grid gap-x-6 gap-y-6 sm:grid-cols-2 xl:grid-cols-4">

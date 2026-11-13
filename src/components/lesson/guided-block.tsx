@@ -19,7 +19,7 @@ import { PersonaDecision } from "./step-kinds/persona-decision";
 import { WrittenReflection } from "./step-kinds/written-reflection";
 
 const eyebrow = "text-[11px] font-semibold tracking-[0.9px] uppercase md:text-xs md:tracking-[1px]";
-const blockTitle = "text-[19px]/6 font-semibold tracking-[-0.3px] md:text-[21px]/[26px]";
+const blockTitle = "text-[19px]/6 font-semibold md:text-[21px]/[26px]";
 
 /** Presentation adapter for existing authored blocks, not a second content source. */
 export function GuidedBlock({ block, history, riskHistory, lessonId, guest, onOutputReady }: { block: LessonBlock; lessonId?: string; guest?: boolean; onOutputReady?: (blockId: string, ready: boolean) => void; history?: readonly LessonHistoryEntry[]; riskHistory?: readonly RiskHistoryEntry[] }) {
@@ -27,7 +27,7 @@ export function GuidedBlock({ block, history, riskHistory, lessonId, guest, onOu
     case "decisionTree": return <DecisionTree block={block} />;
     case "checklist":
     case "rubricSelfAssessment": return lessonId ? <LessonOutput block={block} lessonId={lessonId} guest={guest} onReady={onOutputReady} /> : null;
-    case "heading": return <div className="flex flex-col gap-2"><h3 className="text-[21px]/[26px] font-semibold tracking-[-0.5px] md:text-2xl/[30px]">{block.title}</h3>{block.body ? <p className="text-base/[25px] text-secondary">{block.body}</p> : null}</div>;
+    case "heading": return <div className="flex flex-col gap-2"><h3 className="text-[21px]/[26px] font-semibold md:text-2xl/[30px]">{block.title}</h3>{block.body ? <p className="text-base/[25px] text-secondary">{block.body}</p> : null}</div>;
     case "paragraph": return <p className="break-words text-base/[25px] text-secondary">{block.content}</p>;
     case "formula": return <LessonFormula latex={block.latex ?? block.expression} variables={block.variables} />;
     case "workedExample": return <section aria-labelledby={`${block.id}-title`} className="flex flex-col gap-3.5 rounded-surface border border-border-card bg-surface p-[18px] md:gap-[18px] md:px-7 md:py-6">
@@ -57,7 +57,7 @@ export function GuidedBlock({ block, history, riskHistory, lessonId, guest, onOu
     case "interactiveFigure": return <section aria-labelledby={`${block.id}-title`} className="overflow-hidden rounded-surface border border-primary/30 bg-surface shadow-elevation-1">
       <div className="flex flex-col gap-1.5 border-b border-primary/20 bg-primary-soft px-[18px] py-4 md:px-7 md:py-5">
         <p className={cn(eyebrow, "flex items-center gap-1.5 text-primary")}><SlidersHorizontal aria-hidden="true" className="size-3.5" />Vyzkoušej si</p>
-        <h3 id={`${block.id}-title`} className="text-xl/[1.3] font-semibold tracking-[-0.3px] [overflow-wrap:anywhere] md:text-[1.375rem]/[1.273]">{block.title}</h3>
+        <h3 id={`${block.id}-title`} className="text-xl/[1.3] font-semibold [overflow-wrap:anywhere] md:text-[1.375rem]/[1.273]">{block.title}</h3>
         <p className="text-sm/[1.5] text-secondary [overflow-wrap:anywhere] md:text-[0.9375rem]/[1.533]">{block.description}</p>
       </div>
       <div className={cn("py-4 pb-[18px] md:p-7", block.figure === "emergency-fund-calculator" ? "px-2" : "px-4")}><LessonFigure figure={block.figure} guest={guest} onOutputReady={onOutputReady} emergencyFundFacts={block.emergencyFundFacts} history={history} riskHistory={riskHistory} /></div>
@@ -82,7 +82,7 @@ function LabMetricLink({ href, label }: { href: string; label: string }) {
 
 function Titled({ as: Tag = "section", icon, title, className, titleClassName, children }: { as?: "section" | "aside"; icon: ReactNode; title: string; className: string; titleClassName: string; children: ReactNode }) {
   return <Tag aria-label={Tag === "aside" ? title : undefined} className={cn("flex flex-col", className)}>
-    <div className="flex items-start gap-2">{icon}<h3 className={cn("min-w-0 flex-1 tracking-normal", titleClassName)}>{title}</h3></div>
+    <div className="flex items-start gap-2">{icon}<h3 className={cn("min-w-0 flex-1", titleClassName)}>{title}</h3></div>
     {children}
   </Tag>;
 }
