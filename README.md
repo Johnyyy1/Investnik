@@ -17,6 +17,7 @@ Learn investing by doing. The authenticated product is organized around three de
 - **`features/market-data`** normalizes deterministic/FMP security data, Frankfurter FX, equity fundamentals, and ETF analytics behind server-only services.
 - **`features/personalization`** owns diagnostic evidence, preference validation, and deterministic recommendations.
 - **`features/lab`** contains pure allocation/backtest math and an explicitly synthetic educational fixture.
+- **`mobile/`** is a separate Expo (React Native) project with its own dependencies and CI. It uses this app as its only backend. See [mobile architecture](docs/mobile-architecture.md).
 
 ## Local setup and deployment order
 

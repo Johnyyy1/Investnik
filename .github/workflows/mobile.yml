@@ -1,0 +1,48 @@
+name: Mobile
+
+on:
+  pull_request:
+    paths:
+      - mobile/**
+      - .github/workflows/mobile.yml
+  push:
+    branches: [main]
+    paths:
+      - mobile/**
+      - .github/workflows/mobile.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  checks:
+    name: Lint, typecheck, unit tests, Expo doctor, Metro export
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_NO_TELEMETRY: "1"
+      # Release bundles refuse to start without an https backend; this is the public production origin, not a secret.
+      EXPO_PUBLIC_API_URL: https://investnik.cz
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      # Checks SDK version alignment and config against Expo's current compatibility data.
+      - run: npm run doctor
+      # Bundles both platforms with Metro and Hermes, no native toolchain needed.
+      - run: npm run check:export

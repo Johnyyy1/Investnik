@@ -2,6 +2,11 @@ name: CI
 
 on:
   pull_request:
+    # A PR that touches only the Expo app cannot change the web build; mobile.yml checks it.
+    # Any PR that also touches a web file still runs everything. Pushes to main always run.
+    paths-ignore:
+      - mobile/**
+      - .github/workflows/mobile.yml
   push:
     branches: [main]
   workflow_dispatch:
