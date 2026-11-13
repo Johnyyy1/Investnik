@@ -1,5 +1,5 @@
 .page { min-height: 100dvh; }
-.container { max-width: 1440px; margin-inline: auto; padding: 72px 64px 40px; }
+.container { max-width: var(--container-shell); margin-inline: auto; padding: 72px 64px 40px; }
 .eyebrow { color: var(--color-primary); font-size: .75rem; line-height: 1.2; font-weight: 600; letter-spacing: .083em; text-transform: uppercase; }
 .hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); }
 .greeting { grid-area: 1 / 1; max-width: 640px; margin-bottom: 64px; }

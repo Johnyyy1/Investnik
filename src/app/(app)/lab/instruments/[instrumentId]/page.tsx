@@ -37,7 +37,7 @@ export default async function InstrumentPage({ params, searchParams }: { params:
   const query = await searchParams;
   const range = parseChartRange(query.range);
   const budget = await rateLimiter.consume(marketDataBuckets(user.id, "instrument-detail"));
-  if (!budget.allowed) return <PageFrame width="wide" className="max-w-[80rem] pt-6 pb-28 sm:pt-7 sm:pb-10 lg:pt-8">
+  if (!budget.allowed) return <PageFrame width="data" className="pt-6 pb-28 sm:pt-7 sm:pb-10 lg:pt-8">
     <Link href="/lab/portfolio" className="inline-flex min-h-11 items-center text-small font-semibold text-primary-hover">← Portfolio Lab</Link>
     <div className="mt-6"><h1 className="text-page-title font-bold">Instrument teď nelze načíst</h1><Feedback state="warning" role="status" className="mt-5">{marketDataLimitMessage(budget)}</Feedback></div>
   </PageFrame>;
@@ -46,7 +46,7 @@ export default async function InstrumentPage({ params, searchParams }: { params:
     loadPortfolioView(user.id),
   ]);
   if (detail.instrumentMissing) notFound();
-  return <PageFrame width="wide" className="max-w-[80rem] pt-6 pb-28 sm:pt-7 sm:pb-10 lg:pt-8">
+  return <PageFrame width="data" className="pt-6 pb-28 sm:pt-7 sm:pb-10 lg:pt-8">
     <Link href="/lab/portfolio" className="inline-flex min-h-11 items-center text-small font-semibold text-primary-hover">← Portfolio Lab</Link>
     {detail.instrument ? <InstrumentDetailView instrument={detail.instrument} quote={detail.quote ? {
       price: detail.quote.price,

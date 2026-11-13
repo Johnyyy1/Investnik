@@ -1,6 +1,6 @@
 /* Lab hub: Pen "Investi / Lab hub — 1440px" (iByrw) and "— 390px" (YZnok), states 1–4.
    Mobile first; type in rem so 200 % text reflows, layout widths in px. */
-.page { max-width: 1440px; margin-inline: auto; padding: 20px 20px 40px; overflow-x: clip; }
+.page { max-width: var(--container-shell); margin-inline: auto; padding: 20px 20px 40px; overflow-x: clip; }
 .page :where(h1, h2, h3, p, a, span, li, strong) { overflow-wrap: anywhere; }
 .page svg { flex-shrink: 0; }
 .eyebrow { color: var(--color-primary); font-size: .6875rem; line-height: 1.25; font-weight: 600; letter-spacing: .082em; text-transform: uppercase; }

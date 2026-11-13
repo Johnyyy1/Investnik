@@ -1,6 +1,6 @@
 /* Pen GC1XA / W56lMz: setup, results, period comparison and state boards.
    Supported synthetic strategies replace the boards' unimplemented experiments. */
-.page { max-width: 1440px; margin-inline: auto; padding: 16px 20px 40px; }
+.page { max-width: var(--container-shell); margin-inline: auto; padding: 16px 20px 40px; }
 .page :where(h1, h2, h3, h4) { font-family: inherit; }
 .page :where(p, h1, h2, h3, a, label, dt, dd, button, summary) { overflow-wrap: anywhere; }
 .page svg { flex-shrink: 0; }

@@ -2,10 +2,11 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 const widths = {
-  reading: "max-w-3xl",
-  focused: "max-w-4xl",
-  standard: "max-w-5xl",
-  wide: "max-w-6xl",
+  reading: "max-w-reading",
+  focused: "max-w-focused",
+  standard: "max-w-standard",
+  wide: "max-w-wide",
+  data: "max-w-data",
 } as const;
 
 export type PageFrameWidth = keyof typeof widths;

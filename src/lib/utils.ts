@@ -6,9 +6,13 @@ import { extendTailwindMerge } from "tailwind-merge";
 const twMerge = extendTailwindMerge({
   extend: {
     theme: {
-      text: ["microcopy", "small", "body", "emphasis", "card-title", "section-title", "page-title", "celebration"],
+      text: ["microcopy", "small", "body", "emphasis", "card-title", "section-title", "page-title", "celebration", "label", "chart"],
       radius: ["compact", "control", "button", "surface", "panel", "pill"],
       shadow: ["elevation-0", "elevation-1", "elevation-2"],
+      tracking: ["display", "heading", "label"],
+      spacing: ["control-sm", "control", "control-lg", "icon-xs", "icon-sm", "icon-md", "icon-lg", "icon-xl"],
+      container: ["reading", "focused", "standard", "wide", "data", "shell"],
+      ease: ["drawer"],
     },
   },
 });

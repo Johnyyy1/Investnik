@@ -11,7 +11,7 @@ export function LessonTopBar({ eyebrow, title, minutes, segments, current, finis
 }) {
   const done = finished ? segments.length : current;
   return <header className="border-b border-divider bg-background">
-    <div className="mx-auto flex max-w-[1440px] flex-col gap-0.5 px-5 pt-1 pb-2.5 md:gap-1.5 md:px-8 md:pt-0 md:pb-3.5 lg:px-16">
+    <div className="mx-auto flex max-w-shell flex-col gap-0.5 px-5 pt-1 pb-2.5 md:gap-1.5 md:px-8 md:pt-0 md:pb-3.5 lg:px-16">
       <div className="flex items-center gap-2.5 md:min-h-16 md:gap-6">
         <Link href="/learn" aria-label="Zavřít lekci" className="-ml-2.5 flex size-11 shrink-0 items-center justify-center rounded-control text-foreground hover:bg-surface-muted md:ml-0 md:w-[180px] md:justify-start md:gap-1.5 md:px-0 md:hover:bg-transparent md:hover:underline md:underline-offset-4">
           <X aria-hidden="true" className="size-5 md:size-4" />
@@ -38,6 +38,6 @@ export function LessonTopBar({ eyebrow, title, minutes, segments, current, finis
 /** Sticky bottom bar: quiet Previous on the left, one primary action on the right. */
 export function LessonActionBar({ children }: { children: ReactNode }) {
   return <nav aria-label="Navigace kroků lekce" className="sticky bottom-0 z-20 border-t border-divider bg-background">
-    <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-5 pt-3 pb-[max(20px,env(safe-area-inset-bottom))] md:px-8 md:py-4 lg:px-16">{children}</div>
+    <div className="mx-auto flex max-w-shell items-center justify-between gap-3 px-5 pt-3 pb-[max(20px,env(safe-area-inset-bottom))] md:px-8 md:py-4 lg:px-16">{children}</div>
   </nav>;
 }

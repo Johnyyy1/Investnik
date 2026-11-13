@@ -11,7 +11,7 @@ Preview the foundation at `/dev/design-system` under `npm run dev`. The route re
 - The root layout applies `.investi-theme` once: page colour, body font, heading font, focus ring, selection colour and the reduced-motion rule. Screens do not add their own theme wrapper.
 - `src/lib/utils.ts` configures `tailwind-merge` with the custom type, radius and shadow scales, so `cn("text-small text-secondary")` keeps both classes.
 
-`src/styles/tokens.test.ts` checks contrast pairs, the radius and elevation hierarchy, the font pairing, that no legacy names come back, and that product CSS modules use only defined tokens and no raw colours.
+`src/styles/tokens.test.ts` checks contrast pairs, the radius and elevation hierarchy, the control, icon and width scales, the 13px text floor, the easing curves, the font pairing, that no legacy names come back, and that product CSS modules use only defined tokens and no raw colours.
 
 ## Color roles
 
@@ -60,8 +60,21 @@ Headings use Manrope 600 with tight tracking; everything else uses Inter. The pr
 - 16px body (`body`)
 - 15px secondary copy and labels (`small`)
 - 13px microcopy (`microcopy`)
+- 12px uppercase eyebrow (`label`, with `tracking-label` and weight 600 built in) and chart ticks (`chart`). These are the only roles below 13px, and the token test enforces that.
+
+Tracking: `tracking-heading` (-0.03em, applied to every heading by the root theme), `tracking-display` (-0.036em, Manrope at 40px and up), `tracking-label` (0.083em).
 
 Spacing follows a four-pixel rhythm: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, and 80px, available as `--space-*`.
+
+## Sizes and widths
+
+| Scale | Utilities | Values |
+| --- | --- | --- |
+| Control height | `h-`, `min-h-`, `size-control-sm` / `control` / `control-lg` | 44 / 48 / 52px |
+| Icon | `size-icon-xs` / `sm` / `md` / `lg` / `xl` | 14 / 16 / 18 / 20 / 24px |
+| Content width | `max-w-reading` / `focused` / `standard` / `wide` / `data` / `shell` | 48 / 56 / 64 / 72 / 80 / 90rem |
+
+`Button` and the form controls use the control heights; `PageFrame width="…"` uses the content widths. CSS modules read the same values as `var(--spacing-control)`, `var(--container-shell)` and so on. `tailwind-merge` knows every custom name, so a later `min-h-0` or `size-icon-sm` overrides the default.
 
 ## Radius, elevation, and motion
 
@@ -69,7 +82,7 @@ Radius: 8px for controls and buttons (`control`, `button`), 12px for surfaces an
 
 Elevation: `elevation-1` (`0 12px 24px`, the dominant learning surface) and `elevation-2` (`0 12px 28px`, menus and dialogs). Depth comes from surfaces and borders first.
 
-Motion uses 180ms micro interactions, 270ms surface transitions, and 400ms larger entries. Buttons darken over 160ms without movement. The root theme removes transitions and animations under `prefers-reduced-motion`.
+Motion uses 180ms micro interactions, 270ms surface transitions, and 400ms larger entries. Easing: `--ease-out` (`cubic-bezier(0.23, 1, 0.32, 1)`) for anything entering or responding, which also replaces Tailwind's `ease-out` utility, and `--ease-drawer` (`cubic-bezier(0.32, 0.72, 0, 1)`, utility `ease-drawer`) for edge-attached sheets. Buttons darken over 160ms with `ease-out`, without movement. The root theme removes transitions and animations under `prefers-reduced-motion`.
 
 ## Accessibility and behavior boundaries
 

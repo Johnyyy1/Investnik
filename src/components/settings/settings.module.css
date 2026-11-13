@@ -1,4 +1,4 @@
-.page { max-width: 1440px; margin-inline: auto; padding: 56px 64px 40px; container: settings / inline-size; }
+.page { max-width: var(--container-shell); margin-inline: auto; padding: 56px 64px 40px; container: settings / inline-size; }
 .page [hidden] { display: none !important; }
 .layout { display: grid; grid-template-columns: 248px minmax(0, 800px); gap: 96px; }
 .workspace, .detail, .defaultDetail { min-width: 0; }

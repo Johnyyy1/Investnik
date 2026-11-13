@@ -20,9 +20,9 @@ export const buttonVariants = cva(
         dangerQuiet: "border-danger-strong-border bg-transparent text-danger-strong not-disabled:hover:border-danger-strong not-disabled:hover:bg-danger-soft not-disabled:hover:text-danger-strong-hover disabled:opacity-60",
       },
       size: {
-        default: "min-h-[52px] px-[22px] py-3 text-body",
-        compact: "min-h-12 px-4 py-2 text-small",
-        icon: "size-12 min-h-0 shrink-0 p-0",
+        default: "min-h-control-lg px-[22px] py-3 text-body",
+        compact: "min-h-control px-4 py-2 text-small",
+        icon: "size-control min-h-0 shrink-0 p-0",
       },
     },
     defaultVariants: { variant: "primary", size: "default" },
@@ -38,7 +38,7 @@ export type ButtonProps = Omit<ComponentProps<"button">, "ref"> &
 
 export function Button({ variant, size, loading = false, disabled, className, children, type = "button", buttonRef, ref, ...props }: ButtonProps) {
   return <button {...props} ref={buttonRef ?? ref} type={type} disabled={disabled || loading} aria-busy={loading || undefined} className={cn(buttonVariants({ variant, size }), className)}>
-    {loading ? <span aria-hidden="true" className="size-4 rounded-full border-2 border-current border-t-transparent motion-safe:animate-spin" /> : null}
+    {loading ? <span aria-hidden="true" className="size-icon-sm rounded-full border-2 border-current border-t-transparent motion-safe:animate-spin" /> : null}
     {children}
   </button>;
 }

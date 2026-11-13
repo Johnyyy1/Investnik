@@ -30,7 +30,7 @@ function instrumentParam(value: string | string[] | undefined) {
 }
 
 function Frame({ children }: { children: ReactNode }) {
-  return <PageFrame width="wide" className="max-w-[80rem] pt-6 pb-28 sm:pt-7 sm:pb-10 lg:pt-8">
+  return <PageFrame width="data" className="pt-6 pb-28 sm:pt-7 sm:pb-10 lg:pt-8">
     <Link href="/lab/portfolio" className="inline-flex min-h-11 items-center text-small font-semibold text-primary-hover">← Portfolio Lab</Link>
     {children}
   </PageFrame>;

@@ -2,7 +2,7 @@
    Type is in rem so 200 % text reflows; layout widths stay in px. */
 .page { min-height: 100dvh; }
 .page :where(h1, h2, h3, h4, p, a, span, dt, dd, li) { overflow-wrap: anywhere; }
-.container { max-width: 1440px; margin-inline: auto; padding: 56px 64px 40px; }
+.container { max-width: var(--container-shell); margin-inline: auto; padding: 56px 64px 40px; }
 .eyebrow { color: var(--color-primary); font-size: .75rem; line-height: 1.25; font-weight: 600; letter-spacing: .083em; text-transform: uppercase; }
 .meta { font-size: .8125rem; color: var(--color-muted); }
 .textLink { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--color-primary); font-size: .875rem; font-weight: 600; line-height: 1.3; }

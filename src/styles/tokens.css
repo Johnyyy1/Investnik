@@ -103,6 +103,45 @@
   --text-page-title--line-height: 1.08;
   --text-celebration: 2.5rem;
   --text-celebration--line-height: 1.1;
+  /* Uppercase eyebrow (set the case with the `uppercase` utility, never in copy). */
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.083em;
+  --text-label--font-weight: 600;
+  /* Chart axis ticks and legends inside a plotted area only; never UI or reading text. */
+  --text-chart: 0.75rem;
+  --text-chart--line-height: 1.2;
+
+  /* Tracking: Manrope tightens as it grows; Inter body copy stays at 0. */
+  --tracking-display: -0.036em;
+  --tracking-heading: -0.03em;
+  --tracking-label: 0.083em;
+
+  /* Control heights: 44px is the touch-target floor, 52px the one primary learning action. */
+  --spacing-control-sm: 2.75rem;
+  --spacing-control: 3rem;
+  --spacing-control-lg: 3.25rem;
+
+  /* Icon sizes follow the text they sit beside: microcopy, small, body, card title, empty state. */
+  --spacing-icon-xs: 0.875rem;
+  --spacing-icon-sm: 1rem;
+  --spacing-icon-md: 1.125rem;
+  --spacing-icon-lg: 1.25rem;
+  --spacing-icon-xl: 1.5rem;
+
+  /* Content widths (max-w-*): reading measure up to the full shell. */
+  --container-reading: 48rem;
+  --container-focused: 56rem;
+  --container-standard: 64rem;
+  --container-wide: 72rem;
+  --container-data: 80rem;
+  --container-shell: 90rem;
+
+  /* Easing. This replaces Tailwind's weak default, so the `ease-out` utility and
+     var(--ease-out) are the same curve: entering and responding UI. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* Edge-attached sheets, matching the swipe-dismiss settle. */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 :root {
@@ -110,7 +149,6 @@
   --motion-surface: 270ms;
   --motion-entry: 400ms;
   --ease-standard: cubic-bezier(0.2, 0.75, 0.25, 1);
-  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -134,11 +172,13 @@
   line-height: 1.5;
   caret-color: var(--color-primary);
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .investi-theme :where(h1, h2, h3, h4) {
   font-family: var(--font-display);
   font-weight: 600;
-  letter-spacing: -.03em;
+  letter-spacing: var(--tracking-heading);
 }
 .investi-theme :focus-visible { outline: 3px solid var(--color-foreground); outline-offset: 4px; }
 .investi-theme ::selection { color: var(--color-foreground); background: var(--color-primary-soft); }

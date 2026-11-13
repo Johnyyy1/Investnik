@@ -76,6 +76,26 @@ describe("Investník design tokens", () => {
     expect(Object.keys(declarations).filter((name) => name.startsWith("motion-"))).toEqual(["motion-micro", "motion-surface", "motion-entry"]);
   });
 
+  it("keeps controls at or above the touch-target floor and every size scale ascending", () => {
+    const rem = (name: string) => parseFloat(resolve(name));
+    const ascending = (names: string[]) => names.map(rem).every((value, index, all) => index === 0 || value > all[index - 1]);
+    expect(rem("spacing-control-sm") * 16).toBeGreaterThanOrEqual(44);
+    expect(ascending(["spacing-control-sm", "spacing-control", "spacing-control-lg"])).toBe(true);
+    expect(ascending(["spacing-icon-xs", "spacing-icon-sm", "spacing-icon-md", "spacing-icon-lg", "spacing-icon-xl"])).toBe(true);
+    expect(ascending(["container-reading", "container-focused", "container-standard", "container-wide", "container-data", "container-shell"])).toBe(true);
+  });
+
+  it("keeps chart and label text the only roles below the 13px microcopy floor", () => {
+    const small = Object.keys(declarations).filter((name) => /^text-[\w-]+$/.test(name) && !name.includes("--") && parseFloat(resolve(name)) < 0.8125);
+    expect(small.sort()).toEqual(["text-chart", "text-label"]);
+  });
+
+  it("offers entering and drawer easings and no ease-in exit curve", () => {
+    expect(resolve("ease-out")).toBe("cubic-bezier(0.23, 1, 0.32, 1)");
+    expect(resolve("ease-drawer")).toBe("cubic-bezier(0.32, 0.72, 0, 1)");
+    expect(declarations["ease-exit"]).toBeUndefined();
+  });
+
   it("uses Inter for UI text and Manrope for headings", () => {
     expect(resolve("font-sans")).toMatch(/^var\(--font-investi-inter\)/);
     expect(resolve("font-display")).toMatch(/^var\(--font-investi-manrope\)/);
