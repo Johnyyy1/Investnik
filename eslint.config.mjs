@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Separate local Vite project; not part of Investník.
     "fine-details/**",
+    // Expo app with its own ESLint config and dependencies; see docs/mobile-architecture.md.
+    "mobile/**",
     // Local agent worktrees: full copies of the repository with their own build output.
     ".claude/**",
   ]),

@@ -24,7 +24,7 @@ Use `.env.example` as the template and keep all credential-bearing files ignored
 | `SKIP_ENV_VALIDATION` | Development/build escape hatch | `true` bypasses schema validation; keep production validation enabled |
 | `NODE_ENV` | Framework-controlled | Production guards, DB client lifetime; Next assigns development/production |
 
-`NEXT_PUBLIC_APP_URL` was obsolete: no client or server consumer read it outside its own environment declaration. Authentication uses `BETTER_AUTH_URL` and the browser's same-origin auth client. Its declaration, example, Compose setting, and setup references have been removed. No client environment variable is currently needed.
+`NEXT_PUBLIC_APP_URL` was obsolete: no client or server consumer read it outside its own environment declaration. Authentication uses `BETTER_AUTH_URL` and the browser's same-origin auth client. Its declaration, example, Compose setting, and setup references have been removed. No client environment variable is currently needed. The Expo app's one public build-time variable, `EXPO_PUBLIC_API_URL`, is documented in [mobile architecture](mobile-architecture.md#environment).
 
 ## Infrastructure/development settings
 

@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* The Expo app has no web CSS; scanning it would only add stray utilities to this stylesheet. */
+@source not "../../mobile";
 @import "../styles/tokens.css";
 
 html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }

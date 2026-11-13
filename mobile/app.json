@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Investník",
+    "slug": "investnik",
+    "scheme": "investnik",
+    "version": "0.1.0",
+    "platforms": ["ios", "android"],
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "cz.investnik.app"
+    },
+    "android": {
+      "package": "cz.investnik.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#236F66"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F7F2E8",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 96
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

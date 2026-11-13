@@ -18,6 +18,10 @@ const targets = [
   // iOS rounds the corners itself, so the touch icon is the full-bleed tile.
   { from: "investnik-symbol-maskable.svg", to: "src/app/apple-icon.png", size: [180, 180] },
   { from: "investnik-og.svg", to: "src/app/opengraph-image.png", size: [1200, 630] },
+  // Mobile app (mobile/app.json): iOS masks the full-bleed tile itself, and its glyph sits inside
+  // Android's adaptive-icon safe zone, so one file serves both. The splash shows the rounded symbol.
+  { from: "investnik-symbol-maskable.svg", to: "mobile/assets/icon.png", size: [1024, 1024] },
+  { from: "investnik-symbol.svg", to: "mobile/assets/splash-icon.png", size: [288, 288] },
 ];
 const faviconSizes = [16, 32, 48];
 
