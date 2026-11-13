@@ -383,8 +383,8 @@ Tick in the PR that closes each item.
 - [ ] D3 landing demo interactive vs copy-only
 - [ ] D4 Progress purpose
 - [ ] D5 checkpoint term
-- [ ] D6 rail target (lesson route or in-page preview)
-- [ ] D7 study-plan context home
+- [ ] D6 rail target (lesson route or in-page preview) — the integration PR applies the recommendation (lesson route); confirm
+- [ ] D7 study-plan context home — the integration PR keeps it as a disclosure under the task until decided
 - [ ] D8 recommendation order after module 1.1
 - [x] F1 `/learn` layout direction: D „Studijní pracoviště“ (2026-11-13)
 
@@ -402,14 +402,14 @@ Tick in the PR that closes each item.
 - [ ] WP-14 one display identity across chip, menu, greeting and settings
 
 **Phase 2: IA and hierarchy**
-- [ ] WP-17 Learn recap withheld on question steps (branch `fix/learn-recap-answer-leak`)
-- [ ] WP-17b Learn preview resolves fact tokens (finding C-2)
+- [x] WP-17 Learn recap withheld on question steps (f81c5a2, in the D integration PR)
+- [x] WP-17b Learn preview resolves fact tokens (finding C-2)
 - [ ] WP-00 design foundation landed; F1 and F4 (rail rows) recorded in `DESIGN.md`
-- [ ] WP-18 heading rule in `@layer base`; heading no-op utilities removed; computed styles unchanged (implemented on `proto/learn-d-refinement`, not merged)
-- [ ] WP-19 Learn workspace model with state tests
-- [ ] WP-20 rail (44 px rows), sheet reuse, numeric and choice inline question, no pre-answer hint
-- [ ] WP-21 `/learn` cutover; 13 browser suites updated; `/learn` at 1440 ≤ 3,800 px
-- [ ] WP-22 dead Studovna code and prototype removed
+- [x] WP-18 heading rule in `@layer base`; heading no-op utilities removed; computed styles unchanged (30db51e, in the D integration PR)
+- [x] WP-19 Learn workspace model with state tests
+- [x] WP-20 rail (44 px rows), sheet reuse, numeric and choice inline question, no pre-answer hint
+- [x] WP-21 `/learn` cutover; browser suites updated; `/learn` at 1440 ≤ 3,800 px
+- [x] WP-22 dead Studovna code and prototype removed
 - [ ] WP-06 Progress on direction C without the curriculum map; MilestoneCard; mastery status column; unique h2
 - [ ] WP-08 process-first Portfolio Lab; IPS prompt at top; neutral P&L color; one formatter
 - [ ] WP-12 Lab hub „Tvůj plán“ row; Backtesting demoted

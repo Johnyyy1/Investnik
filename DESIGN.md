@@ -122,7 +122,7 @@ A calm place to return to a learning decision. Warm paper, clear ink, generous s
 
 This is the implemented system from the approved Pen.dev boards `V7mUpG`, `QB1gf`, `liRhy`, and `mAWd8`. The onboarding extension follows `wKThC` (desktop), `Ui4uz` (mobile), `Z9Mlw` (plans), `XFfjW` (components), and `V507P` (guide library). It is the only visual system: the root layout applies `.investi-theme` once, so marketing, auth, onboarding, Learn, focused lessons, Lab, Portfolio Lab, Backtesting, Progress, Settings, legal and error pages share the same tokens, fonts and primary action. The earlier Nunito Sans / Investi Blue theme and its `ql-*` aliases were retired in #47.
 
-Source authority: [tokens.css](src/styles/tokens.css) (every colour, radius, shadow, font and type-scale token), [fonts.ts](src/styles/fonts.ts) (font loading), [Button](src/components/ui/button.tsx) (the one button style), [Studovna CSS](src/components/learning/studovna-page.module.css), [shell CSS](src/components/shell/paper-shell.module.css), [Studovna components](src/components/learning/studovna-page.tsx), [onboarding CSS](src/components/personalization/personalization-flow.module.css), [onboarding flow](src/components/personalization/personalization-flow.tsx) and [saved plan](src/components/personalization/study-plan.tsx). Frontmatter records the tokens and recurring values; the sidecar adds stateful previews and metadata. Its generated tonal ramps are swatch previews, not additions to the runtime palette. The onboarding composition and behavior are recorded in [docs/onboarding.md](docs/onboarding.md); token usage rules are in [docs/design-system.md](docs/design-system.md). Product constraints remain in [PRODUCT.md](PRODUCT.md) and [AGENTS.md](AGENTS.md).
+Source authority: [tokens.css](src/styles/tokens.css) (every colour, radius, shadow, font and type-scale token), [fonts.ts](src/styles/fonts.ts) (font loading), [Button](src/components/ui/button.tsx) (the one button style), [shell CSS](src/components/shell/paper-shell.module.css), [Learn workspace](src/components/learning/studovna-page.tsx) and its [client parts](src/components/learning/learn-workspace-client.tsx), [onboarding CSS](src/components/personalization/personalization-flow.module.css), [onboarding flow](src/components/personalization/personalization-flow.tsx) and [saved plan](src/components/personalization/study-plan.tsx). Frontmatter records the tokens and recurring values; the sidecar adds stateful previews and metadata. Its generated tonal ramps are swatch previews, not additions to the runtime palette. The onboarding composition and behavior are recorded in [docs/onboarding.md](docs/onboarding.md); token usage rules are in [docs/design-system.md](docs/design-system.md). Product constraints remain in [PRODUCT.md](PRODUCT.md) and [AGENTS.md](AGENTS.md).
 
 **Key Characteristics:**
 
@@ -215,9 +215,9 @@ Marketing display sizes and the lesson-title sizes above stay route-scoped. `tra
 
 ## Layout
 
-The desktop container caps at (1440px), with (64px) gutters and (72px) top padding. The continuation surface has a flexible exercise column plus a (392px) recap. Below it, curriculum and a (400px) supporting rail are separated by (72px), with (112px) between major regions. These are Studovna composition values, not mandatory widths for every future screen.
+Learn („Studijní pracoviště“, direction D, adopted 2026-11-13) uses the header's rendered box: `max-w-shell` with (20px), (40px) and (64px) gutters from (768px) and (1200px), set in px as in the shell so the leading edge stays under the wordmark at every text size. From (64rem) a (17rem) curriculum rail sits beside a `focused` main column, (48px) apart ((64px) from `xl`); reading text inside is capped at 65ch. Below (64rem), a rem breakpoint so enlarged text lands here too, the same rail opens as a bottom sheet from a „Kurikulum“ button. Regions are (48px) apart on phones and (64px) from `lg`. These are Learn composition values, not mandatory widths for every future screen.
 
-At tablet widths (768–1199px), gutters become (40px); recap and supporting rail narrow. At (768–899px), recap and supporting cards reflow beneath their main content. Below (768px), the page becomes a single column with (20px) gutters, a full-width primary action, native chapter and recap disclosures, and a fixed bottom tab bar. Below (360px), gutters become (16px). Desktop shell navigation appears from (1024px).
+Below (768px) the page is a single column with a full-width primary action and the fixed bottom tab bar. Desktop shell navigation appears from (1024px).
 
 ### Content widths
 
@@ -318,11 +318,11 @@ Confident, quiet, and direct. There is one button component, `Button` (`src/comp
 
 ### Cards / Containers
 
-The dominant learning card joins exercise and recap into one surface rather than separate equal-weight panels. Recap uses Practice Surface. Curriculum chapters and supporting cards use quieter borders and the Paper Card radius. Supporting cards use (28px) padding; mobile content reflows rather than compressing essential text.
+On Learn the active step is the only raised surface (Card shadow; (16px), (20px) from 375px and (32px) from 640px padding, in px so enlarged text keeps its column). The recap of earlier steps is a disclosure inside it, and only on a step without a graded question. Milestone, Lab and personalization context are ruled rows, not cards. Curriculum chapters and supporting cards use quieter borders and the Paper Card radius. Supporting cards use (28px) padding; mobile content reflows rather than compressing essential text.
 
 ### Inputs / Fields
 
-Answer choices are native labeled radios within a fieldset, presented as full-width options with a minimum height of (55px). Selection is followed by an icon and explanatory feedback: correct uses Soft Teal and Action Teal, incorrect uses Error Ink. Radio keyboard behavior remains native. Focus outlines the whole answer option (3px, offset 3px); pending save disables the fieldset.
+Answer choices are native labeled radios within a fieldset, presented as full-width options with a minimum height of (55px) in lessons and (52px, `control-lg`) on Learn. On Learn, Check stays enabled and grades on submit only, never on change; an empty or malformed answer gets a field error. Grading is followed by an icon and explanatory feedback: correct uses Soft Teal and Action Teal, incorrect uses Error Ink. Radio keyboard behavior remains native. Focus outlines the whole answer option (3px, offset 3px); pending save disables the fieldset.
 
 ### Navigation
 
@@ -330,7 +330,7 @@ Desktop navigation uses quiet Inter text with an Action Teal underline for the c
 
 ### Chapter Disclosure
 
-Learn and Progress share a registry-driven map of levels containing display modules and semantic lesson lists. The level containing the saved continuation starts expanded at every viewport size; other levels start collapsed, and all remain native keyboard-operable disclosures. The Continue learning card remains the dominant action above the Learn map. Display placement and codes do not replace stable lesson identities or existing lesson URLs.
+Progress shows a registry-driven map of levels containing display modules and semantic lesson lists. Learn shows the same registry as its compact rail: only the continuation's level is open, two or more finished lessons in a module fold into one row, levels 4–6 and V share one „Prohloubení“ disclosure, every row is at least (44px, `control-sm`) and rows open the lesson route itself. In both, the level containing the saved continuation starts expanded and all levels remain native keyboard-operable disclosures. Display placement and codes do not replace stable lesson identities or existing lesson URLs.
 
 Level summaries show completed and available lesson counts with a written status. Expanded levels add a thin, labeled meter for available lesson completion and module-level status; modules without published lessons say “Připravujeme”. Completed, active, next, and unstarted lesson rows combine text and icons, and only the continuation lesson has `aria-current="step"`. Narrow screens move lesson status below its title and reflow level headings rather than shrinking essential text.
 
@@ -374,7 +374,7 @@ The foundation above changes no screen's layout. These choices change what learn
 
 | # | Question | Options | Recommendation |
 | --- | --- | --- | --- |
-| F1 | Layout direction for Learn, the template for Progress and Lab | A „Pracovní stůl“ (focused single column) · B „Pracoviště“ (side-rail workspace) · C „Cesta k plánu“ (milestone first). See [the brief](docs/ui-overhaul/LEARN-VARIANTS.md) | Compare live first. Each one sets the IA for WP-06 and WP-12 |
+| F1 | Layout direction for Learn, the template for Progress and Lab | **Decided 2026-11-13: D „Studijní pracoviště“** for `/learn` (rail + one focused task), shipped by WP-21. C stays the candidate for `/progress` (WP-06). See [LEARN-D-REFINEMENT.md](docs/ui-overhaul/LEARN-D-REFINEMENT.md) | — |
 | F2 | Desktop navigation | Top text nav with underline (today) · left rail (needed by variant B) | Keep the top nav unless B wins |
 | F3 | Elevation | Keep the single soft drops · crisper layered shadows (hairline ring + short drop) for the one raised surface and popovers | Prototype on the continue card before changing the tokens |
 | F4 | Density on data screens | 52px primary everywhere · `control` (48px) as the default on Lab and Settings, `control-lg` only for the learning action | 48px on Lab and Settings |

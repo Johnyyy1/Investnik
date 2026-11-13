@@ -1,5 +1,7 @@
 # Learn: three layout directions (brief)
 
+> **Status (2026-11-13):** the founder chose **D „Studijní pracoviště“** (F1). It ships as production `/learn` on branch `feat/learn-direction-d`; the `/dev/learn-variants` prototypes were removed with it (WP-22). A to C below are kept as the decision record.
+
 This brief prepares decision F1 in [DESIGN.md](../../DESIGN.md#decisions-awaiting-approval). It describes three directions for `/learn` to build as comparable prototypes with `/variant` and `/prototype`. Those skills are user-invoked, so this file is their input. **No direction is adopted** until the founder picks one. Until then, the shipped `/learn` stays as it is.
 
 ## Why `/learn`

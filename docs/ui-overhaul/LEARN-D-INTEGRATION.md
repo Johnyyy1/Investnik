@@ -1,5 +1,7 @@
 # Learn direction D: production integration plan (2026-11-13)
 
+> **Status:** implemented on `feat/learn-direction-d` as one PR, with one commit per package (WP-17 to WP-22), awaiting founder review. Deviations from this plan are listed in [§8](#8-as-built-differences).
+
 How the refined D prototype ([LEARN-D-REFINEMENT.md](LEARN-D-REFINEMENT.md)) becomes production `/learn`. This document plans the work and changes no production behaviour. It refines WP-17 to WP-22 in [PLAN.md](PLAN.md#learn-direction-d-approved-2026-11-13) with what the refinement learned. Every package stays one issue, one worktree and one PR, and none merges without the founder.
 
 ## 1. Target architecture
@@ -123,3 +125,12 @@ Small and independently verifiable, in order. ⚑ marks a founder decision.
 | D1 ⚑ | Milestone A name without a slash | Unchanged: PLAN.md D1 |
 | — | Persist the rail collapse | Not until learners ask. It resets per visit |
 | — | DESIGN.md amendments (rail width token, 52 px answer options, layering note) | [LEARN-D-REFINEMENT.md §9](LEARN-D-REFINEMENT.md#9-proposed-designmd-changes-for-approval-not-applied) |
+
+## 8. As-built differences
+
+- **Lab row needs no Suspense.** The row shows only the unlock status (already awaited by the layout, request-memoized) and the receipt-derived capital, so `/learn` no longer loads `loadPortfolioCardView` or any quote. The `loading` and `unavailable` states were removed with it: an unlock-status failure fails the layout first. `loadPortfolioCardView` was deleted.
+- **Guest and XP copy.** Guests see „Portfolio Lab otevřeš, až si uložíš účet.“ linking to `/onboarding/save` (the server's existing sentence). A learner with all seven lessons but too little XP sees the Progress page's „Lekce Základů máš hotové. Chybí ještě XP.“
+- **D6 and D7.** Rail rows and „Potom“ open the lesson route (no in-page preview). The study plan stays on `/learn` as the „Jak si rozvrhnout učení“ disclosure.
+- **Px gutters and card padding.** The workspace gutters copy the shell's px values, and the task surface and answer options use DESIGN.md's px padding. With rem utilities, 200 % text doubled them: the rail drifted off the wordmark edge and the 320 px column overflowed.
+- **Optional continuation.** A continuation in levels 4 to 6 or V also opens „Prohloubení“.
+- **No component test environment.** The repository has no DOM test runtime, so the inline question's behaviour (empty, wrong, grade on Check only, failed save, persisted cursor, numeric and choice) is covered in `validate-studovna.mjs` against the real server instead of new unit tests.
