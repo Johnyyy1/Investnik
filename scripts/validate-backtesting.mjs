@@ -81,10 +81,13 @@ try {
   await page.goto(`${baseURL}/sign-in`);
   await button("Vyzkoušet demo").click(); await page.waitForURL("**/learn");
   const session = await (await context.request.get(`${baseURL}/api/auth/get-session`)).json(); userId = session.user.id;
-  const before = await financialState();
-  // The Studovna link and Lab entry keep their existing destinations.
-  await page.locator('a[href="/lab/backtesting"]').waitFor();
+  // Backtesting is entered from the Lab hub; Learn (direction D) no longer links it.
+  await page.goto(`${baseURL}/lab`);
+  await page.locator('main a[href="/lab/backtesting"]:visible').first().waitFor();
   await page.goto(`${baseURL}/lab/backtesting`); await amount().waitFor();
+  // Baseline after the Lab pages have loaded: the first portfolio read creates the demo's generation, which is
+  // not a backtest effect. (Learn used to make that read before D removed its portfolio card.)
+  const before = await financialState();
   assert.equal(await page.getByRole("combobox", { name: "Zvolená strategie" }).locator("option").count(), 3);
   assert.equal(await page.getByRole("region", { name: "Výsledek backtestu" }).count(), 0);
   assert.equal(await page.getByRole("heading", { name: /Náklady obchodů/ }).count(), 0, "the synthetic sample has no cost model");
