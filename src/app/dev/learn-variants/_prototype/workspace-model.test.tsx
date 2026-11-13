@@ -65,7 +65,8 @@ describe("D learner states (fixtures through the production builders)", () => {
     expect(focus.lesson.id).toBe("returns-what-is-a-return");
     const moduleOne = workspace.rail.levels.find((level) => level.id === "L1")!.modules[0];
     expect(moduleOne.lessons).toEqual([]);
-    expect(moduleOne.folded).toHaveLength(10);
+    expect(moduleOne.folded.length).toBeGreaterThan(1);
+    expect(moduleOne.folded.every((lesson) => lesson.status === "done")).toBe(true);
     expect(workspace.lab.state).toBe("unlocked");
   });
 

@@ -1,5 +1,6 @@
 import { demoSeed } from "@/features/demo/seed";
 import { availableLessons } from "@/features/learning/catalog";
+import { getDisplayModulePlacements } from "@/features/learning/curriculum";
 import { getLearnerSummary, type LearnerState } from "@/features/learning/learner-summary";
 import { getStepDefinitions } from "@/features/lessons/steps";
 import { milestoneStates } from "@/features/milestones/domain";
@@ -23,7 +24,8 @@ const completed = (lessonIds: readonly string[]): LearnerState[] => lessonIds.ma
 });
 const inProgress = (lessonId: string, lastPosition: number): LearnerState => ({ lessonId, status: "in_progress", lastPosition, completedAt: null, updatedAt: minutesAgo(30) });
 const foundationsStart = ["foundations-why-invest", "foundations-stocks", "foundations-etfs-indexes", "foundations-bonds-cash", "returns-what-is-a-return"];
-const moduleOneOne = ["foundations-why-invest", "foundations-stocks", "foundations-etfs-indexes", "foundations-bonds-cash", "foundations-markets", "foundations-risk-reward", "foundations-portfolio", "foundations-funds", "foundations-active-vs-index", "foundations-checkpoint"];
+// From the registry, so a lesson published into 1.1 later keeps this state "module done" (no hard-coded inventory).
+const moduleOneOne = getDisplayModulePlacements("1.1").map((placement) => placement.lessonId).filter((lessonId) => availableLessons.some((lesson) => lesson.id === lessonId));
 
 function progressFor(id: LearnScenarioId): LearnerState[] {
   switch (id) {
