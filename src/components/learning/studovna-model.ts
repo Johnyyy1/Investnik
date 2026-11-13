@@ -1,5 +1,6 @@
 import type { loadLearner } from "@/features/learning/load-learner";
 import { getAuthoredLesson } from "@/features/lessons/registry";
+import { isQuestion } from "@/features/lessons/question-evaluation";
 import { getGuidedSteps } from "@/features/lessons/steps";
 import type { LessonBlock } from "@/features/lessons/types";
 import type { PortfolioCardView } from "@/features/portfolio/service";
@@ -24,7 +25,8 @@ export function studovnaLesson(summary: Pick<LearnerSummary, "next" | "position"
   const steps = getGuidedSteps(lesson);
   const step = steps[summary.position];
   const question = step.blocks.find((block) => block.type === "multipleChoiceQuestion");
-  const recap = steps.slice(0, summary.position).flatMap((item) => item.blocks)
+  // An earlier step can state the result the open question asks for (a worked example's conclusion).
+  const recap = step.blocks.some(isQuestion) ? [] : steps.slice(0, summary.position).flatMap((item) => item.blocks)
     .filter((block) => ["conceptCallout", "paragraph", "heading", "takeaway", "interactiveFigure"].includes(block.type))
     .filter((block) => blockDescription(block)).slice(-2)
     .map((block) => ({ title: "title" in block ? block.title : "Už znáš souvislosti", body: blockDescription(block)! }));

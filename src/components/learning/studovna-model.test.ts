@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { availableLessons } from "@/features/learning/catalog";
 import { getGuidedSteps } from "@/features/lessons/steps";
 import { getAuthoredLesson } from "@/features/lessons/registry";
+import { isQuestion } from "@/features/lessons/question-evaluation";
 import { portfolioComposition, studovnaLesson } from "./studovna-model";
 import type { PortfolioView } from "@/features/portfolio/service";
 
@@ -16,6 +17,26 @@ describe("Studovna persisted lesson preview", () => {
         expect(preview.question).toEqual(step.blocks.find((block) => block.type === "multipleChoiceQuestion"));
       });
     }
+  });
+  it("withholds the recap while the saved step holds an unanswered question", () => {
+    // Demo learner: the worked result of step 5 (+20 % then −20 % gives 96) is step 6's answer.
+    const next = availableLessons.find((lesson) => lesson.id === "foundations-risk-reward")!;
+    const steps = getGuidedSteps(getAuthoredLesson(next.moduleSlug, next.slug)!);
+    const position = steps.findIndex((step) => step.blocks.some((block) => block.type === "numericQuestion" && block.answer === 96));
+    expect(position).toBeGreaterThan(0);
+    expect(JSON.stringify(studovnaLesson({ next, position }).recap)).not.toMatch(/\b96\b/);
+    for (const lesson of availableLessons) {
+      getGuidedSteps(getAuthoredLesson(lesson.moduleSlug, lesson.slug)!).forEach((step, index) => {
+        const { recap } = studovnaLesson({ next: lesson, position: index });
+        if (step.blocks.some(isQuestion)) expect(recap, `${lesson.id} step ${index + 1}`).toEqual([]);
+      });
+    }
+  });
+  it("keeps the recap of earlier steps on ungraded steps", () => {
+    const next = availableLessons.find((lesson) => lesson.id === "foundations-markets")!;
+    const preview = studovnaLesson({ next, position: 4 });
+    expect(preview.step.blocks.some(isQuestion)).toBe(false);
+    expect(preview.recap.length).toBeGreaterThan(0);
   });
   it("does not show a later question in place of an unfinished concept step", () => {
     const next = availableLessons.find((lesson) => lesson.id === "foundations-markets")!;
