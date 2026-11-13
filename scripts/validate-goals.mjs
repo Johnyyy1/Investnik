@@ -31,7 +31,7 @@ try {
   await page.goto(`${baseURL}/onboarding`);
   await finishOnboarding(page);
   await page.locator('details[data-level="L0"] > summary:visible').click();
-  await page.getByRole("link", { name: /0.1.4.*Cíle a investiční horizont/ }).click();
+  await page.getByRole("link", { name: /^Cíle a investiční horizont/ }).click();
   const next = () => page.getByRole("button", { name: "Pokračovat", exact: true });
   async function check() {
     await page.getByRole("button", { name: "Zkontrolovat odpověď", exact: true }).press("Enter");

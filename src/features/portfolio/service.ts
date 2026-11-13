@@ -144,26 +144,6 @@ async function valueHoldings(earnedPracticeCapitalMinor: bigint, folded: FoldedP
   return { observations, valued: valuePortfolio(earnedPracticeCapitalMinor, folded, valuations) };
 }
 
-/** What the Studovna card shows: composition by asset type. */
-export type PortfolioCardView = Pick<PortfolioView, "valuationComplete" | "portfolioTotalMinor" | "availableCashMinor" | "marketDataMode"> & {
-  holdings: Array<Pick<PortfolioView["holdings"][number], "assetType" | "marketValueMinor">>;
-};
-
-/** Same ledger fold and valuation as loadPortfolioView, without classification, saved mix, IPS,
- * performance history or tax lots, which the card does not show. */
-export async function loadPortfolioCardView(userId: string): Promise<PortfolioCardView> {
-  const rows = await loadPortfolioRows(userId);
-  const folded = foldTrades(rows.earnedPracticeCapitalMinor, rows.trades);
-  const { valued } = await valueHoldings(rows.earnedPracticeCapitalMinor, folded, rows.portfolio.baseCurrency as Currency);
-  return {
-    valuationComplete: valued.complete,
-    portfolioTotalMinor: valued.portfolioTotalMinor?.toString() ?? null,
-    availableCashMinor: folded.cashMinor.toString(),
-    marketDataMode: marketDataMode(portfolioMarketData),
-    holdings: valued.holdings.map(({ assetType, marketValueMinor }) => ({ assetType, marketValueMinor: marketValueMinor?.toString() ?? null })),
-  };
-}
-
 export async function loadPortfolioView(userId: string): Promise<PortfolioView> {
   const current = await perfMeasure("portfolio.getOrCreateActivePortfolio", "db", () => getOrCreateActivePortfolio(userId));
   // The saved mix needs only the generation id, so it loads alongside the ledger.

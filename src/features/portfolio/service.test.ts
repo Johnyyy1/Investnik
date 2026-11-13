@@ -10,7 +10,7 @@ vi.mock("./repository", () => ({
 }));
 vi.mock("./environment", () => ({ portfolioMarketData: { provider: "test", service: { getHistoricalPrices: mocks.history, getFxRate: mocks.fx } } }));
 vi.mock("./market-data", () => ({ observePortfolioHoldingValue: mocks.observe, observeHoldingClassification: mocks.classify, marketDataMode: () => "market" }));
-import { loadPortfolioCardView, loadPortfolioView } from "./service";
+import { loadPortfolioView } from "./service";
 
 const openedAt = new Date("2026-01-01T12:00:00.000Z");
 const readAt = new Date("2026-02-01T12:00:00.000Z");
@@ -53,27 +53,5 @@ describe("portfolio performance view", () => {
     mocks.rows.mockResolvedValue({ ...base, trades: [{ ...trade, unitPrice: "200", grossAmountBaseMinor: 20_000n, cashDeltaBaseMinor: -20_000n }] });
     mocks.observe.mockResolvedValue({ instrumentId: "X", marketValueMinor: value, currentPrice: "200", currentPriceCurrency: "CZK", quoteObservedAt: readAt.toISOString() });
     expect((await loadPortfolioView("u")).holdings[0].gainLossBasisPoints).toBe(expected);
-  });
-});
-
-describe("Studovna portfolio card view (#402)", () => {
-  const cardFields = (view: Awaited<ReturnType<typeof loadPortfolioView>>) => ({
-    valuationComplete: view.valuationComplete, portfolioTotalMinor: view.portfolioTotalMinor, availableCashMinor: view.availableCashMinor,
-    marketDataMode: view.marketDataMode, holdings: view.holdings.map(({ assetType, marketValueMinor }) => ({ assetType, marketValueMinor })),
-  });
-
-  it("values the ledger exactly like the full view, without classification, mix, IPS or price history", async () => {
-    const full = await loadPortfolioView("u");
-    vi.clearAllMocks();
-    expect(await loadPortfolioCardView("u")).toEqual(cardFields(full));
-    expect(mocks.classify).not.toHaveBeenCalled();
-    expect(mocks.allocation).not.toHaveBeenCalled();
-    expect(mocks.plans).not.toHaveBeenCalled();
-    expect(mocks.history).not.toHaveBeenCalled();
-  });
-
-  it("keeps a missing quote unvalued instead of zero", async () => {
-    mocks.observe.mockResolvedValue({ instrumentId: "X", marketValueMinor: null, currentPrice: null, currentPriceCurrency: null, quoteObservedAt: null, unavailableReason: "quote" });
-    expect(await loadPortfolioCardView("u")).toEqual({ valuationComplete: false, portfolioTotalMinor: null, availableCashMinor: "400000", marketDataMode: "market", holdings: [{ assetType: "equity", marketValueMinor: null }] });
   });
 });

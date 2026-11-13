@@ -66,7 +66,8 @@ try {
       document.documentElement.style.fontSize = "200%";
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     });
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${label}: enlarged text overflow`);
+    // Names the innermost elements that stick out, so a failure shows what overflows.
+    assert.deepEqual(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth ? [...document.body.querySelectorAll("*")].filter((element) => element.getBoundingClientRect().right > innerWidth + 1 && ![...element.children].some((child) => child.getBoundingClientRect().right > innerWidth + 1)).slice(0, 5).map((element) => `${element.tagName.toLowerCase()} "${element.textContent.trim().slice(0, 40)}" ends at ${Math.round(element.getBoundingClientRect().right)}px`) : []), [], `${label}: enlarged text overflow`);
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: `${screenshotDir}/${label}-320-text-200.png`, fullPage: false, animations: "disabled" });
     await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
@@ -103,7 +104,7 @@ try {
   assert.equal(receipts.reduce((sum, receipt) => sum + BigInt(receipt.practice_capital_minor), 0n), 200_000n, "the seeded Returns lesson carries 2,000 Kč");
   const [grant] = await sql`select practice_capital_minor from progression_unlock where user_id = ${userId} and unlock_id = 'PORTFOLIO_LAB'`;
   assert.equal(BigInt(grant.practice_capital_minor), 500_000n);
-  await page.getByRole("region", { name: "Doporučeno pro tebe", exact: true }).waitFor();
+  await page.getByRole("region", { name: "Tvoje cesta", exact: true }).waitFor();
   await layouts("learn", "/learn");
   await page.goto(`${baseURL}/dashboard`);
   await page.waitForURL("**/learn");

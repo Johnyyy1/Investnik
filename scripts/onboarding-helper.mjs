@@ -4,5 +4,6 @@ export async function finishOnboarding(page) {
   await page.getByRole("button", { name: "Přeskočit personalizaci", exact: true }).click();
   await page.waitForURL("**/learn");
   await page.goto(new URL("/learn", page.url()).href);
-  await page.getByRole("region", { name: "Doporučeno pro tebe", exact: true }).waitFor();
+  // „Tvoje cesta“ renders in every Learn state (lesson, milestone), so it marks the page as ready.
+  await page.getByRole("region", { name: "Tvoje cesta", exact: true }).waitFor();
 }

@@ -259,7 +259,7 @@ try {
   const d = await account();
   execFileSync('node_modules/.bin/tsx', ['--tsconfig', 'scripts/tsconfig.persistence.json', 'scripts/personalization-browser-fixtures.mts'], { env: { ...process.env, PERSONALIZATION_QA_USER_ID: d.id }, stdio: 'pipe' });
   const financeD = await unchangedFinance(d.id);
-  await d.page.goto(`${baseURL}/learn`); await d.page.getByRole('heading', { name: 'Přizpůsobit učení', exact: true }).waitFor();
+  await d.page.goto(`${baseURL}/learn`); await d.page.getByRole("link", { name: /^Přizpůsobit učení/ }).waitFor();
   await d.page.goto(`${baseURL}/onboarding`); await d.page.waitForURL('**/learn');
   await d.page.goto(`${baseURL}/onboarding?personalize=1`); await preferences(d.page, { goal: 'QUANT', minutes: '30' }); await diagnostic(d.page, correct);
   assert.equal(await d.page.getByRole('link', { name: 'Začít doporučenou lekci', exact: true }).getAttribute('href'), '/learn/returns/what-is-a-return');

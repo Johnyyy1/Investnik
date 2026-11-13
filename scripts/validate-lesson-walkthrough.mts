@@ -604,8 +604,9 @@ try {
     // Milestone A from published content (#456). The lessons above were really walked; the walked drill broke the plan
     // and the capstone was rated at level 1, so the passing capstone and checkpoint evidence are seeded here.
     where = "milestone A";
+    // The milestone map lives on /progress; /learn shows the next requirement instead (direction D).
     const milestoneA = page.locator('[data-milestone="A"]');
-    await page.goto(`${baseURL}/learn`);
+    await page.goto(`${baseURL}/progress`);
     assert.equal(await milestoneA.getAttribute("data-status"), "open");
     const lessonsText = await milestoneA.getByRole("list", { name: "Požadavky milníku A" }).innerText();
     const [, doneLessons, totalLessons] = lessonsText.match(/Lekce: (\d+) z (\d+)/)!;
@@ -624,8 +625,9 @@ try {
     const [row]: { scope_version: string }[] = await sql`select scope_version from milestone_achievement where user_id = ${userId!} and milestone_id = 'A'`;
     assert.match(row.scope_version, /^[0-9a-f]{16}$/);
     assert.deepEqual(await sql`select * from lesson_award where user_id = ${userId!} order by lesson_id`, awardsBefore, "the milestone grants nothing");
+    await page.goto(`${baseURL}/learn`);
+    await page.getByRole("heading", { level: 1, name: "Milník A splněn", exact: true }).waitFor();
     await page.goto(`${baseURL}/progress`);
-    assert.equal(await milestoneA.getAttribute("data-status"), "achieved");
     await audit(where, 1440);
     console.log("✓ milestone A achieved from published lessons and recorded once");
   }

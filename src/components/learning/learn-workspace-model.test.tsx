@@ -1,18 +1,25 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// The inline question saves through a server action and navigates; static markup needs neither.
+vi.mock("@/features/progress/actions", () => ({ saveLessonPositionAction: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 import { availableLessons } from "@/features/learning/catalog";
 import { getLearnerSummary } from "@/features/learning/learner-summary";
 import { getAuthoredLesson } from "@/features/lessons/registry";
 import { getGuidedSteps } from "@/features/lessons/steps";
 import { isQuestion, type QuestionBlock } from "@/features/lessons/question-evaluation";
 import { recommendLearning } from "@/features/personalization/recommendation";
-import { learnScenarios } from "./scenario-list";
-import { learnScenario } from "./scenarios";
-import { InlineQuestion } from "./variant-d-client";
-import { learnWorkspaceModel, outOf, type LessonFocus } from "./workspace-model";
+import { demoSeed } from "@/features/demo/seed";
+import { learnScenario, learnScenarios, type LearnScenarioId } from "./learn-workspace-fixtures";
+import { InlineQuestion } from "./learn-workspace-client";
+import { learnWorkspaceModel, outOf, type LessonFocus, type WorkspaceLab } from "./learn-workspace-model";
 
-const lessonFocus = (id: (typeof learnScenarios)[number]["id"]) => {
+const demoProgress = () => demoSeed(new Date("2026-11-13T09:00:00Z")).progress;
+const locked: WorkspaceLab = { unlocked: false, requiresAccount: false, completedPrerequisiteLessons: 0, requiredPrerequisiteLessons: 7 };
+
+const lessonFocus = (id: LearnScenarioId) => {
   const { focus } = learnScenario(id).workspace;
   if (focus.kind !== "lesson") throw new Error(`${id} has no lesson focus`);
   return focus;
@@ -81,12 +88,33 @@ describe("D learner states (fixtures through the production builders)", () => {
   });
 
   it("lists every published lesson exactly once in the rail, in every state", () => {
-    for (const { id } of learnScenarios) {
+    for (const id of learnScenarios) {
       const { rail } = learnScenario(id).workspace;
       const ids = [...rail.levels, ...rail.optional].flatMap((level) => level.modules.flatMap((module) => [...module.folded, ...module.lessons].map((lesson) => lesson.id)));
       expect(ids.toSorted(), id).toEqual(availableLessons.map((lesson) => lesson.id).toSorted());
       expect(ids.filter((lessonId) => ids.indexOf(lessonId) !== ids.lastIndexOf(lessonId)), id).toEqual([]);
     }
+  });
+
+  it("guest: saving the account comes before any lesson count, never a capital figure", () => {
+    const states = demoProgress();
+    const summary = getLearnerSummary(states);
+    const model = (lab: WorkspaceLab, personalized: boolean) => learnWorkspaceModel({ ...summary, states: states.map((state) => ({ ...state, userId: "u" })), recommendation: recommendLearning({ progress: states }), practiceCapital: { earnedPracticeCapitalMinor: 500_000n }, personalized }, [], lab, "2026-11-13");
+    expect(model({ ...locked, requiresAccount: true, completedPrerequisiteLessons: 7 }, true).lab).toEqual({ state: "guest" });
+    // A learner who finished initial onboarding with personalization sees no prompt for it.
+    expect(model(locked, true).personalize).toBe(false);
+    expect(model(locked, false).personalize).toBe(true);
+    // Unlocked shows the receipt-derived capital only.
+    expect(model({ ...locked, unlocked: true }, true).lab).toEqual({ state: "unlocked", capital: expect.stringContaining("5") });
+  });
+
+  it("opens the continuation's optional level, and only that one", () => {
+    const states = [{ lessonId: "returns-log-returns", status: "in_progress" as const, lastPosition: 2, completedAt: null, updatedAt: new Date("2026-11-13T09:00:00Z") }];
+    const summary = getLearnerSummary(states);
+    const { rail, then } = learnWorkspaceModel({ ...summary, states: states.map((state) => ({ ...state, userId: "u" })), recommendation: recommendLearning({ progress: states }), practiceCapital: { earnedPracticeCapitalMinor: 0n }, personalized: true }, [], locked, "2026-11-13");
+    expect(rail.optional.filter((level) => level.current).map((level) => level.id)).toEqual(["L6"]);
+    expect(rail.levels.some((level) => level.current)).toBe(false);
+    expect(then).toBeUndefined();
   });
 
   it("uses Czech vocalization for counts", () => {
@@ -117,7 +145,7 @@ describe("D never shows an open question's answer before it is attempted", () =>
       getGuidedSteps(lesson).forEach((step, position) => {
         const states = [{ lessonId: next.id, status: "in_progress" as const, lastPosition: position, completedAt: null, updatedAt: new Date("2026-11-13T09:00:00Z") }];
         const summary = getLearnerSummary(states);
-        const { workspace } = { workspace: learnWorkspaceModel({ ...summary, states: states.map((state) => ({ ...state, userId: "test" })), recommendation: recommendLearning({ progress: states }), practiceCapital: { earnedPracticeCapitalMinor: 0n }, personalized: true }, [], "unavailable", "2026-11-13") };
+        const { workspace } = { workspace: learnWorkspaceModel({ ...summary, states: states.map((state) => ({ ...state, userId: "test" })), recommendation: recommendLearning({ progress: states }), practiceCapital: { earnedPracticeCapitalMinor: 0n }, personalized: true }, [], locked, "2026-11-13") };
         if (workspace.focus.kind !== "lesson") throw new Error("expected a lesson");
         const shown = visibleBeforeAnswer(workspace.focus);
         const where = `${next.id} step ${position + 1}`;
@@ -138,7 +166,7 @@ describe("D never shows an open question's answer before it is attempted", () =>
   it("renders only the prompt and controls before an attempt: no explanation, no recap", () => {
     for (const id of ["rozpracovano", "vyber"] as const) {
       const question = lessonFocus(id).question!;
-      const html = renderToStaticMarkup(createElement(InlineQuestion, { question, lessonHref: "/learn/x", earlierSteps: 5 }));
+      const html = renderToStaticMarkup(createElement(InlineQuestion, { question, lessonId: "x", position: 5, href: "/learn/x", earlierSteps: 5 }));
       expect(html, id).toContain("Zkontrolovat");
       expect(html, id).not.toContain(question.correctExplanation);
       expect(html, id).not.toContain(question.incorrectExplanation);

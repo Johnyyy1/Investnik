@@ -73,7 +73,7 @@ try {
 
   // Scoped lessons are complete, so Learn prioritizes the missing Milestone A skills.
   await page.goto(`${baseURL}/learn`);
-  const recommended = page.getByRole("region", { name: "Doporučeno pro tebe", exact: true });
+  const recommended = page.getByRole("main");
   await recommended.getByRole("heading", { name: "Co ti zbývá do milníku A", exact: true }).waitFor();
   assert.equal(await recommended.getByRole("link", { name: "Pokračovat", exact: true }).getAttribute("href"), "/learn/checkpoint/1.1");
   await page.goto(`${baseURL}/learn/volatility`);

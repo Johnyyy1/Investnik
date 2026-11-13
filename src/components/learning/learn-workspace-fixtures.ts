@@ -9,13 +9,14 @@ import { recommendLearning } from "@/features/personalization/recommendation";
 import { evaluateUnlock, PORTFOLIO_LAB_UNLOCK_CAPITAL_MINOR, PORTFOLIO_LAB_UNLOCK_ID } from "@/features/progression/unlocks";
 import { LESSON_XP } from "@/features/gamification/domain";
 import { getPracticeCapitalSummary, lessonReward } from "@/features/rewards/practice-capital";
-import type { LearnScenarioId } from "./scenario-list";
-import { learnWorkspaceModel, type WorkspaceLab } from "./workspace-model";
+import { learnWorkspaceModel } from "./learn-workspace-model";
+
+/** Test fixtures: learner states as progress rows, run through the same pure builders as loadLearner and /learn. */
+export const learnScenarios = ["novy", "rozpracovano", "vyber", "vyklad", "modul", "milnik"] as const;
+export type LearnScenarioId = (typeof learnScenarios)[number];
 
 // Fixed clock: every load renders the same learner.
 const NOW = new Date("2026-11-13T09:00:00Z");
-
-
 const minutesAgo = (minutes: number) => new Date(NOW.getTime() - minutes * 60_000);
 const completed = (lessonIds: readonly string[]): LearnerState[] => lessonIds.map((lessonId, index) => {
   // Oldest first, so the last id is the most recent completion (the summary resumes from its module).
@@ -38,7 +39,7 @@ function progressFor(id: LearnScenarioId): LearnerState[] {
   }
 }
 
-export function learnScenario(id: LearnScenarioId, labOverride?: "loading" | "unavailable") {
+export function learnScenario(id: LearnScenarioId) {
   const states = progressFor(id);
   const completedIds = new Set(states.filter((state) => state.status === "completed").map((state) => state.lessonId));
   // As loadLearner: the recommendation picks the module the summary falls back to.
@@ -50,9 +51,8 @@ export function learnScenario(id: LearnScenarioId, labOverride?: "loading" | "un
   const practiceCapital = getPracticeCapitalSummary(awards, unlock.unlocked ? [PORTFOLIO_LAB_UNLOCK_CAPITAL_MINOR] : []);
   const evidence = { completions: states.flatMap((state) => state.completedAt ? [{ lessonId: state.lessonId, completedAt: state.completedAt }] : []), attempts: [], submissions: [] };
   const milestones = milestoneStates(evidence).map((state) => state.id === "A" ? { ...state, navigation: milestoneANavigation(state, evidence, { hasIps: false, labUnlocked: unlock.unlocked, crisisFinished: false }) } : state);
-  const lab: WorkspaceLab = labOverride ?? unlock;
   return {
     labLocked: !unlock.unlocked,
-    workspace: learnWorkspaceModel({ ...summary, states: states.map((state) => ({ ...state, userId: "ukazka" })), recommendation, practiceCapital, personalized: id !== "novy" }, milestones, lab, NOW.toISOString().slice(0, 10)),
+    workspace: learnWorkspaceModel({ ...summary, states: states.map((state) => ({ ...state, userId: "ukazka" })), recommendation, practiceCapital, personalized: id !== "novy" }, milestones, unlock, NOW.toISOString().slice(0, 10)),
   };
 }

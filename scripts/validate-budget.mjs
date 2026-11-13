@@ -30,7 +30,7 @@ try {
   await page.goto(`${baseURL}/onboarding`);
   await finishOnboarding(page);
   await page.locator('details[data-level="L0"] > summary:visible').click();
-  await page.getByRole("link", { name: /0.1.1.*Kolik ti zbývá/ }).click();
+  await page.getByRole("link", { name: /^Kolik ti zbývá/ }).click();
 
   async function check() {
     await page.getByRole("button", { name: "Zkontrolovat odpověď", exact: true }).click();

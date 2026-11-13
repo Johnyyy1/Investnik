@@ -33,7 +33,7 @@ try {
     await page.getByRole("textbox", { name: "Heslo", exact: true }).fill(password);
     await page.getByRole("button", { name: "Přihlásit se", exact: true }).click();
     await page.waitForURL("**/learn");
-    await page.getByRole("heading", { level: 1, name: "Vítej zpátky, Returns.", exact: true }).waitFor();
+    await page.getByRole("region", { name: "Tvoje cesta", exact: true }).waitFor();
   }
   async function signOut() {
     const response = await page.request.post(`${baseURL}/api/auth/sign-out`, { data: {}, headers: { Origin: baseURL } });
@@ -46,15 +46,16 @@ try {
   assert.ok((await page.request.post(`${baseURL}/api/auth/sign-up/email`, { headers: { origin: baseURL }, data: { name: "Returns integration QA", email, password } })).ok());
   await page.goto(`${baseURL}/onboarding`);
   await finishOnboarding(page); // Ends on /learn (Studovna) for a fresh learner.
-  await page.getByRole("heading", { level: 1, name: "Vítej v Investníku, Returns.", exact: true }).waitFor();
+  // A fresh learner starts at the first Foundations lesson; Learn greets nobody by name (WP-14).
+  await page.getByRole("heading", { level: 1, name: "Spoření vs. investování", exact: true }).waitFor();
   [{ id: userId }] = await sql`select id from "user" where email = ${email}`;
   assert.equal(await page.locator(".investi-theme").count(), 1, "Learn uses the shared theme");
-  // Returns now sits in display module 3.1 within the initially collapsed portfolio level.
-  // Exercise the actual map navigation and keep checking the historical lesson route.
-  const portfolioLevel = page.locator("[data-investi-studovna]:visible").getByTestId("journey-modules").locator('[data-level="L3"]');
+  // Returns now sits in display module 3.1 within the initially collapsed portfolio level of the rail.
+  // Exercise the actual rail navigation and keep checking the historical lesson route.
+  const portfolioLevel = page.locator("[data-investi-studovna]:visible aside").locator('[data-level="L3"]');
   assert.equal(await portfolioLevel.evaluate((element) => element.open), false, "non-current level starts collapsed");
   await portfolioLevel.locator(":scope > summary").click();
-  const lessonLink = portfolioLevel.locator(`[data-display-module="3.1"] a[href="${route}"]`);
+  const lessonLink = portfolioLevel.locator(`a[href="${route}"]`);
   await lessonLink.waitFor({ state: "visible" });
   assert.equal(await lessonLink.count(), 1, "Learn lists the Returns lesson in its new display module");
   await lessonLink.click();

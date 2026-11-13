@@ -1,13 +1,17 @@
 "use client";
 
 import { ArrowRight, CircleAlert, CircleCheck, CircleHelp, CircleX, ListTree, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
-import { Button, ButtonLink, IconButton } from "@/components/ui/button";
+import { Button, IconButton } from "@/components/ui/button";
 import { controlClassName } from "@/components/ui/form-controls";
 import { useSheetSwipeDismiss } from "@/components/ui/sheet-swipe";
 import { evaluateQuestion, feedbackFor } from "@/features/lessons/question-evaluation";
+import { saveLessonPositionAction } from "@/features/progress/actions";
 import { cn } from "@/lib/utils";
-import type { InlineQuestion as Question } from "./workspace-model";
+import type { InlineQuestion as Question } from "./learn-workspace-model";
+
+export const learnMainId = "learn-main";
 
 /**
  * Desktop rail beside the main column. Collapsing swaps the grid track instantly: it is navigation,
@@ -16,15 +20,16 @@ import type { InlineQuestion as Question } from "./workspace-model";
 export function CollapsibleWorkspace({ rail, count, children }: { rail: React.ReactNode; count: React.ReactNode; children: React.ReactNode }) {
   const [open, setOpen] = useState(true);
   const railId = useId();
-  // Same box as the rendered app header (max-w-shell; 20/40/64px gutters at 768 and 1200px), so the rail starts on the wordmark's edge.
-  return <div className={cn("mx-auto w-full max-w-shell px-5 md:px-10 min-[75rem]:px-16 lg:grid lg:gap-12 xl:gap-16", open ? "lg:grid-cols-[--spacing(68)_minmax(0,1fr)]" : "lg:grid-cols-[--spacing(11)_minmax(0,1fr)]")}>
+  // Same box as the rendered app header (paper-shell.module.css: max-w-shell, 20/40/64px gutters at 768 and 1200px), in px as
+  // there, so the rail starts on the wordmark's edge at every text size and enlarged text keeps its width.
+  return <div data-investi-studovna className={cn("mx-auto w-full max-w-shell px-[20px] min-[768px]:px-[40px] min-[1200px]:px-[64px] lg:grid lg:gap-12 xl:gap-16", open ? "lg:grid-cols-[--spacing(68)_minmax(0,1fr)]" : "lg:grid-cols-[--spacing(11)_minmax(0,1fr)]")}>
     {/* The header scrolls away, so the rail sticks to the top. -ml-4 + px-2 lets row hovers bleed 8px past the
         wordmark edge and leaves room for the 7px focus ring inside the scroller. */}
     <aside aria-labelledby={`${railId}-title`} className="hidden lg:sticky lg:top-0 lg:-ml-4 lg:block lg:max-h-dvh lg:scroll-pt-16 lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:px-2 lg:pt-10 lg:pb-10">
       {/* The shell's skip link lands before the rail; this one jumps the tree (WCAG 2.4.1). */}
-      <a href="#d-main" className="sr-only rounded-control bg-surface px-3 text-small font-semibold shadow-elevation-2 focus:not-sr-only focus:absolute focus:z-20 focus:mt-1 focus:ml-2 focus:inline-flex focus:min-h-control-sm focus:items-center">Přeskočit kurikulum</a>
+      <a href={`#${learnMainId}`} className="sr-only rounded-control bg-surface px-3 text-small font-semibold shadow-elevation-2 focus:not-sr-only focus:absolute focus:z-20 focus:mt-1 focus:ml-2 focus:inline-flex focus:min-h-control-sm focus:items-center">Přeskočit kurikulum</a>
       <div className={cn("sticky top-0 z-10 flex min-h-control-sm items-center gap-2 bg-background", open ? "pl-2" : "justify-center")}>
-        <h2 id={`${railId}-title`} className={cn("flex min-w-0 flex-1 items-baseline gap-2 text-small font-semibold font-sans tracking-normal", !open && "sr-only")}>Kurikulum {count}</h2>
+        <h2 id={`${railId}-title`} className={cn("flex min-w-0 flex-1 items-baseline gap-2 font-sans text-small font-semibold tracking-normal", !open && "sr-only")}>Kurikulum {count}</h2>
         <IconButton variant="ghost" aria-label={open ? "Skrýt kurikulum" : "Zobrazit kurikulum"} aria-expanded={open} aria-controls={railId} onClick={() => setOpen((value) => !value)} className="size-control-sm shrink-0 text-secondary">
           {open ? <PanelLeftClose className="size-icon-md" aria-hidden="true" /> : <PanelLeftOpen className="size-icon-md" aria-hidden="true" />}
         </IconButton>
@@ -38,8 +43,8 @@ export function CollapsibleWorkspace({ rail, count, children }: { rail: React.Re
 /**
  * Below 1024px (a rem breakpoint, so 200 % text lands here too) the same tree opens as a bottom sheet:
  * native modal <dialog> (focus trap, Escape, focus return) plus the shipped touch swipe-to-dismiss.
- * Entry slides from the edge it is attached to (spatial continuity, 270ms drawer curve). It runs on
- * `translate`, so it never fights the swipe hook, which writes `transform`. Reduced motion: the root rule makes it instant.
+ * Entry slides from the edge it is attached to (270ms drawer curve). It runs on `translate`, so it never
+ * fights the swipe hook, which writes `transform`. Reduced motion: the root rule makes it instant.
  */
 export function CurriculumSheet({ children }: { children: React.ReactNode }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -65,23 +70,27 @@ const keepUnits = (text: string) => text.replace(/(\d) (%|Kč|p\.\s?b\.)/g, "$1\
 
 /**
  * The saved step's question, answered in place. Grading is the production evaluateQuestion/feedbackFor pair the
- * lesson player and the server use, never a copy. Check stays enabled; an empty or malformed answer gets a field
- * error instead of a verdict. Before an answer nothing beyond the prompt is shown: no recap, no explanation.
- * Prototype: a correct answer links to the lesson. Production saves position + 1 first (saveLessonPositionAction).
+ * lesson player uses; the server re-grades on save and moves the cursor only for a correct answer. Check stays
+ * enabled and grades on submit only, never on change. Before an answer nothing beyond the prompt is shown.
  */
-export function InlineQuestion({ question, lessonHref, earlierSteps }: { question: Question; lessonHref: string; earlierSteps: number }) {
+export function InlineQuestion({ question, lessonId, position, href, earlierSteps }: { question: Question; lessonId: string; position: number; href: string; earlierSteps: number }) {
   const id = useId();
+  const router = useRouter();
   const [answer, setAnswer] = useState("");
   const [invalid, setInvalid] = useState(false);
   const [verdict, setVerdict] = useState<Verdict>();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string>();
+  const busy = useRef(false);
   const field = useRef<HTMLInputElement>(null);
-  const next = useRef<HTMLAnchorElement>(null);
+  const next = useRef<HTMLButtonElement>(null);
   const solved = verdict?.correct === true;
   // The submit button is replaced on success; hand focus to its successor so keyboard users keep their place.
   useEffect(() => { if (solved) next.current?.focus(); }, [solved]);
 
   function check(event: React.FormEvent) {
     event.preventDefault();
+    if (solved) return void continueLesson();
     const result = evaluateQuestion(question, { answer });
     if (result === undefined) { setInvalid(true); setVerdict(undefined); if (question.type === "numericQuestion") field.current?.focus(); return; }
     setInvalid(false);
@@ -91,9 +100,20 @@ export function InlineQuestion({ question, lessonHref, earlierSteps }: { questio
     setAnswer(value); setInvalid(false);
     if (!solved) setVerdict(undefined);
   }
+  // The saved cursor moves only after the server re-grades the answer; a failed save keeps it and says so.
+  async function continueLesson() {
+    if (busy.current) return;
+    busy.current = true; setPending(true); setError(undefined);
+    try {
+      const result = await saveLessonPositionAction(lessonId, position + 1, { answer });
+      if (!result.ok) { setError(result.message); return; }
+      router.push(href); router.refresh();
+    } catch { setError("Tvé místo se nepodařilo uložit. Zkus to znovu."); }
+    finally { busy.current = false; setPending(false); }
+  }
   const describedBy = cn(invalid && `${id}-error`, `${id}-feedback`);
   const action = solved
-    ? <ButtonLink ref={next} href={lessonHref} className="max-sm:w-full">Pokračovat v lekci<ArrowRight className="-mr-0.5 size-icon-sm" aria-hidden="true" /></ButtonLink>
+    ? <Button buttonRef={next} type="submit" aria-busy={pending || undefined} disabled={pending} className="max-sm:w-full">{pending ? "Ukládám…" : "Pokračovat v lekci"}<ArrowRight className="-mr-0.5 size-icon-sm @max-[14rem]:hidden" aria-hidden="true" /></Button>
     : <Button type="submit" className="max-sm:w-full">Zkontrolovat</Button>;
 
   return <form onSubmit={check} noValidate className="grid gap-5">
@@ -116,10 +136,11 @@ export function InlineQuestion({ question, lessonHref, earlierSteps }: { questio
           {question.options.map((option) => {
             const chosen = answer === option.id;
             const marked = chosen && verdict;
-            return <label key={option.id} className={cn("flex min-h-control-lg cursor-pointer items-start gap-3 rounded-control border bg-surface px-4 py-3 text-body transition-[background-color,border-color] duration-(--motion-micro) hover:bg-surface-muted has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-4 has-[:focus-visible]:outline-foreground",
+            return <label key={option.id} className={cn("flex min-h-control-lg cursor-pointer items-start gap-3 rounded-control border bg-surface px-[16px] py-3 text-body transition-[background-color,border-color] duration-(--motion-micro) hover:bg-surface-muted has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-4 has-[:focus-visible]:outline-foreground",
               marked ? verdict.correct ? "border-primary bg-primary-soft hover:bg-primary-soft" : "border-danger-border bg-danger-soft hover:bg-danger-soft" : chosen ? "border-primary bg-primary-soft hover:bg-primary-soft" : "border-border-strong")}>
               <input type="radio" name={`${id}-answer`} value={option.id} checked={chosen} disabled={solved} onChange={() => change(option.id)} className="mt-1 size-icon-sm shrink-0 accent-primary focus-visible:outline-none" />
-              <span className="min-w-0 flex-1 text-pretty">{keepUnits(option.label)}</span>
+              {/* px padding (as the surface) keeps „100,20 Kč“ whole at 320px and 200 % text; anywhere is only the last resort. */}
+              <span className="min-w-0 flex-1 text-pretty [overflow-wrap:anywhere]">{keepUnits(option.label)}</span>
               {marked && (verdict.correct ? <CircleCheck className="mt-0.5 size-icon-md shrink-0 text-primary" aria-hidden="true" /> : <CircleX className="mt-0.5 size-icon-md shrink-0 text-danger-ink" aria-hidden="true" />)}
             </label>;
           })}
@@ -136,6 +157,7 @@ export function InlineQuestion({ question, lessonHref, earlierSteps }: { questio
         <span className="min-w-0 text-pretty"><strong className="font-semibold">{verdict.correct ? "Správně." : "Ještě ne."}</strong> {keepUnits(verdict.explanation)}{verdict.correct ? "" : " Uprav odpověď a zkontroluj ji znovu."}</span>
       </p>}
     </div>
+    {error && <p role="alert" className="flex items-start gap-2 text-small text-danger-ink"><CircleAlert className="mt-0.5 size-icon-sm shrink-0" aria-hidden="true" />{error}</p>}
 
     {!solved && <details className="group border-t border-divider pt-3">
       <summary className="-ml-2 inline-flex min-h-control-sm cursor-pointer list-none items-center gap-2 rounded-control px-2 text-small font-semibold text-primary-hover hover:bg-surface-muted [&::-webkit-details-marker]:hidden">

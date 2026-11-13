@@ -82,7 +82,7 @@ async function markCompleted(where) {
 }
 async function recommends(title) {
   await page.goto(`${baseURL}/learn`);
-  await page.getByRole("region", { name: "Doporučeno pro tebe", exact: true }).getByText(title).first().waitFor();
+  await page.getByRole("main").getByRole("heading", { level: 1, name: title }).waitFor();
 }
 async function startModule(slug, title, count, first) {
   await page.goto(`${baseURL}/learn/${slug}`);

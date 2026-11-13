@@ -35,7 +35,7 @@ try {
   // A legacy account with existing progress and no profile must never be re-gated.
   await sql`insert into lesson_progress (user_id, lesson_id, status, last_position, updated_at) values (${id}, 'foundations-why-invest', 'in_progress', 1, now())`;
   await page.goto(`${baseURL}/learn`);
-  await page.getByRole("region", { name: "Doporučeno pro tebe", exact: true }).waitFor();
+  await page.getByRole("region", { name: "Tvoje cesta", exact: true }).waitFor();
   await page.goto(`${baseURL}/onboarding`);
   await page.waitForURL("**/learn");
   await page.goto(`${baseURL}/settings`);
@@ -50,7 +50,7 @@ try {
   // Incomplete profile + existing progress also bypasses the initial onboarding gate.
   await sql`update learning_profile set onboarding_completed_at = null where user_id = ${id}`;
   await page.goto(`${baseURL}/learn`);
-  await page.getByRole("region", { name: "Doporučeno pro tebe", exact: true }).waitFor();
+  await page.getByRole("region", { name: "Tvoje cesta", exact: true }).waitFor();
   // Existing portfolio-only account with no profile remains accessible.
   await sql`delete from learning_profile where user_id = ${id}`;
   await sql`delete from lesson_progress where user_id = ${id}`;
