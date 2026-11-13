@@ -4,6 +4,8 @@ This plan turns the findings in [AUDIT.md](AUDIT.md) (stamped at `origin/main` 3
 
 **Status (2026-11-13).** The founder approved direction **D „Studijní pracoviště“** for `/learn` (decision F1). [Learn: direction D](#learn-direction-d-approved-2026-11-13) below replaces the Learn half of WP-06 with WP-17 to WP-22. Direction **C „Cesta k plánu“** is not used for `/learn`. It remains the candidate structure for `/progress` (WP-06, D4). Nothing here authorizes a merge or a deploy. Every PR stays in review until the founder merges it.
 
+**Refinement (2026-11-13, branch `proto/learn-d-refinement`).** D was refined to production quality as a development-only prototype, with six deterministic learner states. See [LEARN-D-REFINEMENT.md](LEARN-D-REFINEMENT.md) for the design record and [LEARN-D-INTEGRATION.md](LEARN-D-INTEGRATION.md) for the production plan. It added WP-17b and decisions D7 and D8, and implemented WP-18 on that branch. Production `/learn` is unchanged.
+
 ## Ground rules for every package
 
 - **One package = one issue = one worktree = one PR** ([WORKTREES.md](../../WORKTREES.md)). Read `docs/agents/ui-and-design.md`, `DESIGN.md` and `docs/design-system.md` before starting.
@@ -25,10 +27,12 @@ This plan turns the findings in [AUDIT.md](AUDIT.md) (stamped at `origin/main` 3
 | D4 | What Progress is for once the curriculum map moves out | WP-06 | Milestone-first, built on direction C (recommended) · mastery-first |
 | D5 | Single term for the mixed checkpoint | WP-03 | „Smíšená kontrola“ (recommended: Czech, already in milestone copy) · „Checkpoint“ |
 | D6 | Where the rail sends a learner: straight to the lesson route, or to an in-page lesson preview (`/learn?lesson=…`, as in the prototype) | WP-20 | Straight to the lesson (recommended: every lesson is open, and the lesson route already has its own intro) · in-page preview |
+| D7 | Where the study-plan context goes on D („Jak si rozvrhnout učení“, the recommended lesson when it differs from the continuation) | WP-21 | Settings → Učení, with the reason line staying on `/learn` (recommended) · a disclosure under the task |
+| D8 | After module 1.1 `recommendLearning` sends learners to 3.1.1 (Returns, outside Milestone A), while Milestone A continues with 2.1.6 ([finding C-3](LEARN-D-INTEGRATION.md#4-correctness-findings)) | Recommendation rules (own PR) | Follow Milestone A order (recommended) · keep Returns after Foundations |
 
 **Decided.**
 - **F1 (2026-11-13): `/learn` follows direction D.** The brief and the prototype are `docs/ui-overhaul/LEARN-VARIANTS.md` and `/dev/learn-variants/d`. Both are uncommitted in the `design-foundation` and `learn-variant-d` worktrees and land with WP-00.
-- **F4, rail rows only:** 44 px (`min-h-control-sm`) at every width. The prototype's 36 px pointer rows are dropped (see [Resolved conflicts](#resolved-conflicts)). F4 for Lab and Settings stays open.
+- **F4, rail rows only:** 44 px (`min-h-control-sm`) at every width. The prototype's 36 px pointer rows are dropped (see [Resolved conflicts](#resolved-conflicts)). Implemented and measured in the refinement: the smallest rail and sheet row is 44.0 px. F4 for Lab and Settings stays open.
 - **D2 is narrowed by F1:** D removes the guide illustration from `/learn`. D2 still decides the other screens.
 
 ## Phases and sequence
@@ -250,7 +254,7 @@ D keeps B's curriculum as a compact rail and puts A's single task in the main pa
 | **Pre-answer hint leak.** The prototype's „Potřebuješ nápovědu?“ shows the authored `incorrectExplanation` before any attempt. 13 of 227 graded questions state the answer there, e.g. `returns-compounding` step 4: „Faktor je 0,96“ | Drop the pre-answer hint. `incorrectExplanation` appears only after an incorrect attempt, as in the lesson player. A hint returns only with an authored `hint` field, which is content work under the lesson standard and outside this track | The prototype's claim that the hint „never states the result“ is false for 6 % of questions |
 | **Post-correct recap.** The prototype reveals the recap after a correct answer | Delete it. In production a correct answer saves and navigates, so that state is never visible | Nothing to build |
 | **Duplicate sheet.** `CurriculumSheet` is a second bespoke `<dialog>` with a fixed id (`b-sheet-title`) | Reuse the shipped edge-attached sheet (`src/components/ui/sheet-swipe.ts`, PR #499) and `useId` | One sheet implementation, swipe-to-dismiss included |
-| **Rail edge versus header edge.** The workspace uses `max-w-shell` (90rem) while the header container is `max-w-6xl` (72rem) | WP-20 aligns both to one width token. Decide on screenshots at 1280 and 1440, and change the header only if the shell's width must change | One leading edge from the wordmark down |
+| **Rail edge versus header edge.** The workspace uses `max-w-shell` (90rem) while the header container is `max-w-6xl` (72rem) | Resolved in the refinement. The header *as rendered* uses `max-w-shell` with 20/40/64 px gutters (`paper-shell.module.css` overrides `max-w-6xl`), and WP-04 keeps that box. D uses the same box, and rail text starts on the wordmark's edge. The rendered header also scrolls away (`position: relative`), so the rail sticks to `top: 0`, not under the header | One leading edge from the wordmark down |
 | **Truncated „Potom“ title** (`truncate`) | Let it wrap (`text-pretty`) | The full title must stay readable without the rail |
 
 ### Work packages
@@ -261,6 +265,12 @@ D keeps B's curriculum as a compact rail and puts A's single task in the main pa
 - **Status:** implemented on branch `fix/learn-recap-answer-leak` (commit f81c5a2), not yet pushed.
 - **Guardrails:** Grading, completion, progression and persisted lesson state are unchanged.
 - **Verify:** The regression tests in `studovna-model.test.ts` failed before the fix. `test:studovna`. A catalog probe of all 227 graded steps finds no correct option label or numeric answer in the recap or in the step preview text.
+
+#### WP-17b · Resolve fact tokens in the Learn preview
+
+- **Change:** `studovnaLesson()` runs the authored lesson through `prepareLessonFacts(…, factRegistry, { today: factToday(), published: true })` before it builds the step, question and recap. Today 17 of 475 saved-step previews (7 lessons) would print raw `{{…}}` tokens on `/learn` ([finding C-2](LEARN-D-INTEGRATION.md#4-correctness-findings)).
+- **Depends on:** WP-17.
+- **Verify:** A catalog unit test (no `{{` in any preview), `test:studovna`.
 
 #### WP-00 · Land the design foundation (prerequisite)
 
@@ -277,11 +287,18 @@ D keeps B's curriculum as a compact rail and puts A's single task in the main pa
 - **Depends on:** WP-00 (both edit `tokens.css`).
 - **Guardrails:** No visual change. Any heading that changes is a bug in this PR.
 - **Verify:** A computed-style snapshot (`font-family`, `font-weight`, `letter-spacing`, `font-size`, `line-height`) of every `h1`–`h4` on the 27 audit routes at 1440 and 390, before and after, must be identical. Run `test:design-system-browser`, `test:product` and `test:marketing-browser`.
+- **Status:** implemented on `proto/learn-d-refinement` (30db51e) as its own commit, ready to cherry-pick into a WP-18 branch after WP-00.
+  - 46 masked utilities were removed, plus `blockTitle`, `cardTitle` and `AppHeader`.
+  - The fact-notice `h3` pins `tracking-heading`, because its shared `eyebrow` class would otherwise start applying.
+  - `tokens.test.ts` now fails on any unlayered heading selector.
+  - The snapshot was identical for 265 headings on the 23 routes that render without a database.
+  - Still to run on the PR: the authenticated routes with a seeded database, and the three browser suites above.
 
 #### WP-19 · Learn workspace model (no UI change)
 
 - **Change:** A pure server function, `learnWorkspaceModel(summary, milestones)`. It builds the rail (open level, folded-done counts, the „Prohloubení“ group, status per lesson), the continuation (lesson, step, meter, minutes left, question kind), „Potom“, the milestone row and the complete states from the builders listed above. It reuses `curriculumMapModel`, `studovnaLesson` and `milestoneANextStep`, and computes nothing new about progress.
 - **Verify:** Unit tests for a new learner (position 0), in progress (the demo profile), a saved step with a question, a saved step without one, Milestone A lessons done, Milestone A achieved, all complete, and a learner with Lab locked. The rail contains every published lesson exactly once.
+- **Head start:** the refinement wrote this model and its tests: `src/app/dev/learn-variants/_prototype/workspace-model.ts` (signature `learnWorkspaceModel(summary, milestones, lab, today)`) and `workspace-model.test.tsx`. It includes the catalog no-leak and no-token tests. WP-19 moves them and adds the entry-test, guest and Lab-unavailable fixtures ([integration plan §5](LEARN-D-INTEGRATION.md#5-work-packages)).
 
 #### WP-20 · Rail, sheet and inline question components
 
@@ -290,6 +307,14 @@ D keeps B's curriculum as a compact rail and puts A's single task in the main pa
   - Generalize `StudovnaQuestion` to `multipleChoiceQuestion` and `numericQuestion`. For numeric input, reuse `parseNumericAnswer` from `src/features/finance/numeric-input`, a labelled input with `inputmode="decimal"`, validation on submit and a stable `role="status"` region. Other question kinds show the step and the CTA to the lesson.
   - Real headings throughout (needs WP-18).
   - The step meter keeps `role="progressbar"` and adds `aria-valuetext="Krok N z M"`.
+  - **From the refinement:**
+    - Split into WP-20a (rail and sheet) and WP-20b (question).
+    - Grade with `evaluateQuestion`/`feedbackFor` rather than a copy.
+    - Grade choices only on „Zkontrolovat“, never on change (finding C-4).
+    - Add a „Přeskočit kurikulum“ skip link at the top of the rail.
+    - Collapse to 2.75rem (one 44 px toggle).
+    - Answer inline only when the step has exactly one graded block.
+    - Reference implementation: `variant-d.tsx` and `variant-d-client.tsx` in `_prototype/`.
   - No collapse persistence until someone asks for it.
 - **Depends on:** WP-18, WP-19 and D6.
 - **Guardrails:** Client components import no lesson content. Only the serialized question block crosses the boundary (`check:lesson-bundle`). The server stays the grader.
@@ -359,6 +384,8 @@ Tick in the PR that closes each item.
 - [ ] D4 Progress purpose
 - [ ] D5 checkpoint term
 - [ ] D6 rail target (lesson route or in-page preview)
+- [ ] D7 study-plan context home
+- [ ] D8 recommendation order after module 1.1
 - [x] F1 `/learn` layout direction: D „Studijní pracoviště“ (2026-11-13)
 
 **Phase 0: foundations**
@@ -376,8 +403,9 @@ Tick in the PR that closes each item.
 
 **Phase 2: IA and hierarchy**
 - [ ] WP-17 Learn recap withheld on question steps (branch `fix/learn-recap-answer-leak`)
+- [ ] WP-17b Learn preview resolves fact tokens (finding C-2)
 - [ ] WP-00 design foundation landed; F1 and F4 (rail rows) recorded in `DESIGN.md`
-- [ ] WP-18 heading rule in `@layer base`; heading no-op utilities removed; computed styles unchanged
+- [ ] WP-18 heading rule in `@layer base`; heading no-op utilities removed; computed styles unchanged (implemented on `proto/learn-d-refinement`, not merged)
 - [ ] WP-19 Learn workspace model with state tests
 - [ ] WP-20 rail (44 px rows), sheet reuse, numeric and choice inline question, no pre-answer hint
 - [ ] WP-21 `/learn` cutover; 13 browser suites updated; `/learn` at 1440 ≤ 3,800 px

@@ -66,8 +66,10 @@ export function learnWorkspaceModel(summary: WorkspaceSummary, milestones: reado
   const preview = studovnaLesson(summary);
   const { lesson, step, recap } = withFacts(preview, calendarDate(preview.lesson.factContext?.asOf ?? today));
   const current = ordered.find((item) => item.id === lesson.id);
-  const graded = step.blocks.some(isQuestion);
-  const question = step.blocks.find((block): block is InlineQuestion => block.type === "numericQuestion" || block.type === "multipleChoiceQuestion");
+  const gradedBlocks = step.blocks.filter(isQuestion);
+  const graded = gradedBlocks.length > 0;
+  // Inline only when it is the step's sole graded block: the server moves the cursor only if every one is correct.
+  const question = gradedBlocks.length === 1 ? gradedBlocks.find((block): block is InlineQuestion => block.type === "numericQuestion" || block.type === "multipleChoiceQuestion") : undefined;
   const resuming = summary.state?.status === "in_progress";
   const lastDone = summary.completed.length ? [...summary.states].filter((state) => state.status === "completed").sort((a, b) => (b.completedAt?.getTime() ?? 0) - (a.completedAt?.getTime() ?? 0))[0] : undefined;
   const lastModule = lastDone && map.flatMap((level) => level.modules).find((module) => module.lessons.some((item) => item.id === lastDone.lessonId));

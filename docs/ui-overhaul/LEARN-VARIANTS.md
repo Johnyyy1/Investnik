@@ -61,6 +61,12 @@ This brief prepares decision F1 in [DESIGN.md](../../DESIGN.md#decisions-awaitin
 
 *Hypothesis: B's persistent curriculum is worth keeping as wayfinding, if it stays compact and out of the way, around A's single task.* Added 2026-11-13 after the founder preferred a B + A hybrid. Prototype: `/dev/learn-variants/d`.
 
+> **Superseded details (refinement, 2026-11-13).** [LEARN-D-REFINEMENT.md](LEARN-D-REFINEMENT.md) replaces the specifics below:
+> - Rail rows are 44 px everywhere.
+> - The pre-answer hint is removed, because the authored explanation states the result in 13 of 227 questions.
+> - Grading uses the production `evaluateQuestion`.
+> - The prototype has six learner states (`?stav=`).
+
 - **Rail (≥ 1024px):** 17rem, sticky under the header, collapsible to a 3.5rem strip (instant, no animation: navigation never animates). Only the current level is open; its finished lessons fold into one row („5 hotových lekcí“); levels 4–6 and V share one „Prohloubení“ disclosure. No lesson codes in the rail. Pointer rows are 36px (`min-h-9`), below the 44px `control-sm` floor: **a decision for F4**. The phone sheet keeps 44px rows.
 - **Main pane:** A's editorial column (`max-w-reading`): eyebrow, the lesson title as the `h1`, its summary, a per-step meter. One raised surface holds the active step and question. The step number is stated once (P2-02).
 - **Recap fix:** „Co už víš“ is withheld until the answer is correct. Before that, „Potřebuješ nápovědu?“ shows the method hint (the authored `incorrectExplanation`), which never states the result. Root cause, still present in production: `studovnaLesson` (`studovna-model.ts`) takes the last two descriptive blocks of earlier steps, and a worked example's conclusion can be the next question's answer. Fix it there before shipping any variant.
