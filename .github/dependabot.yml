@@ -12,6 +12,44 @@ updates:
         applies-to: version-updates
         update-types: [minor, patch]
 
+  - package-ecosystem: npm
+    directory: /mobile
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    # The Expo SDK pins these packages, and expo-doctor fails when one drifts from the SDK's
+    # version (expo/bundledNativeModules.json plus relatedPackages in api.expo.dev/v2/versions).
+    # They move together in a manual SDK upgrade PR (npx expo install --fix, then expo-doctor),
+    # never as single-package bumps. Ignore conditions also stop Dependabot security updates
+    # for them, so Expo security fixes come through SDK patch releases.
+    ignore:
+      - dependency-name: "expo"
+      - dependency-name: "expo-*"
+      - dependency-name: "@expo/*"
+      - dependency-name: "*-expo" # eslint-config-expo, babel-preset-expo, jest-expo
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-*"
+      - dependency-name: "*react-native*" # @react-native-*/*, lottie-react-native, @shopify/react-native-skia, ...
+      - dependency-name: "react-server-dom-webpack"
+      - dependency-name: "@shopify/flash-list"
+      - dependency-name: "unimodules-*"
+      - dependency-name: "@types/react"
+      - dependency-name: "@types/react-dom"
+      - dependency-name: "typescript"
+      - dependency-name: "metro"
+      - dependency-name: "@babel/core"
+      - dependency-name: "jest"
+      - dependency-name: "@types/jest"
+      # Not Expo: scripts/check-zod-versions.mjs requires the root lockfile's zod, so it moves with the root.
+      - dependency-name: "zod"
+    groups:
+      mobile-npm-minor-and-patch:
+        applies-to: version-updates
+        update-types: [minor, patch]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
