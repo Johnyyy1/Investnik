@@ -4,7 +4,12 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     // Lets `node --test` run lib/*.test.ts directly: Node strips the types and needs the file extension.
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@investnik/contracts": ["../packages/contracts/src"],
+      // packages/contracts would otherwise find the web's root node_modules/zod; metro.config.js pins Metro the same way.
+      "zod": ["./node_modules/zod"]
+    }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "../packages/contracts/src/**/*.ts"]
 }

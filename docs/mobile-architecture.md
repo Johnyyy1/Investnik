@@ -108,7 +108,7 @@ Not done on this branch, because the server change cannot be verified without a 
 
 ## CI
 
-- `.github/workflows/mobile.yml` runs on PRs and `main` pushes that touch `mobile/**`: `npm ci`, lint, typecheck, unit tests, `expo-doctor` and a Metro export for both platforms. No signing, no EAS, no store upload.
+- `.github/workflows/mobile.yml` runs on PRs and `main` pushes that touch `mobile/**` or `packages/**`: the `zod` lockfile check, `npm ci`, lint, typecheck, unit tests, `expo-doctor` and a Metro export for both platforms. No signing, no EAS, no store upload.
 - `ci.yml` skips PRs whose every changed file is under `mobile/` (`paths-ignore`). A PR touching anything else, and every push to `main`, still runs the full web pipeline. No status check is required on `main` today. If one becomes required, replace `paths-ignore` with an always-running job that skips internally.
 - `browser.yml`, `vercel.json` and the Vercel build are unchanged. Vercel still creates a preview for a mobile-only PR. The build ignores `mobile/` (not installed, type-checked or scanned).
 - Dependabot does not watch `mobile/` yet: Expo packages must move together with the SDK (`npx expo install --fix`), and single-package bumps would break the alignment that `expo-doctor` checks. A planned small PR adds a grouped `mobile/` entry that ignores SDK-pinned packages ([roadmap](mobile/implementation-roadmap.md#independent-small-prs)).

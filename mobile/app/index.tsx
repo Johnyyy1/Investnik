@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { parseAppConfig } from "../lib/app-config";
 import { apiOrigin } from "../lib/env";
 import { colors, spacing } from "../lib/theme";
 
@@ -15,6 +16,7 @@ const stateLabel: Record<BackendState, string> = {
 // Placeholder entry that proves the app starts and reaches the backend; product screens come in a later milestone.
 export default function Index() {
   const [backend, setBackend] = useState<BackendState>("checking");
+  const [maintenance, setMaintenance] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -24,6 +26,11 @@ export default function Index() {
       .then((response) => setBackend(response.ok ? "reachable" : "unreachable"))
       .catch(() => setBackend("unreachable"))
       .finally(() => clearTimeout(timeout));
+    // Planned endpoint (docs/mobile/api-plan.md). Until it exists, its 404 parses to "no maintenance".
+    fetch(`${apiOrigin}/api/v1/app-config`, { signal: controller.signal })
+      .then((response) => response.json())
+      .catch(() => undefined)
+      .then((body) => setMaintenance(parseAppConfig(body).maintenance));
     return () => {
       clearTimeout(timeout);
       controller.abort();
@@ -38,6 +45,7 @@ export default function Index() {
         <Text accessibilityLiveRegion="polite" style={[styles.body, backend === "unreachable" && styles.error]}>
           {stateLabel[backend]}
         </Text>
+        {maintenance ? <Text style={styles.body}>Probíhá údržba. Zkuste to prosím později.</Text> : null}
         {__DEV__ ? <Text style={styles.meta}>{apiOrigin}</Text> : null}
       </View>
     </SafeAreaView>

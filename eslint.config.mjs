@@ -19,6 +19,16 @@ const eslintConfig = defineConfig([
     // Local agent worktrees: full copies of the repository with their own build output.
     ".claude/**",
   ]),
+  {
+    // Shared with the Expo app: zod and relative imports only (packages/contracts/README.md).
+    files: ["packages/contracts/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        { patterns: [{ regex: "^(?!zod$|\\./)", message: "packages/contracts may import only zod and its own files." }] },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

@@ -388,11 +388,11 @@ Add one shared, source-only folder when the first endpoint is built: `packages/c
 Zod resolution. Node resolves an import from the file's own directory upwards, so `packages/contracts/*.ts` finds the root `node_modules/zod`. On a developer machine that folder exists and Metro and `tsc` would both quietly use the web's copy. In CI (`mobile.yml` installs only `mobile/`) and in EAS Build it is absent, so the same import fails there. The plan:
 
 - `zod` becomes a direct dependency of `mobile/`, at the exact version the web pins.
-- Metro: `resolver.disableHierarchicalLookup = true` and `resolver.nodeModulesPaths = [mobile/node_modules]`, so every import, including those from `packages/contracts`, resolves to the app's copy.
+- Metro: `watchFolders` limited to `packages/contracts` and `resolver.nodeModulesPaths = [mobile/node_modules]`. The root `node_modules` is outside every watched folder, so Metro cannot resolve into it, and `zod` imported from `packages/contracts` falls through to the app's copy. `resolver.disableHierarchicalLookup = true` was planned but breaks the export: npm nests packages such as `expo-router/node_modules/@expo/metro-runtime`, which hierarchical lookup is needed to find (PR 2.1).
 - `mobile/tsconfig.json`: a `paths` entry mapping `zod` to `mobile/node_modules/zod`, for the same reason in type-checking.
 - A CI check fails when `package-lock.json` and `mobile/package-lock.json` pin different `zod` versions.
 
-The Metro wiring is **assumed** to work and is the first thing to prove (`npm run check:export` in `mobile.yml`, which has no root `node_modules`, is enough to prove it). Fallbacks, in order: a `file:../packages/contracts` dependency; then npm workspaces limited to `mobile` and `packages/*` with the web left at the root.
+The Metro wiring is **confirmed** in PR 2.1 (a local export with the app's `zod` removed fails even though the root `node_modules/zod` exists). `npm run check:export` in `mobile.yml`, which has no root `node_modules`, proves it on every run. The fallbacks were not needed: a `file:../packages/contracts` dependency, then npm workspaces limited to `mobile` and `packages/*` with the web left at the root.
 
 Why the grading code belongs in the shared folder: mobile must grade offline, and the rule against duplicating learning logic rules out a copy. This is the justification the brief asks for before creating a package.
 
