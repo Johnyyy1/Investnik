@@ -1,5 +1,7 @@
 # Mobile app architecture
 
+The Milestone 0 discovery of 2026-11-14 continues this document in [mobile/architecture-audit.md](mobile/architecture-audit.md), [mobile/api-plan.md](mobile/api-plan.md) and [mobile/implementation-roadmap.md](mobile/implementation-roadmap.md). Where they differ (route prefix, milestone numbering), the open decision is listed in the audit.
+
 Status 2026-11-13: infrastructure only. `mobile/` is a minimal Expo app that starts, validates its backend URL and checks that it can reach the backend. It has no product screens, no sign-in and no shared contracts yet. Nothing in the web app, database, authentication or deployment behaves differently.
 
 ## Repository structure
