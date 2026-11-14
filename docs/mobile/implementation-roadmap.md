@@ -6,7 +6,7 @@ Rules for every milestone:
 
 - One issue, one worktree, one branch, one PR ([WORKTREES.md](../../WORKTREES.md)).
 - Backend PRs and app PRs are separate. A backend PR is safe to merge with no app using it.
-- Portfolio Lab is a separately gated P1 feature. Nothing below depends on it.
+- Portfolio Lab is outside v1, separately gated, and starts after milestone 4. Nothing below depends on it.
 - A performance target counts as met only when a measurement on a release build is recorded.
 
 ## Why milestone 3 is split
@@ -36,7 +36,7 @@ Finish what #502 could not: prove the app on real native runtimes, and settle th
 2. Run `eas init`; commit the project ID and owner in `mobile/app.json`.
 3. Produce an EAS `development` build for iOS and Android. Install both on physical devices.
 4. Confirm on each device that the start screen reaches `GET /api/auth/ok` on a local backend and on production.
-5. Choose the route prefix (decision D1) and make `docs/mobile-architecture.md` agree with `docs/mobile/api-plan.md`.
+5. Add a copy of the PRD ("Investník Mobile — PRD v1") as `docs/mobile/prd.md`, so later PRs can cite it.
 6. Record the placeholder app's cold-start time on each device as the baseline, using the method in the audit.
 
 ### Acceptance criteria
@@ -57,7 +57,7 @@ Sign-in, any API endpoint, any product screen, store submission, workspaces.
 ### PR boundaries
 
 - PR 1.1: EAS project link and identifier confirmation (`mobile/app.json`, documentation).
-- PR 1.2: baseline measurements and the prefix decision (documentation only).
+- PR 1.2: baseline measurements and the PRD copy in `docs/mobile/prd.md` (documentation only). The route prefix is already decided: `/api/v1` (D1).
 
 ## Milestone 2: Shared API contracts and authentication
 
@@ -73,17 +73,18 @@ A learner can sign in on the phone with the same account as on the web, and the 
 
 ### Tasks
 
-1. **Contracts spike.** Create `packages/contracts/` with one schema. Wire the web through a `tsconfig.json` path and the app through Metro. Prove it with `npm run check:export`. If it fails, take the next fallback listed in the audit.
-2. Move the pure grading modules into `packages/contracts/` and re-export them from their current paths. No web import changes.
+1. **Contracts spike.** Create `packages/contracts/` with one schema. Wire the web through a `tsconfig.json` path and the app through Metro. Resolve `zod` as the audit describes: a direct `mobile/` dependency at the web's exact version, Metro `resolver.disableHierarchicalLookup = true` plus `nodeModulesPaths`, a `paths` entry for `zod` in `mobile/tsconfig.json`, and a CI check that both lockfiles pin the same `zod` version. Prove it with `npm run check:export` in `mobile.yml`, where the root `node_modules` does not exist. If it fails, take the next fallback listed in the audit.
+2. Define structural types for the gradable blocks in `packages/contracts/` (only the fields the evaluators read). Move the pure grading modules and `parseNumericAnswer` there, typed against those types, and re-export them from their current paths. Add a web compile-time check that each `LessonBlock` question variant is assignable to its structural type. No web import changes.
 3. Update tooling: `ci.yml` and `mobile.yml` path filters for `packages/**`, knip, root `tsconfig.json`.
 4. **Server auth.** Add the `expo()` plugin before `nextCookies()` and the `investnik://` trusted origin. Pin `@better-auth/expo` to the server's `better-auth` version.
-5. Add `GET /api/v1/me`, `POST /api/v1/me/quick-start` and `PUT /api/v1/me/time-zone` with the shared error envelope, origin check and tests.
-6. Extract `loadLearnerFor(user)` and add `GET /api/v1/learn`.
-7. **App auth.** Add `expo-secure-store`, `expo-network`, `expo-web-browser` and the Better Auth client. Build sign-in, sign-up and sign-out screens for e-mail and password.
-8. Add the API client: cookie header from `authClient.getCookie()`, `credentials: "omit"`, response parsing with the shared schemas, the client version header.
-9. Add TanStack Query and show the signed-in learner's name and next lesson on a plain screen, to prove the whole path.
-10. Add Google sign-in through the redirect flow. Add Sign in with Apple if D5 includes it, in its own PR.
-11. Add the guest start (`x-investi-anonymous-kind: guest`) if the product wants account-free starts on mobile.
+5. Add `GET /api/v1/me`, `POST /api/v1/me/quick-start` and `PUT /api/v1/me/time-zone` with the shared error envelope, origin check and tests. `GET /api/v1/me` records the early return as the web `(app)` layout does (decision D12).
+6. Add `GET /api/v1/app-config` (no session): `{ minSupportedVersion, latestVersion, maintenance }` from environment variables.
+7. Extract `loadLearnerFor(user)` and add `GET /api/v1/learn`.
+8. **App auth.** Add `expo-secure-store`, `expo-network`, `expo-web-browser` and the Better Auth client. Build sign-in, sign-up and sign-out screens for e-mail and password.
+9. Add the API client: cookie header from `authClient.getCookie()`, `credentials: "omit"`, response parsing with the shared schemas, the client version header. Check `app-config` at start-up and show an update or maintenance screen when it says so. Every build given to testers includes this check.
+10. Add TanStack Query and show the signed-in learner's name and next lesson on a plain screen, to prove the whole path.
+11. Add Google sign-in through the redirect flow. Add Sign in with Apple if D5 includes it, in its own PR.
+12. Add the guest start (`x-investi-anonymous-kind: guest`), recommended by decision D14.
 
 ### Acceptance criteria
 
@@ -92,6 +93,8 @@ A learner can sign in on the phone with the same account as on the web, and the 
 - Signing out removes it.
 - `GET /api/v1/learn` on the phone shows the same next lesson as `/learn` on the web for the same account.
 - A mobile-first account gets a learning profile with the device's time zone before it can complete anything.
+- An app below `minSupportedVersion` shows only the update screen; `maintenance: true` shows the maintenance screen; with the variables unset the app starts normally.
+- A learner who returns through the app on a later day is counted by the early-return measure.
 - Every existing web auth suite passes unchanged on the PR that adds the plugin.
 - Web bundle size for the lesson route is within its budget.
 
@@ -111,10 +114,10 @@ Lessons, progress writes, offline behaviour, account deletion UI, Lab.
 - PR 2.1: `packages/contracts` wiring and tooling. No behaviour change.
 - PR 2.2: grading modules moved and re-exported. No behaviour change.
 - PR 2.3: server `expo()` plugin and trusted origin. Auth suites attached.
-- PR 2.4: `/api/v1/me*` endpoints.
+- PR 2.4: `/api/v1/me*` endpoints (with the early-return record) and `GET /api/v1/app-config`.
 - PR 2.5: `loadLearnerFor` and `GET /api/v1/learn`.
 - PR 2.6: app auth client and screens.
-- PR 2.7: app API client, TanStack Query, proof screen.
+- PR 2.7: app API client with the `app-config` check, TanStack Query, proof screen.
 - PR 2.8: Google sign-in. PR 2.9: Sign in with Apple, if decided.
 
 ## Milestone 3a: Native Learn engine
@@ -132,7 +135,7 @@ The Learn map and a native lesson player for every block type except interactive
 ### Tasks
 
 1. Backend: `buildLessonPayload`, `GET /api/v1/learn/lessons/{lessonId}` with `ETag`, and `POST .../start`.
-2. Backend: `advanceLessonWalk` and `POST .../sync`, with the pure and disposable-database tests from the API plan. Add the learning-write rate limit.
+2. Backend: extract `completeLessonInTransaction(tx, userId, lessonId)` from `completeLesson`, which becomes a wrapper. Then `advanceLessonWalk`, which calls it inside its own transaction, and `POST .../sync`, with the pure and disposable-database tests from the API plan, including the test that a `sync` with `complete: true` finishes within a timeout and writes one award. Add the learning-write rate limit.
 3. App: native tokens generated from `DESIGN.md`, fonts decided and measured.
 4. App: Learn map screen from `GET /api/v1/learn`, with lesson states and the "continue on the web" state for lessons the app cannot render.
 5. App: block registry and renderer for the class A and B blocks in the audit's matrix.
@@ -166,7 +169,7 @@ Interactive figures, offline use, artifacts, Lab missions, mixed checkpoints, no
 
 ### PR boundaries
 
-- PR 3a.1: lesson payload endpoint. PR 3a.2: `advanceLessonWalk` and `sync`.
+- PR 3a.1: lesson payload endpoint. PR 3a.2: `completeLessonInTransaction`, `advanceLessonWalk` and `sync`.
 - PR 3a.3: tokens and fonts. PR 3a.4: Learn map.
 - PR 3a.5: static blocks. PR 3a.6: question blocks and local grading.
 - PR 3a.7: `documentTap` and formula. PR 3a.8: player and completion screen.
@@ -211,6 +214,10 @@ Provider-backed `historical-*` figures, learner-artifact figures (`ips-builder`,
 
 One PR for the spike decision and registry, then one PR per figure or per closely related pair.
 
+### Note: 3c, the remaining model-only figures
+
+After 3b, 18 of 52 published lessons can be completed on the phone (the 10 generic lessons and the 8 Foundations lessons). The next step needs no new decision: 15 further lessons have no artifact or mission requirement and use only `model` figures (`before-investing-budget`, `before-investing-debt`, `returns-what-is-a-return`, `volatility-what-is-volatility`, `volatility-standard-deviation`, `correlation-what-is-correlation`, `correlation-not-causation`, `correlation-in-crises`, `diversification-concentration`, `diversification-sectors-countries`, `diversification-etf-look-through`, `diversification-correlation-risk`, `diversification-scenario`, `costs-spread-and-fees`, `costs-over-30-years`). Porting their figures brings coverage to 33 of 52. Of the other 19, 13 need a saved artifact or a Lab mission, 5 use a `historical-*` figure (D13), and `broker-fee-schedule` uses the learner figure `fee-profile`. 3c is not scheduled; it follows 3b in the same PR pattern when the founder wants it.
+
 ## Milestone 4: Offline progress and synchronisation
 
 ### Scope
@@ -220,7 +227,7 @@ Lessons already loaded work without a connection. Answers get immediate local fe
 ### Dependencies
 
 - Milestone 3a (3b is not required).
-- Decision D6 (streak day for offline completions), D7 (storage engine), D8 (operation age limit), D9 (cached fact age).
+- Decision D6 (streak day for offline completions; the PRD prefers option B, the founder decides before this milestone starts), D7 (storage engine), D8 (operation age limit), D9 (cached fact age).
 
 ### Tasks
 
@@ -283,7 +290,7 @@ A Progress screen, daily learning reminders, the account features the stores req
 2. Local notifications for a daily reminder at a time the learner chooses. Permission is asked in context, not at first launch. No server component.
 3. Settings: account e-mail, sign out, link to privacy and terms.
 4. Account deletion in the app through `/api/auth/delete-user`, including re-authentication for social-only accounts.
-5. Crash and performance reporting, with consent where required.
+5. Crash and performance reporting, with consent where required. Any vendor is the project's first third party (D10): update the privacy policy and [product-analytics.md](../product-analytics.md) in the same PR.
 6. Measure every target in the audit on the four test devices. Fix what misses, or record the gap with a reason.
 7. Accessibility audit on both platforms.
 8. Store metadata, screenshots, review notes, a review account.
@@ -311,11 +318,18 @@ Public store release, Portfolio Lab, server-sent push notifications, tablets, da
 - PR 5.3: reminders. PR 5.4: settings and account deletion.
 - PR 5.5: reporting. PR 5.6: performance fixes, one per finding.
 
-## Portfolio Lab (P1, separately gated)
+## Portfolio Lab (outside v1, separately gated)
 
-Starts only after a founder decision, and only after milestone 4. It needs its own discovery for native charts, live-quote failure states, market-hours handling and the finance test matrix in [finance-and-data.md](../agents/finance-and-data.md). The endpoint shapes are sketched in the [API plan](api-plan.md#portfolio-lab-separately-gated-p2). Trades stay online-only.
+Outside v1. Starts only after a founder decision, and only after milestone 4. It needs its own discovery for native charts, live-quote failure states, market-hours handling and the finance test matrix in [finance-and-data.md](../agents/finance-and-data.md). The endpoint shapes are sketched in the [API plan](api-plan.md#portfolio-lab-outside-v1-separately-gated). Trades stay online-only.
 
 Until then, lessons that need a Lab mission or a saved plan stay "continue on the web".
+
+## Independent small PRs
+
+Neither depends on a milestone; each is its own issue, worktree and PR.
+
+- **Next.js 16.4.2 to 16.4.6.** A patch upgrade of the web, with the full web gates (`npx next typegen`, `lint`, `knip`, `typecheck`, `test`, `build`, `check:lesson-bundle`) and the browser suites.
+- **Dependabot for `mobile/`.** Add a `mobile/` entry to the Dependabot configuration. Expo-managed packages must move together with the SDK (`npx expo install --fix`), so the entry groups updates and ignores the packages the SDK pins; SDK upgrades stay deliberate PRs.
 
 ## The recommended first implementation PR
 
