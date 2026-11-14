@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@investnik/contracts": ["./packages/contracts/src"]
     }
   },
   "include": [

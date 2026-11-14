@@ -4,11 +4,15 @@ on:
   pull_request:
     paths:
       - mobile/**
+      - packages/**
+      - scripts/check-zod-versions.mjs
       - .github/workflows/mobile.yml
   push:
     branches: [main]
     paths:
       - mobile/**
+      - packages/**
+      - scripts/check-zod-versions.mjs
       - .github/workflows/mobile.yml
   workflow_dispatch:
 
@@ -38,6 +42,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: mobile/package-lock.json
+      # packages/contracts is bundled with each project's own zod; both lockfiles must pin the same one.
+      - run: node ../scripts/check-zod-versions.mjs
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck

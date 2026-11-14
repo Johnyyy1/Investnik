@@ -4,7 +4,9 @@
     // Spawned with `tsx` by validate-personalization-browser, validate-onboarding-redesign and validate-settings.
     "scripts/*-browser-fixtures.mts",
     // Manual latency tool for the navigation benchmark; see docs/performance-baseline.md.
-    "scripts/pg-latency-proxy.mjs"
+    "scripts/pg-latency-proxy.mjs",
+    // Shared schemas; the Expo app imports them, the web will once /api/v1 handlers exist.
+    "packages/contracts/src/index.ts"
   ],
   // Separate Expo project with its own package.json and checks (docs/mobile-architecture.md).
   "ignore": ["mobile/**"],
