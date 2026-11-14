@@ -1,6 +1,6 @@
 # Mobile app architecture
 
-The Milestone 0 discovery of 2026-11-14 continues this document in [mobile/architecture-audit.md](mobile/architecture-audit.md), [mobile/api-plan.md](mobile/api-plan.md) and [mobile/implementation-roadmap.md](mobile/implementation-roadmap.md). Where they differ (route prefix, milestone numbering), the open decision is listed in the audit.
+The Milestone 0 discovery of 2026-11-14 continues this document in [mobile/architecture-audit.md](mobile/architecture-audit.md), [mobile/api-plan.md](mobile/api-plan.md) and [mobile/implementation-roadmap.md](mobile/implementation-roadmap.md). The route prefix is decided: `/api/v1` (decision D1 in the audit). Milestone numbering follows the roadmap; the "M1" below predates it.
 
 Status 2026-11-13: infrastructure only. `mobile/` is a minimal Expo app that starts, validates its backend URL and checks that it can reach the backend. It has no product screens, no sign-in and no shared contracts yet. Nothing in the web app, database, authentication or deployment behaves differently.
 
@@ -89,9 +89,9 @@ Current shape: the web UI calls 11 Server Action modules (`src/features/*/action
 
 Plan:
 
-1. **Versioned route handlers per use case**, under `src/app/api/mobile/v1/…`, added one screen at a time. Each handler does what the matching action does (session, ownership, Zod input, repository call) by calling the **same repository functions**. It never copies domain logic. Where an action and a handler would duplicate more than the session and validation lines, extract the shared body into the feature module, as an ordinary refactor with tests. Do not convert actions wholesale.
-2. **Contracts.** With the first handler, create `packages/contracts` (plain TypeScript + Zod, no React, no Node or server imports) holding that endpoint's request and response schemas. The handler parses its output with them in tests, and the app validates responses with them. Wire it with a TS path plus Metro `watchFolders` (or a `file:` dependency). Money crosses the wire as integer minor units in strings, as `serializePracticeCapitalMinor` already does.
-3. **Versioning.** A breaking change adds `/v2` beside `/v1`. Installed apps cannot be force-updated instantly, so `/v1` lives until usage data says otherwise. Add a minimum-supported-version response at the same time as the first breaking change, not before.
+1. **Versioned route handlers per use case**, under `src/app/api/v1/…`, added one screen at a time. Each handler does what the matching action does (session, ownership, Zod input, repository call) by calling the **same repository functions**. It never copies domain logic. Where an action and a handler would duplicate more than the session and validation lines, extract the shared body into the feature module, as an ordinary refactor with tests. Do not convert actions wholesale.
+2. **Contracts.** With the first handler, create `packages/contracts` (plain TypeScript + Zod, no React, no Node or server imports) holding that endpoint's request and response schemas. The handler parses its output with them in tests, and the app validates responses with them. Wire it with a TS path plus Metro `watchFolders` (or a `file:` dependency). `zod` must resolve from `mobile/node_modules` only; the plan is in the [audit](mobile/architecture-audit.md#monorepo-assessment). Money crosses the wire as integer minor units in strings, as `serializePracticeCapitalMinor` already does.
+3. **Versioning.** A breaking change adds `/v2` beside `/v1`. Installed apps cannot be force-updated instantly, so `/v1` lives until usage data says otherwise. A forced update is still possible: from the first tester build the app checks `GET /api/v1/app-config` (`minSupportedVersion`, `latestVersion`, `maintenance`) at start-up ([API plan](mobile/api-plan.md#app-configuration)).
 4. **Unchanged guarantees.** Rate limits (the shared Postgres limiter), session checks, structured errors without internals (`logUnexpectedError`) and `Cache-Control: no-store` on personal data. `/api/*` keeps its static CSP from `next.config.ts`.
 
 ## Authentication plan
@@ -111,7 +111,7 @@ Not done on this branch, because the server change cannot be verified without a 
 - `.github/workflows/mobile.yml` runs on PRs and `main` pushes that touch `mobile/**`: `npm ci`, lint, typecheck, unit tests, `expo-doctor` and a Metro export for both platforms. No signing, no EAS, no store upload.
 - `ci.yml` skips PRs whose every changed file is under `mobile/` (`paths-ignore`). A PR touching anything else, and every push to `main`, still runs the full web pipeline. No status check is required on `main` today. If one becomes required, replace `paths-ignore` with an always-running job that skips internally.
 - `browser.yml`, `vercel.json` and the Vercel build are unchanged. Vercel still creates a preview for a mobile-only PR. The build ignores `mobile/` (not installed, type-checked or scanned).
-- Dependabot does not watch `mobile/`: Expo packages must move together with the SDK (`npx expo install --fix`), and single-package bumps would break the alignment that `expo-doctor` checks.
+- Dependabot does not watch `mobile/` yet: Expo packages must move together with the SDK (`npx expo install --fix`), and single-package bumps would break the alignment that `expo-doctor` checks. A planned small PR adds a grouped `mobile/` entry that ignores SDK-pinned packages ([roadmap](mobile/implementation-roadmap.md#independent-small-prs)).
 
 ## Performance strategy
 
@@ -152,7 +152,7 @@ Rules that make the targets likely:
 **M1: signed-in Learn read path.**
 
 1. Better Auth Expo integration (the [Authentication plan](#authentication-plan) above), behind its own PR with the auth browser and persistence suites.
-2. `packages/contracts` plus the first endpoint, `GET /api/mobile/v1/learn` (the learner's map: modules, lesson status and next lesson), calling the existing progress and catalog repositories.
+2. `packages/contracts` plus the first endpoint, `GET /api/v1/learn` (the learner's map: modules, lesson status and next lesson), calling the existing progress and catalog repositories.
 3. TanStack Query and a persisted cache for that response.
 4. First native screen and native token generation, after a mobile design pass.
 5. First device measurements against the targets above, recorded in this document.

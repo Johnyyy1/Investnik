@@ -16,10 +16,10 @@ Nothing in this audit was run on a device, a simulator or a native build. This M
 
 ## Limitations and contradictions with the brief
 
-1. **The PRD was not available.** "Investník Mobile — PRD v1, November 13, 2026" is not in the repository and was not attached to the session. This audit uses the requirements in the Milestone 0 brief only. Any PRD requirement the brief does not repeat is unchecked.
+1. **The PRD is not in the repository.** "Investník Mobile — PRD v1, November 13, 2026" exists outside the repository and was not attached to the discovery session. This audit used the requirements in the Milestone 0 brief, plus PRD points relayed in review (decisions D6 and D14). Any other PRD requirement is unchecked. A copy lands in `docs/mobile/prd.md` in roadmap PR 1.2.
 2. **The Expo app already exists.** The brief says not to generate it. PR #502 merged `mobile/` (Expo SDK 58, React Native 0.88.1, Expo Router, EAS profiles, a CI workflow) into `main` on 2026-11-13. Roadmap milestone 1 is therefore mostly done. See [the roadmap](implementation-roadmap.md#milestone-1-expo-foundation-and-monorepo-setup).
 3. **"Monorepo" is one repository, not npm workspaces.** The brief decides on a monorepo with `packages/contracts`. The merged foundation deliberately uses two independent npm projects with no `workspaces` field. The reasons hold up (see [Monorepo assessment](#monorepo-assessment)), and the brief also forbids changing workspace configuration in this milestone. The recommendation is to keep it that way.
-4. **Route prefix.** The brief asks for `/api/v1`. The merged [mobile-architecture.md](../mobile-architecture.md) says `/api/mobile/v1`. This audit follows the brief. No endpoint exists under either prefix, so the choice is still free (decision D1).
+4. **Route prefix.** The brief asks for `/api/v1`; the first version of [mobile-architecture.md](../mobile-architecture.md) said `/api/mobile/v1`. Decided: `/api/v1` (decision D1). Both documents now say so.
 5. **Milestone numbering.** The merged document calls the signed-in Learn read path "M1". The brief's milestones 1 to 5 are used here.
 6. **Native rendering of the whole curriculum is not a rendering problem, it is a porting problem.** 37 of 52 published lessons contain at least one bespoke interactive figure, and 13 need a saved artifact or a Lab mission. Only 10 lessons can be rendered from generic blocks alone. See [Learning engine](#learning-engine).
 7. **`docs/authentication.md` names Better Auth 1.7.3.** The lockfile installs 1.7.12 (`package-lock.json`). The document is stale on that point.
@@ -106,7 +106,7 @@ The 10 lessons that need only generic blocks: `foundations-checkpoint`, `foundat
 
 **Confirmed.**
 
-- Grading is one pure function, `evaluateQuestion` (`src/features/lessons/question-evaluation.ts:32`). It imports only `parseNumericAnswer`, `exercise-evaluation.ts` and Zod. It returns `true`, `false` or `undefined` (not answered yet).
+- Grading is one pure function, `evaluateQuestion` (`src/features/lessons/question-evaluation.ts:32`). It returns `true`, `false` or `undefined` (not answered yet). Its runtime imports are small (`parseNumericAnswer` from `src/features/finance/numeric-input.ts`, `exercise-evaluation.ts`, which adds `answer-contract.ts` and Zod), but it and `exercise-evaluation.ts` are typed against `LessonBlock`. `src/features/lessons/types.ts` imports, through the `@/` alias, `artifacts/schemas.ts` (which pulls in the IPS schema and the learning catalog), `facts/registry.ts`, `learning/metric-glossary.ts` and `figure-catalog.ts`. Moving the files unchanged would drag that graph into the shared folder; see [Monorepo assessment](#monorepo-assessment).
 - The web player already grades locally. The lesson page sends each step with its answer key (`correctOptionId`, `answer`, `tolerance`) to the browser, and `GuidedLesson` calls `evaluateQuestion` there (`src/components/lesson/guided-lesson.tsx:149`). Shipping answer keys to a phone exposes nothing the web does not.
 - The server never trusts that verdict. `saveLessonProgress` calls `validateMove` (`src/features/progress/transition.ts:19`), which re-evaluates the submitted answers against the authored block before the cursor moves forward.
 - Progress is one row per learner and lesson: `status`, `last_position` (a zero-based step index), `completed_at`, `updated_at`. There is no per-answer history.
@@ -169,7 +169,7 @@ Interactive figures by data source (`src/features/lessons/figure-catalog.ts`):
 **Yes for content, no for figures.**
 
 - Content needs no second copy. `getGuidedSteps(prepareLessonFacts(lesson))` already produces a JSON-safe value. An endpoint can return it, and the app can render it.
-- Grading needs no second copy either, provided the evaluator moves into a shared package (see [Monorepo assessment](#monorepo-assessment)). A hand-written copy in `mobile/` would break the rule against duplicating learning logic.
+- Grading needs no second copy either, provided the evaluator moves into a shared package and is retyped against structural block types (see [Monorepo assessment](#monorepo-assessment)). A hand-written copy in `mobile/` would break the rule against duplicating learning logic.
 - Figures are React DOM components (`src/components/lesson/*`, about 3,500 lines) styled with Tailwind. None of that runs natively. Their models are reusable; their views are not. This is the largest single cost of the project.
 
 ### Proposed lesson schema
@@ -349,7 +349,7 @@ The default (option A) keeps today's rule: the learning day is the day the serve
 
 Option B lets the server accept a claimed completion time inside tight bounds: not in the future, no older than a fixed window (48 hours is a proposal), and not earlier than the learner's previous award. It needs a change to `completeLesson` and new exact tests. It lets a learner who tampers with the clock move a completion by at most the window, which can rescue one missed streak day.
 
-Option B is a change to reward-adjacent behaviour and needs a founder decision (D6). The roadmap assumes option A.
+Option B is a change to reward-adjacent behaviour and needs a founder decision (D6) before milestone 4. The PRD prefers option B. The roadmap plans option A and keeps option B as a separate PR (4.5).
 
 ### Cached content and dated facts
 
@@ -367,6 +367,7 @@ A cached lesson carries `factsAsOf`. The app refetches when online and the revis
 | Root tooling | `tsconfig.json` excludes `mobile`; ESLint, knip and Tailwind ignore it |
 | Import aliases | Web uses `@/*` for `src/*`. Shared code must not use it |
 | Vercel | Runs `npm ci` at the root. With workspaces it would install the native dependency tree on every web deploy |
+| Zod in `mobile/` | Only a transitive dependency (4.6.7 in `mobile/package-lock.json`, the same version as the web lockfile). Not listed in `mobile/package.json` |
 | CI | `mobile.yml` runs only for `mobile/**`; `ci.yml` ignores PRs that touch only `mobile/**` |
 | Dependabot | Does not watch `mobile/` |
 | EAS | Profiles exist (`mobile/eas.json`). No project is linked (`eas init` not run) |
@@ -377,12 +378,21 @@ Keep two npm projects. Do not add workspaces, Turborepo or Nx.
 
 Add one shared, source-only folder when the first endpoint is built: `packages/contracts/`.
 
-- Contents: Zod request and response schemas, the lesson payload types, and the pure grading modules (`question-evaluation.ts`, `exercise-evaluation.ts`, `answer-contract.ts`, `numeric-input.ts`), moved there and re-exported from their current paths so no web import changes.
+- Contents: Zod request and response schemas, the lesson payload types, and the pure grading modules (`question-evaluation.ts`, `exercise-evaluation.ts`, `answer-contract.ts`, and `parseNumericAnswer` from `src/features/finance/numeric-input.ts`), moved there and re-exported from their current paths so no web import changes.
+- Gradable block types: `packages/contracts` defines structural types for the gradable blocks, holding only the fields the evaluators read (for example `type`, `options`, `correctOptionId`, `answer`, `tolerance`, `answers`). The evaluators are typed against these, not against `LessonBlock`, so nothing from `src/features/lessons/types.ts` and its imports enters the folder.
+- Web compile-time check: a type-only test in the web asserts that each question variant of `LessonBlock` is assignable to its structural type. A field renamed in authored lessons then fails `npm run typecheck` instead of grading silently wrong.
 - Dependencies: Zod only. No React, no Node APIs, no `@/` alias, no `server-only`.
 - Web consumes it through a `tsconfig.json` path. The lesson bundle check (`npm run check:lesson-bundle`) must still pass.
-- Mobile consumes it through Metro `watchFolders` plus `resolver.nodeModulesPaths` pointing at `mobile/node_modules`, so `zod` resolves to the app's copy.
+- Mobile consumes it through Metro `watchFolders`.
 
-The Metro wiring is **assumed** to work and is the first thing to prove (`npm run check:export` in CI is enough to prove it). Fallbacks, in order: a `file:../packages/contracts` dependency; then npm workspaces limited to `mobile` and `packages/*` with the web left at the root.
+Zod resolution. Node resolves an import from the file's own directory upwards, so `packages/contracts/*.ts` finds the root `node_modules/zod`. On a developer machine that folder exists and Metro and `tsc` would both quietly use the web's copy. In CI (`mobile.yml` installs only `mobile/`) and in EAS Build it is absent, so the same import fails there. The plan:
+
+- `zod` becomes a direct dependency of `mobile/`, at the exact version the web pins.
+- Metro: `resolver.disableHierarchicalLookup = true` and `resolver.nodeModulesPaths = [mobile/node_modules]`, so every import, including those from `packages/contracts`, resolves to the app's copy.
+- `mobile/tsconfig.json`: a `paths` entry mapping `zod` to `mobile/node_modules/zod`, for the same reason in type-checking.
+- A CI check fails when `package-lock.json` and `mobile/package-lock.json` pin different `zod` versions.
+
+The Metro wiring is **assumed** to work and is the first thing to prove (`npm run check:export` in `mobile.yml`, which has no root `node_modules`, is enough to prove it). Fallbacks, in order: a `file:../packages/contracts` dependency; then npm workspaces limited to `mobile` and `packages/*` with the web left at the root.
 
 Why the grading code belongs in the shared folder: mobile must grade offline, and the rule against duplicating learning logic rules out a copy. This is the justification the brief asks for before creating a package.
 
@@ -400,6 +410,7 @@ Follow-on work when the folder appears: `ci.yml` and `mobile.yml` must both run 
 - **Errors.** Stable machine codes, no database or provider text. `logUnexpectedError` stays the only logging path.
 - **Caching headers.** `Cache-Control: no-store` on every personal response. `/api/*` already gets a restrictive static Content Security Policy from `next.config.ts`.
 - **Transport.** Release builds already refuse a non-HTTPS backend (`mobile/lib/api-url.ts`). Certificate pinning is not proposed.
+- **Analytics.** [product-analytics.md](../product-analytics.md) rules out third-party analytics; measurement stays first-party in our own database (decision D12).
 - **Product safeguards.** Unchanged: no price notifications, no trade celebrations, no return leaderboards, server-owned prices, FX and balances.
 
 ## Performance architecture
@@ -436,7 +447,7 @@ Decisions that follow:
 - Cold start: iOS with Xcode Instruments (App Launch) and MetricKit in the field; Android with `adb shell am start -W` and Macrobenchmark or Perfetto. Take at least 10 cold starts per device and report the 75th percentile.
 - Interaction timings: `performance.now()` marks around tab press to first frame, lesson open to first frame, and answer press to feedback, logged in a release build with a debug flag.
 - Frames: Perfetto and Android GPU profiling; Instruments (Animation Hitches) on iOS.
-- Field data: crash-free sessions and start-up from a crash reporter, once a vendor is chosen (D10).
+- Field data: crash-free sessions and start-up from a crash reporter, once a vendor is chosen (D10). That vendor would be the project's first third party.
 - Record results in this folder with device, OS, build number and date. A target is met only by a recorded measurement.
 
 ## Risks ranked by severity
@@ -450,32 +461,41 @@ Decisions that follow:
 | 5 | High | Offline completion loses the streak day | `learningDate(now, timeZone)` | Decide D6; say it honestly in the app until then |
 | 6 | High | Mobile-first learners have no profile, so learning days are in UTC | `profile?.timeZone ?? "UTC"` | Profile bootstrap before the first completion from mobile |
 | 7 | High | Sign in with Apple is effectively required on iOS once Google is offered, and is not configured | No Apple provider in `auth-providers.ts` | Decide launch methods (D5); Apple developer setup has lead time |
-| 8 | Medium | Shared code across two npm projects is unproven with Metro | Not covered by Expo's guide | Prove with `check:export` in the first contracts PR |
-| 9 | Medium | The cursor can regress when devices interleave | `validateStepMove` | Forward-only rule in the new sync function, with tests |
-| 10 | Medium | Cached lessons with dated tax facts go stale offline | `prepareLessonFacts` resolves per day | `factsAsOf` shown; refresh policy D9 |
-| 11 | Medium | Market history inside lessons cached on devices may breach provider terms | `historical-*` figures; FMP terms in project notes | Keep those five figures online-only until terms are checked |
-| 12 | Medium | Formula rendering without a WebView | KaTeX outputs HTML | Spike in milestone 3; plain `expression` is the fallback |
-| 13 | Medium | PR #501 changes Learn UI while this work starts | 100 files, none under `src/features/progress`, `lessons`, `learning`, `mastery`, `db` or `api` | The API reads `src/features/*` only. No dependency on #501 |
-| 14 | Low | Two response conventions on the web | Actions and handlers differ | One envelope for `/api/v1`, defined in the API plan |
-| 15 | Low | Extra session read per API request | `requestMemo` is render-only | Pass the user into loaders |
+| 8 | High | A sync that holds the `user` row lock and then calls `completeLesson` deadlocks: `completeLesson` opens its own `db.transaction` on another connection and waits for the same row | `src/features/progress/repository.ts:44` | Extract `completeLessonInTransaction(tx, userId, lessonId)`; the sync calls it inside its own transaction (see the [API plan](api-plan.md#new-domain-functions)) |
+| 9 | Medium | Shared code across two npm projects is unproven with Metro | Not covered by Expo's guide | Prove with `check:export` in the first contracts PR |
+| 10 | Medium | The cursor can regress when devices interleave | `validateStepMove` | Forward-only rule in the new sync function, with tests |
+| 11 | Medium | Cached lessons with dated tax facts go stale offline | `prepareLessonFacts` resolves per day | `factsAsOf` shown; refresh policy D9 |
+| 12 | Medium | Market history inside lessons cached on devices may breach provider terms | `historical-*` figures; FMP terms in project notes | Ask the provider now (D13); those five figures stay online-only until it answers |
+| 13 | Medium | Formula rendering without a WebView | KaTeX outputs HTML | Spike in milestone 3; plain `expression` is the fallback |
+| 14 | Medium | PR #501 changes Learn UI while this work starts | 100 files, none under `src/features/progress`, `lessons`, `learning`, `mastery`, `db` or `api` | The API reads `src/features/*` only. No dependency on #501 |
+| 15 | Low | Two response conventions on the web | Actions and handlers differ | One envelope for `/api/v1`, defined in the API plan |
+| 16 | Low | Extra session read per API request | `requestMemo` is render-only | Pass the user into loaders |
 
 ## Decisions, alternatives and what is still open
+
+### Decided
+
+| ID | Decision | Outcome |
+| --- | --- | --- |
+| D1 | Route prefix | `/api/v1`. [mobile-architecture.md](../mobile-architecture.md) updated to match |
+| D12 | Analytics for app learners | First-party only, as [product-analytics.md](../product-analytics.md) requires. Today `recordEarlyReturn` is called only from the web `(app)` layout (`src/app/(app)/layout.tsx:30`), so a learner who returns through the app is not counted. `GET /api/v1/me` records the early return the same way. Attributing returns to a platform from `X-Investnik-Client` is a follow-up |
 
 ### Recommended, pending founder confirmation
 
 | ID | Decision | Recommendation | Alternative |
 | --- | --- | --- | --- |
-| D1 | Route prefix | `/api/v1` | `/api/mobile/v1`, as the merged notes say. Either works; pick one and fix the other document |
 | D2 | Repository shape | Two npm projects plus a source-only `packages/contracts` | npm workspaces for `mobile` and `packages/*` only |
 | D3 | Lesson schema | Mirror `LessonBlock` one to one, `schemaVersion: 1` | A new, smaller mobile schema with a real conversion layer |
 | D4 | Lessons mobile cannot render yet | Show them in the map as "continue on the web", never degrade them | Text fallback for figures (needs content sign-off, weakens the lesson) |
 | D5 | Sign-in methods at iOS launch | E-mail and password, Google, Sign in with Apple. No Facebook on mobile | E-mail and password only, which avoids the Apple requirement |
-| D6 | Streak day for offline completions | Server receipt time | Bounded client completion time |
+| D6 | Streak day for offline completions | Server receipt time (option A). The PRD prefers option B; the founder decides before milestone 4 | Option B: client completion time, at most 48 hours back and not before the previous award |
 | D7 | Local storage engine | Decide by measurement between AsyncStorage and a synchronous store | |
 | D8 | Maximum age of an unsent operation | 30 days | |
 | D9 | Maximum age of a cached dated-fact lesson | Content owner decides | |
-| D10 | Crash and performance reporting vendor | Decide before the first beta; check data-processing terms for the EU | |
+| D10 | Crash and performance reporting vendor | Decide before the first beta; check data-processing terms for the EU. Any vendor is the project's first third party, so the privacy policy and [product-analytics.md](../product-analytics.md) change with it | No crash reporting; rely on store consoles |
 | D11 | Bundle identifiers `cz.investnik.app` and the `investnik` scheme | Confirm before the first store build; they are permanent | |
+| D13 | Licence to cache provider market history on a device | Ask the provider now. Until it answers, the five `historical-*` figures are online-only | Never cache them |
+| D14 | Guest start on mobile (`x-investi-anonymous-kind: guest`) | Yes | Account required before the first lesson |
 
 ### Remaining unknowns
 
@@ -483,11 +503,11 @@ Each is assumed above and untested.
 
 1. Whether `@better-auth/expo` at the server's version works with this configuration (anonymous plugin, custom hooks, Postgres rate limiter), and whether the plugin order matters.
 2. Whether adding the plugin changes any web auth behaviour.
-3. Whether Metro can import `packages/contracts` without workspaces, in local development and in EAS Build.
+3. Whether Metro can import `packages/contracts` without workspaces, in local development and in EAS Build, with `zod` resolved from `mobile/node_modules` only.
 4. Whether Better Auth revokes Apple tokens on account deletion.
 5. How guest sessions behave across app reinstalls, and whether the guest claim flow works from the app.
 6. Whether a native formula renderer meets the quality of KaTeX for the 31 formula blocks.
 7. Which chart technology holds 60 frames per second on the low-end Android device.
-8. Whether provider terms allow caching lesson market history on a device.
-9. Everything in the PRD that the brief does not restate.
+8. Whether provider terms allow caching lesson market history on a device (D13).
+9. Everything in the PRD that the brief and the review do not restate, until the copy lands in `docs/mobile/prd.md`.
 10. Real cold-start, transition and memory numbers.
