@@ -13,3 +13,9 @@ export const appConfigSchema = z.object({
   maintenance: z.boolean(),
 });
 export type AppConfig = z.infer<typeof appConfigSchema>;
+
+// Answer grading, shared so the app grades offline with the web's code. The server still re-grades every move.
+export * from "./grading/question-evaluation";
+export * from "./grading/exercise-evaluation";
+export * from "./grading/answer-contract";
+export type * from "./grading/blocks";
