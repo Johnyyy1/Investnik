@@ -1,6 +1,6 @@
 # Mobile app architecture
 
-The Milestone 0 discovery of 2026-11-14 continues this document in [mobile/architecture-audit.md](mobile/architecture-audit.md), [mobile/api-plan.md](mobile/api-plan.md) and [mobile/implementation-roadmap.md](mobile/implementation-roadmap.md). The route prefix is decided: `/api/v1` (decision D1 in the audit). Milestone numbering follows the roadmap; the "M1" below predates it.
+The Milestone 0 discovery of 2026-11-14 continues this document in [mobile/architecture-audit.md](mobile/architecture-audit.md), [mobile/api-plan.md](mobile/api-plan.md) and [mobile/implementation-roadmap.md](mobile/implementation-roadmap.md). The route prefix is decided: `/api/v1` (decision D1 in the audit). The identifiers are decided: bundle ID and package `cz.investnik.app`, scheme `investnik` (D11, confirmed by the founder on 2026-11-14). Milestone numbering follows the roadmap; the "M1" below predates it.
 
 Status 2026-11-13: infrastructure only. `mobile/` is a minimal Expo app that starts, validates its backend URL and checks that it can reach the backend. It has no product screens, no sign-in and no shared contracts yet. Nothing in the web app, database, authentication or deployment behaves differently.
 
@@ -41,7 +41,7 @@ A `packages/contracts` package is created with the first versioned mobile endpoi
 | Language | TypeScript 6, `strict` + `noUncheckedIndexedAccess` | |
 | Lint | ESLint 9 flat config with `eslint-config-expo` | `npm run lint` lints the whole app |
 | Native builds | `expo-dev-client`, EAS Build profiles | CNG: `ios/` and `android/` are generated, gitignored, never committed |
-| Identity | Name „Investník“, slug/scheme `investnik`, iOS bundle ID and Android package `cz.investnik.app` | IDs are permanent once registered in App Store Connect and Play Console. Confirm before the first store build |
+| Identity | Name „Investník“, slug/scheme `investnik`, iOS bundle ID and Android package `cz.investnik.app` | Decided (D11, founder, 2026-11-14). Permanent once registered in App Store Connect and Play Console |
 | Appearance | `userInterfaceStyle: "light"` (with `expo-system-ui` so Android respects it) | The web has no dark palette. Switch to `automatic` only once one is approved |
 
 Deliberately not added yet: TanStack Query, a global state library, a UI kit, fonts, `@better-auth/expo`, `expo-secure-store`, analytics and notifications. Each comes with the milestone that needs it.
@@ -143,7 +143,7 @@ Rules that make the targets likely:
 ## Known risks and constraints
 
 - **No native runtime was verified here.** This Mac has no Xcode and no Android SDK. Validation stops at config, types, lint, unit tests, expo-doctor, a throwaway `expo prebuild` (inspected, then deleted) and Metro/Hermes export.
-- The bundle IDs, the scheme and EAS project linking (`eas init` writes `extra.eas.projectId` and `owner`) need an Expo account and founder confirmation.
+- The EAS project is linked: `@jsobotka/investnik` (personal Expo account), project ID in `mobile/app.json` (`extra.eas.projectId`, `owner`). The bundle IDs and the scheme are decided (D11).
 - SDK upgrades arrive roughly three times a year. Each one is a deliberate PR (`expo install --fix`, `expo-doctor`, a device smoke test).
 - `npm audit` reports 3 moderate advisories in Expo's transitive tooling (`minimatch` in the CLI chain). They are not in the app bundle, and `npm audit fix --force` would break SDK alignment.
 - Product safeguards apply unchanged to mobile: educational only, no price notifications, no trade confetti or return leaderboards, server-owned prices, FX and balances, and Practice Capital as external contributions.

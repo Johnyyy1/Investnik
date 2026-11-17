@@ -33,6 +33,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "owner": "jsobotka",
+    "extra": {
+      "eas": {
+        "projectId": "dc1ebb21-0d90-4037-8283-ac6e66961e51"
+      }
     }
   }
 }

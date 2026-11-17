@@ -478,6 +478,7 @@ Decisions that follow:
 | ID | Decision | Outcome |
 | --- | --- | --- |
 | D1 | Route prefix | `/api/v1`. [mobile-architecture.md](../mobile-architecture.md) updated to match |
+| D11 | Bundle identifiers and URL scheme | iOS bundle ID and Android package `cz.investnik.app`, scheme `investnik`. Confirmed by the founder on 2026-11-14; permanent once registered in the stores |
 | D12 | Analytics for app learners | First-party only, as [product-analytics.md](../product-analytics.md) requires. Today `recordEarlyReturn` is called only from the web `(app)` layout (`src/app/(app)/layout.tsx:30`), so a learner who returns through the app is not counted. `GET /api/v1/me` records the early return the same way. Attributing returns to a platform from `X-Investnik-Client` is a follow-up |
 
 ### Recommended, pending founder confirmation
@@ -493,7 +494,6 @@ Decisions that follow:
 | D8 | Maximum age of an unsent operation | 30 days | |
 | D9 | Maximum age of a cached dated-fact lesson | Content owner decides | |
 | D10 | Crash and performance reporting vendor | Decide before the first beta; check data-processing terms for the EU. Any vendor is the project's first third party, so the privacy policy and [product-analytics.md](../product-analytics.md) change with it | No crash reporting; rely on store consoles |
-| D11 | Bundle identifiers `cz.investnik.app` and the `investnik` scheme | Confirm before the first store build; they are permanent | |
 | D13 | Licence to cache provider market history on a device | Ask the provider now. Until it answers, the five `historical-*` figures are online-only | Never cache them |
 | D14 | Guest start on mobile (`x-investi-anonymous-kind: guest`) | Yes | Account required before the first lesson |
 
