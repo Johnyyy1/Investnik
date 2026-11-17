@@ -2,6 +2,8 @@
 
 Zod schemas and types shared by the web API (`src/app/api/v1/`) and the Expo app (`mobile/`). Background: [API plan](../../docs/mobile/api-plan.md#contracts-package) and [monorepo assessment](../../docs/mobile/architecture-audit.md#monorepo-assessment).
 
+`src/grading/` holds the answer grading (`evaluateQuestion`, `feedbackFor`, `parseNumericAnswer`, `lessonAnswersSchema`), so the app grades offline with the web's code. The web re-exports it from its old paths under `src/features/`, and the server still re-grades every move. The evaluators are typed against structural block types (`src/grading/blocks.ts`); `src/features/lessons/gradable-blocks.test.ts` fails the web typecheck when an authored question stops matching them.
+
 This is a source-only folder, not an installed package. It has no dependencies, no scripts, no build step and no `node_modules`. Each project compiles it as part of its own source.
 
 ## Rules
