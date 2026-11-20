@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, CalendarCheck, CircleDashed, CircleDot, Coins, Hourglass, Play, Scale, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, Building2, CalendarCheck, CircleDashed, CircleDot, Coins, FileText, HeartPulse, Hourglass, ListChecks, Play, Scale, ShieldCheck, Target, type LucideIcon } from "lucide-react";
 import { DemoButton } from "@/components/auth/demo-button";
 import { LessonPreview, MobileNavigation } from "./pen-interactions";
 import { CrisisDrill, PortfolioLabDemo } from "./portfolio-lab-demo";
@@ -31,6 +31,8 @@ const outputs = [
   ["Checklist výběru ETF", "Dostupné", true],
   ["Checklist brokera", "Připravujeme", false],
 ] as const;
+/** Same order as `outputs`. */
+const outputIcons: readonly LucideIcon[] = [HeartPulse, Target, FileText, Scale, ListChecks, Building2];
 
 const trust: readonly (readonly [LucideIcon, string, string])[] = [
   [CalendarCheck, "Fakta se zdrojem a\u00a0datem ověření", "Sazby, limity a\u00a0lhůty vedeme jako datované údaje se zdrojem, datem ověření a\u00a0termínem další kontroly."],
@@ -113,7 +115,7 @@ export function PenLanding() {
         <div className={`${styles.container} ${styles.lessonSectionLayout}`}>
           <div className={styles.lessonSectionCopy}><p className={styles.eyebrow} data-reveal="fade">UČENÍ TÍM, ŽE TO ZKUSÍŠ</p><SplitHeading id="lesson-title">Každý modul končí<br/>výstupem.</SplitHeading><p data-reveal data-reveal-delay="0.2">Otázky ověří, že tomu rozumíš. Výstup ti zůstane: uložíš si ho k&nbsp;účtu a&nbsp;vrátíš se k&nbsp;němu, až se budeš rozhodovat doopravdy.</p>
             <ul className={styles.outputList} aria-label="Výstupy modulů" data-reveal data-reveal-delay="0.3">
-              {outputs.map(([title, status, available]) => <li key={title} data-available={available ? "" : undefined}><span>{title}</span><small>{status}</small></li>)}
+              {outputs.map(([title, status, available], i) => { const Icon = outputIcons[i]; return <li key={title} data-available={available ? "" : undefined}><Icon size={18} aria-hidden="true"/><span>{title}</span><small>{status}</small></li>; })}
             </ul>
           </div>
           <div className={styles.lessonSectionDemo} data-reveal><LessonPreview compact/></div>
