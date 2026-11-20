@@ -121,6 +121,7 @@ Source authority: [tokens.css](src/styles/tokens.css) (every colour, radius, sha
 - One dominant learning action and quieter supporting context.
 - Manrope headings with Inter controls and explanation.
 - Real state, explicit feedback, and intentional mobile reflow.
+- Liquid glass as an accent material where there is light behind it (see [Liquid Glass](#liquid-glass)). Paper and teal remain the system; glass never replaces a reading surface.
 
 ## Colors
 
@@ -185,9 +186,13 @@ Depth comes mainly from warm tonal surfaces, borders, and spacing. The continuat
 
 **The Quiet Depth Rule.** Use surfaces and hierarchy first; shadows should clarify layering rather than decorate every section.
 
+Glass adds one more layer above these: chrome that floats over content (navigation, segmented controls, frames, sheets). Its shadows and highlights are part of the material and are defined in [Liquid Glass](#liquid-glass), not added per screen.
+
 ## Shapes
 
 Controls and answer options use the Control radius (`--radius-control`, 8px); content containers use the Surface radius (`--radius-surface`, 12px). Borders are thin and warm. Radio indicators, completion markers, and the allocation ring are circular because their function calls for it. Desktop navigation is text and an underline; mobile tabs avoid filled pills.
+
+The landing page already uses the softer Liquid Glass shape scale (pill actions, 14–48px containers); product screens keep 8/12px until that scale is promoted to tokens (see [Liquid Glass › Shapes](#shapes-1)).
 
 ## Components
 
@@ -227,6 +232,106 @@ Trading must not earn XP, Practice Capital, confetti, celebratory motion, rankin
 
 The 2026-10-22 audit of the Portfolio Lab, instrument order flow and portfolio actions found structured execution receipts, no trade celebrations, no leaderboards and no price notification mechanism. The sparkle icon beside “Co se stalo?” identifies a static explanation, not a trading celebration. These are permanent product constraints. Calculation conventions and current limitations are in [docs/portfolio-process.md](docs/portfolio-process.md).
 
+## Liquid Glass
+
+**Status.** Adopted by the founder on 2026-11-20 for the landing page, which is the reference implementation (branch `proto/liquid-glass-landing`). It is the target direction for the remaining marketing pages and for the product redesign. Product screens adopt it screen by screen under the rules below; until a screen is redesigned, the sections above still describe it.
+
+**The Glass-Where-Light-Is Rule.** Glass only goes where something behind it can be bent: ambient light, a lit dark stage, a slab with its own light, or content scrolling underneath. On flat paper, frosted glass reads as a dirty white card, so use a plain `surface` instead. This rule decided every change on the landing page: the full-glass version (every card frosted) was rejected for flattening hierarchy and reading as card soup.
+
+### Materials
+
+| Material | Where | Recipe (landing values) |
+| --- | --- | --- |
+| **Frosted** (`.glass`) | Closing slab and the base of the nav pill; a lighter variant for secondary buttons (`white/40%`, `blur(12px)`) | Background `linear-gradient(155deg, white/62%, surface/46% 42%, surface/34%)`; `backdrop-filter: blur(22px) saturate(175%)`; 1px `white/50%` border; inset highlights `0 1px 0 white/90%`, `0 -1px 0 white/28%`, `0 0 28px white/22%`; drop shadow `0 28px 60px -28px ink/30%`. A masked `::before` draws a specular rim (bright top-left and bottom-right). An `::after` adds a pointer-tracked highlight (`--mx`, `--my`, fine pointers only). |
+| **Clear lens** (`.lens`) | Floating navigation only | Background `white/42% → white/16%`; `blur(6px) saturate(180%)`. In Chromium, `html[data-refract]` adds the SVG filter `#lg-lens` (low-frequency `feTurbulence` displacement, scale 22), so text scrolling under the bar visibly bends. Other browsers keep the frosted fallback. |
+| **Smoked** (dark glass) | Controls and cards on a dark stage | Background `white/8% → white/3%`; 1px `white/12%` border; `blur(20–24px)` with **saturation ≤ 110%** (higher saturation tints it brown over warm light); inset `0 1px 0 white/14%`. |
+| **Glass frame** | Around a live demo or preview | A 6–10px glass bezel (`white/62% → white/22%`, `blur(16px)`) around an **opaque** surface card. The content stays crisp; the frame carries the material. |
+| **Liquid teal** | Primary marketing action | Pill; `linear-gradient(180deg, primary mixed 90% with white, primary 52%, primary-pressed)`; border primary mixed 55% with white; inset `0 1px 0 white/40%` and `0 -3px 8px black/16%`; coloured shadow `0 12px 26px -12px primary`. Hover `brightness(1.08)`, press `brightness(.94)`. White text stays ≥ 4.5:1 across the gradient. |
+
+### Where glass goes, and where it never goes
+
+**Use it for chrome and framing:**
+- the floating navigation pill;
+- segmented controls, such as the Lab step tabs as one track with a surface-coloured selected segment;
+- badges and short principle chips on a dark stage;
+- frames around demos;
+- the closing CTA slab with its own light;
+- in product: app header, mobile tab bar, sheets, popovers and dialog chrome, toolbars over scrolling content.
+
+**Never put it on reading or data surfaces:**
+- lesson text, explanations and answer options;
+- tables, numbers and forms;
+- the Portfolio Lab panel, which stays opaque. A translucent panel turned grey over the dark stage and let the crossfading step panels show through each other.
+- the course-path card, which stays opaque with a timeline.
+
+**Also never:**
+- nest glass inside glass. An element with `backdrop-filter` is a backdrop root, so a glass child only sees its parent. The mobile menu inside the nav pill therefore uses a near-opaque surface.
+- use more than about six glass elements per viewport.
+
+### Light
+
+Light is what glass bends, so each section gets at most two light sources, all built from palette tokens with `color-mix`:
+
+- **Ambient field (hero).** Four radial colour fields (progress, warning, primary-tint, primary-soft) drift slowly (`transform` only, 29–47s, alternate). They are absolutely positioned behind the hero only (135vh) and masked to fade out before the next section.
+- **Dark stage (Lab).** `ink` with one spotlight from above (`progress` 42%) and a low `primary` 26% glow. It is a rounded sheet (`border-radius: clamp(28px, 3vw, 48px)`) inset `clamp(8px, 1.2vw, 20px)` from the viewport edges, never a hard full-bleed cut.
+- **Section tint.** The light band (lesson section) gets a `primary-tint` 45% glow behind its demo and a faint `warning` 22% glow in a corner.
+- **Slab light.** The closing slab sits on a `progress` and `warning` glow of its own.
+
+Avoid warm (`warning`) light directly behind smoked glass, because it reads as brown.
+
+### Shapes
+
+| Element | Radius |
+| --- | --- |
+| Actions, nav, chips, segmented tracks | pill (`999px`) |
+| Small tiles (outputs, Lab tools) | 14–16px |
+| Cards and panels (path card, Lab panel, crisis card) | 20–22px |
+| Frames and slabs | 28–40px |
+| Dark stage | `clamp(28px, 3vw, 48px)` |
+
+Proposed tokens for the product rollout: `--radius-tile: 14px`, `--radius-card: 20px`, `--radius-frame: 32px`, alongside the existing `pill`. Controls inside forms keep the 8px control radius, because pill inputs read as search fields.
+
+### Navigation
+
+The marketing nav is a sticky floating pill (`min(1180px, 100% - 48px)`, 64px tall, 16px from the top) that **always stays visible**: it no longer hides on scroll. Over a dark stage it switches to a dark variant (`data-on-dark`: smoked glass, paper text, paper focus outline). Anything pinned by the motion layer starts below it (`NAV_CLEARANCE`, 88px, in `motion/sections/global.ts`), and in-page anchors stop 24px lower.
+
+### Composition patterns from the landing
+
+- **Centred statement.** On a dark stage: badge (dot plus eyebrow), Manrope headline whose second clause is muted (`paper` at 58%, no gradient text), a lead of at most 600px, three principle chips and a fine-print note.
+- **Timeline list.** Steps of a path: 28px status dots on a 2px `progress` → `primary-tint` spine, a title and a one-line detail, and a status pill (`primary-soft`, or filled teal for the recommended next step). Secondary destinations become small tiles under it.
+- **Artifact tiles.** Saved outputs as a two-column grid of icon tiles. Unavailable items get a dashed border and a muted icon, plus the „Připravujeme“ text.
+- **Framed demo.** A live preview inside a glass frame, with its disclosure line inside the frame.
+
+### Accessibility
+
+- `prefers-reduced-transparency: reduce` replaces every glass material with an opaque `surface` and removes the ambient field.
+- `prefers-reduced-motion` stops the drift and all transitions, as before.
+- Measure text contrast against the worst backdrop that can pass beneath the element: dark stage, illustration or scrolling headline. Muted text over a coloured field is the main risk.
+- Status still uses text or an icon, not tint alone.
+- Large muted headline clauses must stay ≥ 3:1. Body text on glass must stay ≥ 4.5:1.
+
+### Performance
+
+- `backdrop-filter` is the cost, so keep the number of glass elements low and never animate blur values.
+- Light fields animate `transform` only.
+- Refraction is limited to the nav.
+- Test on a mid-range phone before adding glass to a scrolling list.
+
+### Implementation map
+
+- [liquid-glass.tsx](src/components/marketing/liquid-glass.tsx): ambient field, the `#lg-lens` filter, the Chromium `data-refract` flag and the pointer highlight.
+- [pen-landing.module.css](src/components/marketing/pen-landing.module.css): materials, nav, light and section patterns in the blocks after "Liquid glass prototype".
+- [portfolio-lab-demo.module.css](src/components/marketing/portfolio-lab-demo.module.css): Lab panel, segmented tabs and smoked crisis card.
+- [motion/sections/global.ts](src/components/marketing/motion/sections/global.ts): sticky nav, dark-variant trigger and `NAV_CLEARANCE`.
+
+### Rolling out to the product
+
+1. **Promote the material first.** Add `--glass-*` tokens (backgrounds, border, highlight, shadow, blur) and the new radii to `tokens.css`. Add a shared `glass` utility, or a `Button` variant for the liquid action, so screens never copy recipes. Extend `tokens.test.ts` with the contrast pairs above. Then replace the marketing-local copies.
+2. **Per screen,** decide which elements float over content: header, tab bar, sheet, toolbar. Only those become glass. Lesson renderers, answer options, data panels, tables and forms stay opaque.
+3. **Lesson UI** comes from the approved Pen designs ([learning and facts](docs/agents/learning-and-facts.md)). Restyling step renderers needs an updated design export first.
+4. **Light:** product screens get at most a quiet section tint. Ambient fields and dark stages remain marketing devices unless a screen is explicitly designed around them.
+5. **Validate** at 1440, 1024, 768, 390, 375 and 320px and at 200% text, with reduced transparency and reduced motion on, in Chromium, WebKit and Firefox, plus axe.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -242,6 +347,7 @@ The 2026-10-22 audit of the Portfolio Lab, instrument order flow and portfolio a
 
 - **Don't** turn supporting content into an equal-priority dashboard card grid.
 - **Don't** replace unavailable data with invented portfolio graphics or zero values.
-- **Don't** add glow, gradient text, trading-terminal styling, or decorative finance objects.
+- **Don't** add glow, gradient text, trading-terminal styling, or decorative finance objects. The soft light fields behind glass are the only exception, and they follow [Liquid Glass › Light](#light).
+- **Don't** put glass on reading or data surfaces, nest glass, or use frosted glass on flat paper where nothing sits behind it.
 - **Don't** shrink essential text to solve responsive overflow.
 - **Don't** change lesson completion, auth, financial accounting, rewards, persistence, or server authority during visual work.

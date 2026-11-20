@@ -71,6 +71,15 @@ Elevation: `elevation-1` (`0 12px 24px`, the dominant learning surface) and `ele
 
 Motion uses 180ms micro interactions, 270ms surface transitions, and 400ms larger entries. Buttons darken over 160ms without movement. The root theme removes transitions and animations under `prefers-reduced-motion`.
 
+## Liquid glass
+
+[DESIGN.md › Liquid Glass](../DESIGN.md#liquid-glass) defines the material, where it may be used and the rollout order. The code state today:
+
+- The material exists only on the landing page, as marketing-local CSS: the "Liquid glass prototype" blocks in `src/components/marketing/pen-landing.module.css` and `portfolio-lab-demo.module.css`, plus `src/components/marketing/liquid-glass.tsx`. That file holds the ambient light, the `#lg-lens` SVG filter, the Chromium-only `html[data-refract]` flag and the pointer highlight. Its white alphas and `color-mix` light fields are material values, documented like the existing illustration tints.
+- No glass token exists in `tokens.css` yet. Before any product screen uses glass, add `--glass-*` roles (fill, border, highlight, shadow, blur) and the new radii (`--radius-tile`, `--radius-card`, `--radius-frame`). Expose them as utilities and add their contrast pairs to `tokens.test.ts`. Product CSS modules must not paste the landing recipes, because the token test rejects raw colours there.
+- A glass action is a `Button` variant added in `button.tsx`, never module CSS on a button. A glass surface (header, tab bar, sheet) uses the shared utility.
+- Every glass rule needs a `prefers-reduced-transparency: reduce` fallback to an opaque `surface`. Never animate `backdrop-filter` values, and do not nest glass: the inner element only sees its parent.
+
 ## Accessibility and behavior boundaries
 
 Focus-visible treatment is a 3px Ink outline with a 4px offset. Native controls keep their labels, touch targets, keyboard behavior, disabled semantics, and error descriptions. Correctness is always communicated with text or an icon as well as colour.
@@ -79,4 +88,4 @@ Design-system work must preserve authentication, sessions, reward policy, streak
 
 ## Validation
 
-Run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. With the development server running, `npm run test:design-system-browser` also checks that the primary action, UI font and heading font come from the shared tokens and that no second UI font loads. Production isolation must still return HTTP 404 for `/dev/design-system`.
+Run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. For glass, also check the screen with reduced transparency and reduced motion emulated. Measure contrast over the darkest and the busiest backdrop that can pass beneath the element. With the development server running, `npm run test:design-system-browser` also checks that the primary action, UI font and heading font come from the shared tokens and that no second UI font loads. Production isolation must still return HTTP 404 for `/dev/design-system`.

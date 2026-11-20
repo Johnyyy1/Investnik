@@ -108,7 +108,7 @@ random color usage;
 
 excessive pills;
 
-glassmorphism everywhere;
+glassmorphism everywhere: glass is an accent material for chrome and framing, used only where DESIGN.md's Liquid Glass section allows it, and never on lesson, data or form surfaces;
 
 generic AI-generated finance decoration;
 
@@ -148,7 +148,7 @@ beginner-friendly;
 
 clearly related to the marketing brand, but quieter.
 
-Do not copy marketing clouds, hills, oversized gradients, mascots, tilted cards, or decorative 3D scenes into normal app screens.
+Do not copy marketing clouds, hills, oversized gradients, ambient light fields, dark stages, mascots, tilted cards, or decorative 3D scenes into normal app screens. Product screens may adopt the glass material for floating chrome (header, tab bar, sheets, popovers) once it exists as shared tokens, following the rollout order in DESIGN.md.
 
 Mascot usage, if any, should be rare and purposeful:
 
