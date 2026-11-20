@@ -69,7 +69,7 @@ export function PenLanding() {
             </div>
             <p className={styles.heroNote}>Pár otázek o&nbsp;tvých cílech a&nbsp;znalostech doporučí, kde začít. Lekce o&nbsp;rezervě, výběru brokera a&nbsp;daních připravujeme.</p>
           </div>
-          <div className={`${styles.heroLessonWrap} ${styles.glass}`} data-glass data-hero-card role="group" aria-label="Ukázka lekce; nezapisuje pokrok ani neuděluje XP">
+          <div className={styles.heroLessonWrap} data-hero-card role="group" aria-label="Ukázka lekce; nezapisuje pokrok ani neuděluje XP">
             <Image className={styles.heroArt} data-hero-art src="/marketing/v14-curiosity-cropped.webp" alt="" aria-hidden="true" width={512} height={519} sizes="(max-width: 500px) 98px, (max-width: 1100px) 194px, 256px" preload />
             <div className={styles.lessonBrowserHeader}><Wordmark className={styles.smallWordmark} /><span>Než začneš investovat / Dluh, nebo investice?</span><span>Lekce 0.1.2 · ≈ 12 min</span><span>Ukázka lekce</span></div>
             <LessonPreview hero />
@@ -86,7 +86,7 @@ export function PenLanding() {
             <div className={styles.journeyIllustration} aria-hidden="true" data-journey-art>
               <Image src="/marketing/v14-discovery-edge.webp" alt="" width={685} height={1065} sizes="(max-width: 780px) 250px, (max-width: 1100px) 302px, 397px" />
             </div>
-            <div className={`${styles.courseCard} ${styles.glass}`} data-glass data-course-card>
+            <div className={styles.courseCard} data-course-card>
               <Image className={styles.discoveryGripTop} src="/marketing/v14-discovery-top-grip.webp" alt="" aria-hidden="true" width={136} height={86} />
               <Image className={styles.discoveryGripSide} src="/marketing/v14-discovery-side-grip.webp" alt="" aria-hidden="true" width={97} height={115} />
               <span className={styles.cardOverline}>Co je dostupné dnes a&nbsp;co připravujeme</span>
@@ -101,7 +101,7 @@ export function PenLanding() {
               <p>Milník „Připraven/a začít“ se počítá z&nbsp;lekcí, které už vyšly. Daně ani výběr brokera zatím nezahrnuje.</p>
             </div>
           </div>
-          <div className={styles.threeSteps} data-steps><span className={styles.stepsLine} data-steps-line aria-hidden="true"/>{[["01","Rozhodni se","Modelová situace s\u00a0dluhem, rezervou nebo poplatkem. Nejdřív zvolíš ty."],["02","Pochop důsledek","Vysvětlení ukáže proč, ne jen co je správně."],["03","Odnes si výstup","Check-up, mapu cílů nebo plán, ke kterému se vrátíš."]].map(([num,title,description])=><div key={num} className={styles.glass} data-glass data-step><span data-step-num>{num}</span><h3>{title}</h3><p>{description}</p></div>)}</div>
+          <div className={styles.threeSteps} data-steps><span className={styles.stepsLine} data-steps-line aria-hidden="true"/>{[["01","Rozhodni se","Modelová situace s\u00a0dluhem, rezervou nebo poplatkem. Nejdřív zvolíš ty."],["02","Pochop důsledek","Vysvětlení ukáže proč, ne jen co je správně."],["03","Odnes si výstup","Check-up, mapu cílů nebo plán, ke kterému se vrátíš."]].map(([num,title,description])=><div key={num} data-step><span data-step-num>{num}</span><h3>{title}</h3><p>{description}</p></div>)}</div>
           </div>
         </div>
       </section>
@@ -112,7 +112,7 @@ export function PenLanding() {
               {outputs.map(([title, status, available]) => <li key={title} data-available={available ? "" : undefined}><span>{title}</span><small>{status}</small></li>)}
             </ul>
           </div>
-          <div className={`${styles.lessonSectionDemo} ${styles.glass}`} data-glass data-reveal><LessonPreview compact/></div>
+          <div className={styles.lessonSectionDemo} data-reveal><LessonPreview compact/></div>
         </div>
       </section>
       <section className={styles.labSection} id="portfolio-lab" aria-labelledby="lab-title">
@@ -129,7 +129,7 @@ export function PenLanding() {
             <div className={styles.progressImage} aria-hidden="true" data-progress-art><Image src="/marketing/v14-steady-understanding.webp" alt="" width={1174} height={654} sizes="(max-width: 780px) calc(100vw - 48px), (max-width: 1100px) 400px, 570px" /></div>
             <div className={styles.progressCard} data-progress-card>
               <span className={styles.cardOverline}>Jak pracujeme s&nbsp;obsahem</span>
-              {trust.map(([Icon, title, detail]) => <div className={`${styles.progressItem} ${styles.glass}`} data-glass key={title} data-progress-item><Icon size={20} aria-hidden="true"/><div><span>{title}</span><small>{detail}</small></div></div>)}
+              {trust.map(([Icon, title, detail]) => <div className={styles.progressItem} key={title} data-progress-item><Icon size={20} aria-hidden="true"/><div><span>{title}</span><small>{detail}</small></div></div>)}
               <p className={styles.progressPromise}>Investník je vzdělávací produkt. Není broker a&nbsp;se skutečnými penězi nepracuje.</p>
             </div>
           </div>
@@ -139,6 +139,6 @@ export function PenLanding() {
         <div className={styles.container}><Image className={styles.closingArt} data-closing-art src="/marketing/generated-19.webp" alt="" aria-hidden="true" width={1000} height={747} sizes="(max-width: 500px) 300px, (max-width: 780px) 500px, 360px" /><div className={`${styles.closingSlab} ${styles.glass}`} data-glass><SplitHeading id="closing-title" mode="chars">Začni tam,<br/>kde právě jsi.</SplitHeading><p data-reveal data-reveal-delay="0.3">Pár otázek ukáže, kde začít.<br/> Úroveň 0 je doporučená, ne povinná.</p><div className={styles.closingActions} data-reveal data-reveal-delay="0.4"><Link href="/onboarding" prefetch={false} className={`${styles.primaryButton} ${styles.shimmerHost}`} data-lift data-press {...magneticProps}>Začít vstupním testem <ArrowRight aria-hidden="true" size={18}/><span className={styles.shimmer} data-shimmer aria-hidden="true"/></Link><DemoButton compact className={styles.demoButtonWrap} buttonClassName={styles.secondaryButton}/></div></div></div>
       </section>
     </main>
-    <footer className={styles.footer} data-footer><div className={`${styles.container} ${styles.glass}`} data-glass><Link href="/" className={styles.wordmark} aria-label="Investník · úvodní stránka"><Wordmark /></Link><p>Vzdělávání, ne investiční doporučení.</p><nav aria-label="Patička"><Link href="/pruvodce" prefetch={false}>Průvodce</Link><Link href="/pro-instituce" prefetch={false}>Pro instituce</Link><a href="#jak-to-funguje">Jak to funguje</a><Link href="/sign-in" prefetch={false}>Přihlásit se</Link>{legalLinks.map((link) => <Link key={link.href} href={link.href} prefetch={false}>{link.label}</Link>)}</nav></div></footer>
+    <footer className={styles.footer} data-footer><div className={styles.container}><Link href="/" className={styles.wordmark} aria-label="Investník · úvodní stránka"><Wordmark /></Link><p>Vzdělávání, ne investiční doporučení.</p><nav aria-label="Patička"><Link href="/pruvodce" prefetch={false}>Průvodce</Link><Link href="/pro-instituce" prefetch={false}>Pro instituce</Link><a href="#jak-to-funguje">Jak to funguje</a><Link href="/sign-in" prefetch={false}>Přihlásit se</Link>{legalLinks.map((link) => <Link key={link.href} href={link.href} prefetch={false}>{link.label}</Link>)}</nav></div></footer>
   </MotionRoot>;
 }
