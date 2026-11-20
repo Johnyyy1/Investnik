@@ -366,7 +366,7 @@ export function CrisisDrill() {
   };
   return <div className={styles.crisis} data-crisis>
     <p className={styles.crisisEyebrow}>KRIZOVÝ NÁCVIK · DOVĚTEK</p>
-    <h3 className={styles.crisisTitle}>Trh spadne o&nbsp;30 %. Co uděláš?</h3>
+    <h3 className={styles.crisisTitle}>Trh spadne o&nbsp;30&nbsp;%. Co uděláš?</h3>
     <figure className={styles.chart}>
       <figcaption><span>Modelový index po měsících</span><span className={styles.chip}>Modelový scénář</span></figcaption>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Modelový index: start 100, v měsíci ${CRISIS_DECISION_MONTH} ${CRISIS_LEVELS[CRISIS_DECISION_MONTH]} (−30 %), v měsíci 12 ${CRISIS_LEVELS[12]}.`}>
