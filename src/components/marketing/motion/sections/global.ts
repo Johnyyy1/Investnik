@@ -27,34 +27,26 @@ export const initInteractions: SectionInit = ({ root, c }) => {
   return () => cleanups.forEach(fn => fn());
 };
 
-/** Site header: slides down on load, gains a surface when scrolled, hides on scroll down and returns on scroll up. */
+/** Site header: slides down on load, then stays in view as a floating glass bar. Pins sit below it (NAV_CLEARANCE). */
 export const initNav: SectionInit = ({ root }) => {
   const header = $(root, "[data-nav]");
-  const bg = $(root, "[data-nav-bg]");
-  if (!header || !bg) return;
+  if (!header) return;
   // Sticky is applied from JS so the no-JS / reduced-motion header stays in normal flow.
   gsap.set(header, { position: "sticky", top: 0 });
-  gsap.set(bg, { autoAlpha: 0 });
   // Keep navigation fully opaque so sign-in stays readable throughout the intro.
   gsap.from(header, { y: -24, duration: 0.9, delay: 0.1, ease: EASE.enter });
-
-  const details = header.querySelector("details");
-  ScrollTrigger.create({
-    start: 0, end: "max",
-    onUpdate: self => {
-      const y = self.scroll();
-      gsap.to(bg, { autoAlpha: y > 24 ? 1 : 0, duration: 0.35, overwrite: "auto" });
-      const keepVisible = details?.open || header.contains(document.activeElement);
-      // While the Portfolio Lab demo is pinned the bar would cover its step tabs, so it stays away.
-      const pinned = root.hasAttribute("data-lab-pinned");
-      const hide = (pinned || (self.direction === 1 && y > 240)) && !keepVisible;
-      if (hide || self.direction === -1 || y <= 240) {
-        gsap.to(header, { yPercent: hide ? -110 : 0, duration: 0.45, ease: EASE.enter, overwrite: "auto" });
-      }
-    },
+  // Over the dark Lab stage the clear glass would leave dark text on dark; switch the bar to its dark variant.
+  const lab = $(root, "#portfolio-lab");
+  const dark = lab && ScrollTrigger.create({
+    trigger: lab, start: `top ${NAV_CLEARANCE / 2}`, end: `bottom ${NAV_CLEARANCE / 2}`,
+    refreshPriority: -1, // after the Lab pin has added its spacer
+    onToggle: self => header.toggleAttribute("data-on-dark", self.isActive),
   });
-  return () => { gsap.set(header, { clearProps: "position,top,transform" }); };
+  return () => { dark?.kill(); header.removeAttribute("data-on-dark"); gsap.set(header, { clearProps: "position,top,transform" }); };
 };
+
+/** Height the sticky nav covers (16 px gutter + 64 px pill), plus a small gap: pinned blocks start below it. */
+export const NAV_CLEARANCE = 88;
 
 /** Footer: a single calm fade-up. */
 export const initFooter: SectionInit = ({ root }) => {

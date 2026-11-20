@@ -32,6 +32,7 @@ export const initSmoothScroll: SectionInit = ({ root }) => {
     event.preventDefault();
     lenis.scrollTo(target, {
       duration: 1.3,
+      offset: -24, // keeps the section's eyebrow clear of the sticky nav
       onComplete: () => {
         history.pushState(null, "", `#${id}`);
         target.tabIndex = -1;

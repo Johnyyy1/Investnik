@@ -39,7 +39,6 @@
 .skip { position: absolute; z-index: 50; top: 8px; left: 16px; background: var(--surface); border-radius: 8px; padding: 12px; transform: translateY(-200%); }
 .skip:focus { transform: none; }
 .siteHeader { position: relative; z-index: 4; padding-block: 28px; }
-.navBg { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: color-mix(in srgb, var(--paper) 92%, transparent); box-shadow: 0 1px 0 var(--divider), 0 10px 28px #17171710; backdrop-filter: blur(10px); }
 .scrollProgress { position: fixed; z-index: 60; top: 0; left: 0; right: 0; height: 3px; background: var(--teal); transform: scaleX(0); transform-origin: 0 50%; pointer-events: none; }
 .siteHeader .container { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; min-height: 56px; }
 .wordmark { font-family: var(--font-display); font-size: 2.125rem; letter-spacing: -.05em; font-weight: 800; line-height: 1.35; }
@@ -455,11 +454,14 @@
 
 /* Floating nav: a clear lens. Chromium bends what scrolls under it; elsewhere it stays lightly frosted. */
 .siteHeader { padding-block: 16px; }
-.navBg { display: none; }
 .siteHeader .container.navPill { width: min(1180px, calc(100% - 48px)); min-height: 64px; padding: 6px 8px 6px 24px; border-radius: 999px; flex-wrap: nowrap; }
 .navPill .wordmark { font-size: 1.75rem; }
 .lens { background: linear-gradient(180deg, rgb(255 255 255 / .42), rgb(255 255 255 / .16)); -webkit-backdrop-filter: blur(6px) saturate(180%); backdrop-filter: blur(6px) saturate(180%); }
 :global(html[data-refract]) .lens { backdrop-filter: url(#lg-lens) blur(1.5px) saturate(185%) brightness(1.05); }
+.navPill { transition: color 300ms ease, background 300ms ease, box-shadow 300ms ease; }
+.siteHeader[data-on-dark] .navPill { color: var(--paper); background: linear-gradient(180deg, rgb(255 255 255 / .14), rgb(255 255 255 / .05)); border-color: rgb(255 255 255 / .2) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), 0 20px 40px -20px rgb(0 0 0 / .6); }
+.siteHeader[data-on-dark] .navSignIn { background: rgb(255 255 255 / .1); border-color: rgb(255 255 255 / .25); }
+.siteHeader[data-on-dark] :focus-visible { outline-color: var(--paper); }
 .topNav { gap: 6px; }
 .topNav a { padding-inline: 16px; border-radius: 999px; }
 .topNav .navSignIn { border-radius: 999px; border-color: rgb(23 23 23 / .18); background: rgb(255 255 255 / .35); }
@@ -490,7 +492,7 @@
   position: relative;
   background:
     radial-gradient(48% 42% at 12% 18%, color-mix(in srgb, var(--color-progress) 55%, transparent), transparent 72%),
-    radial-gradient(40% 40% at 88% 78%, color-mix(in srgb, var(--color-warning) 30%, transparent), transparent 72%),
+    radial-gradient(34% 30% at 96% 100%, color-mix(in srgb, var(--color-warning) 16%, transparent), transparent 72%),
     radial-gradient(36% 30% at 62% 8%, color-mix(in srgb, var(--color-primary) 60%, transparent), transparent 70%),
     var(--ink);
 }
@@ -524,4 +526,40 @@
 @media (prefers-reduced-transparency: reduce) {
   .glass, .lens, .landing .secondaryButton { background: var(--surface) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   .ambient { display: none; }
+}
+
+/* Course path card, compact: one header row, a timeline of the three levels, the two Lab tools as small tiles. */
+.courseCard { padding: 28px 32px 24px; border-radius: 22px; box-shadow: inset 0 1px 0 #fff, 0 24px 48px -32px rgb(23 23 23 / .35); }
+.courseHeader { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 0 0 18px; }
+.courseHeader .cardOverline { margin-bottom: 6px; }
+.courseHeader h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; line-height: 1.2; }
+.courseHeader > span { padding: 4px 12px; border-radius: 999px; background: var(--color-primary-soft); font-size: .8125rem; }
+.courseSteps { position: relative; list-style: none; margin: 0; padding: 0; }
+/* The timeline spine runs behind the step dots. */
+.courseSteps::before { content: ""; position: absolute; left: 13px; top: 22px; bottom: 22px; width: 2px; border-radius: 2px; background: linear-gradient(var(--teal2), var(--color-primary-tint)); }
+.courseRow { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; column-gap: 16px; align-items: start; min-height: 0; margin: 0; padding: 10px 0; border: 0; }
+.courseRow .rowIcon { position: relative; width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 2px solid var(--teal2); }
+.courseRow .rowIcon svg { stroke-width: 2; }
+.courseSteps .courseRow[data-course-row="next"] .rowIcon { background: var(--teal); border-color: var(--teal); color: var(--color-primary-foreground); }
+.courseRow .rowText { padding-top: 3px; }
+.rowText strong { display: block; font-weight: 600; font-size: 1rem; line-height: 1.3; }
+.courseRow .rowText > span { margin-top: 3px; max-width: 62ch; font-size: .875rem; line-height: 1.45; }
+.courseSteps .courseRow small { margin: 3px 0 0; padding: 3px 10px; border-radius: 999px; background: var(--color-primary-soft); color: var(--teal); font-size: .75rem; font-weight: 600; white-space: nowrap; }
+.courseSteps .courseRow[data-course-row="next"] small { background: var(--teal); color: var(--color-primary-foreground); }
+.courseLab { list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.courseLab li { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 16px; background: var(--color-surface-practice); border: 1px solid var(--color-border); }
+.courseLab li > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.courseLab strong { font-weight: 600; font-size: .9375rem; line-height: 1.3; }
+.courseLab small { color: var(--teal); font-size: .75rem; font-weight: 600; }
+.courseLab span { color: var(--muted); font-size: .8125rem; line-height: 1.4; }
+.courseCard > p { margin-top: 14px; font-size: .75rem; line-height: 1.4; }
+.journeyContent { min-height: 470px; }
+@media (max-width: 1100px) { .journeyContent { min-height: 500px; } }
+@media (max-width: 800px) { .courseLab { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 500px) {
+  .journeyContent { min-height: 0; }
+  .courseCard { padding: 20px; }
+  .courseHeader h3 { font-size: 1.25rem; }
+  .courseRow { grid-template-columns: 28px minmax(0, 1fr); column-gap: 12px; }
+  .courseSteps .courseRow small { grid-column: 2; justify-self: start; margin-top: 8px; }
 }

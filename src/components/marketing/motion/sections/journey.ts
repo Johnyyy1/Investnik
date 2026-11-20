@@ -1,6 +1,7 @@
 import { gsap, ScrollTrigger, MQ, EASE, DUR } from "@/lib/gsap";
 import { $, $$ } from "../utils";
 import type { SectionInit } from "../types";
+import { NAV_CLEARANCE } from "./global";
 
 /**
  * "Jak to funguje": the path card cascades in (rows, statuses, pulsing "Doporučený začátek"), then the
@@ -81,7 +82,7 @@ export const initJourney: SectionInit = ({ root, c, inContext }) => {
   const mm = gsap.matchMedia();
   mm.add(MQ.tall, () => {
     ScrollTrigger.create({
-      animation: tl, trigger: wrap, start: () => `top top+=${Math.round(overhang() + 24)}`, end: "+=1700",
+      animation: tl, trigger: wrap, start: () => `top top+=${Math.round(overhang() + NAV_CLEARANCE)}`, end: "+=1700",
       pin: true, scrub: 0.8, anticipatePin: 1, invalidateOnRefresh: true,
     });
     return () => { tl.scrollTrigger?.kill(); };

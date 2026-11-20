@@ -15,12 +15,12 @@ import { LiquidGlass } from "./liquid-glass";
  * Milestone A path. Statuses mirror the published inventory (lessons/registry.ts, learning/curriculum.ts):
  * change a status only when the lesson or Lab tool behind it is published.
  */
-const path: readonly { title: string; detail: string; status: string; state: "next" | "open" | "planned" }[] = [
-  { title: "0 · Než začneš investovat", detail: "Rozpočet, drahý dluh, cíle a\u00a0horizont, finanční check-up. Rezervu, penzijko s\u00a0DIP a\u00a0podvody připravujeme.", status: "Doporučený začátek", state: "next" },
-  { title: "1 · Jak investice fungují", detail: "Akcie, dluhopisy, ETF a\u00a0indexy, fondy a\u00a0jejich náklady, aktivní a\u00a0indexové investování. Závěrečná kontrola propojí principy ve smíšených úlohách.", status: "Dostupné", state: "open" },
-  { title: "2 · Investování v\u00a0Česku v\u00a0praxi", detail: "Náklady fondu i\u00a0obchodu: TER, rozdíl vůči indexu, spread, minimální poplatek, čtení ceníku brokera, měnová konverze, dopad nákladů za 30 let, srovnání dvou brokerů pro vlastní plán, replikace ETF a\u00a0hlavní globální indexy, checklist výběru ETF, sepsání investičního plánu (IPS), pravidelná investice nastavená předem, první nákup nanečisto a\u00a0závěrečný projekt milníku A\u00a0s\u00a0rubrikou. Brokera a\u00a0účet, další náklady, produkty v\u00a0EU a\u00a0české daně připravujeme.", status: "Dvanáct lekcí dostupných", state: "open" },
-  { title: "Vlastní investiční plán (IPS)", detail: "Cíle, rozložení, pravidelné vklady a\u00a0pravidlo pro propad zapíšeš v\u00a0Labu.", status: "Dostupné v\u00a0Labu", state: "open" },
-  { title: "Krizový nácvik", detail: "Modelovou krizí projdeš měsíc po měsíci bez skutečných peněz a\u00a0ověříš, jestli se držíš svého plánu.", status: "Dostupné v\u00a0Labu", state: "open" },
+const path: readonly { title: string; detail: string; status: string; state: "next" | "open" | "planned"; lab?: true }[] = [
+  { title: "0 · Než začneš investovat", detail: "Rozpočet, drahý dluh, cíle a\u00a0check-up. Rezervu, penzijko s\u00a0DIP a\u00a0podvody připravujeme.", status: "Doporučený začátek", state: "next" },
+  { title: "1 · Jak investice fungují", detail: "Akcie, dluhopisy, ETF, indexy a\u00a0náklady fondů. Aktivní, nebo indexové investování?", status: "Dostupné", state: "open" },
+  { title: "2 · Investování v\u00a0Česku v\u00a0praxi", detail: "Náklady a\u00a0ceníky brokerů, výběr ETF, investiční plán (IPS) a\u00a0první nákup nanečisto. Brokera a\u00a0účet, produkty v\u00a0EU a\u00a0daně připravujeme.", status: "Dvanáct lekcí dostupných", state: "open" },
+  { title: "Vlastní investiční plán (IPS)", detail: "Cíle, rozložení, vklady a\u00a0pravidlo pro propad.", status: "Dostupné v\u00a0Labu", state: "open", lab: true },
+  { title: "Krizový nácvik", detail: "Modelová krize měsíc po měsíci, bez skutečných peněz.", status: "Dostupné v\u00a0Labu", state: "open", lab: true },
 ];
 
 const outputs = [
@@ -45,7 +45,6 @@ export function PenLanding() {
     <div className={styles.scrollProgress} data-scroll-progress aria-hidden="true"/>
     <a className={styles.skip} href="#main">Přejít k&nbsp;obsahu</a>
     <header className={styles.siteHeader} data-nav>
-      <span className={styles.navBg} data-nav-bg aria-hidden="true"/>
       <div className={`${styles.container} ${styles.navPill} ${styles.glass} ${styles.lens}`} data-glass>
         <Link href="/" className={styles.wordmark} aria-label="Investník · úvodní stránka"><Wordmark /></Link>
         <nav className={styles.topNav} aria-label="Hlavní navigace">
@@ -89,16 +88,21 @@ export function PenLanding() {
             <div className={styles.courseCard} data-course-card>
               <Image className={styles.discoveryGripTop} src="/marketing/v14-discovery-top-grip.webp" alt="" aria-hidden="true" width={136} height={86} />
               <Image className={styles.discoveryGripSide} src="/marketing/v14-discovery-side-grip.webp" alt="" aria-hidden="true" width={97} height={115} />
-              <span className={styles.cardOverline}>Co je dostupné dnes a&nbsp;co připravujeme</span>
-              <div className={styles.courseHeader}><h3>Cesta k&nbsp;milníku „Připraven/a začít“</h3><span>Úrovně 0–2</span></div>
-              <ul>
-                {path.map(({ title, detail, status, state }) => <li className={styles.courseRow} key={title} data-course-row={state} data-planned={state === "planned" ? "" : undefined}>
-                  <span className={styles.rowIcon} data-row-icon>{state === "next" ? <Play size={18} aria-hidden="true"/> : state === "planned" ? <CircleDashed size={18} aria-hidden="true"/> : <CircleDot size={18} aria-hidden="true"/>}</span>
-                  <span className={styles.rowText}>{title}<span>{detail}</span></span>
+              <div className={styles.courseHeader}><div><span className={styles.cardOverline}>Co je dostupné dnes a&nbsp;co připravujeme</span><h3>Cesta k&nbsp;milníku „Připraven/a začít“</h3></div><span>Úrovně 0–2</span></div>
+              <ol className={styles.courseSteps}>
+                {path.filter(item => !item.lab).map(({ title, detail, status, state }) => <li className={styles.courseRow} key={title} data-course-row={state} data-planned={state === "planned" ? "" : undefined}>
+                  <span className={styles.rowIcon} data-row-icon>{state === "next" ? <Play size={14} aria-hidden="true"/> : state === "planned" ? <CircleDashed size={14} aria-hidden="true"/> : <CircleDot size={14} aria-hidden="true"/>}</span>
+                  <span className={styles.rowText}><strong>{title}</strong><span>{detail}</span></span>
                   <small data-row-status>{status}</small>
                 </li>)}
+              </ol>
+              <ul className={styles.courseLab} aria-label="V Portfolio Labu">
+                {path.filter(item => item.lab).map(({ title, detail, status, state }) => <li key={title} data-course-row={state}>
+                  <div><strong>{title}</strong><small data-row-status>{status}</small></div>
+                  <span>{detail}</span>
+                </li>)}
               </ul>
-              <p>Milník „Připraven/a začít“ se počítá z&nbsp;lekcí, které už vyšly. Daně ani výběr brokera zatím nezahrnuje.</p>
+              <p>Milník se počítá z&nbsp;lekcí, které už vyšly. Daně ani výběr brokera zatím nezahrnuje.</p>
             </div>
           </div>
           <div className={styles.threeSteps} data-steps><span className={styles.stepsLine} data-steps-line aria-hidden="true"/>{[["01","Rozhodni se","Modelová situace s\u00a0dluhem, rezervou nebo poplatkem. Nejdřív zvolíš ty."],["02","Pochop důsledek","Vysvětlení ukáže proč, ne jen co je správně."],["03","Odnes si výstup","Check-up, mapu cílů nebo plán, ke kterému se vrátíš."]].map(([num,title,description])=><div key={num} data-step><span data-step-num>{num}</span><h3>{title}</h3><p>{description}</p></div>)}</div>
