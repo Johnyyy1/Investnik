@@ -170,10 +170,6 @@
 .lessonCompact .answer { font-size: 1rem !important; min-height: 60px; padding: 16px 18px; }
 .labSection { background: var(--ink); color: var(--paper); padding: 100px 0 64px; }
 .labSection .eyebrow { color: var(--cash); }
-.labIntro { display: grid; grid-template-columns: 790px minmax(0, 1fr); gap: 80px; align-items: end; }
-.labIntro h2 { font-size: 6.25rem; line-height: 1.02; letter-spacing: -.045em; margin-top: 20px; }
-.labExplanation > p { font-size: 1.125rem; line-height: 1.55; color: #e5e5dc; }
-.labExplanation > small { display: block; font-size: .8125rem; margin-top: 20px; color: #d8dad0; }
 .labDemo { margin-top: 56px; display: grid; grid-template-columns: minmax(0, 864fr) minmax(0, 392fr); gap: 56px; align-items: start; }
 .labFooter { margin-top: 56px; padding-top: 28px; border-top: 1px solid #f7f2e833; display: flex; justify-content: space-between; align-items: center; gap: 32px; }
 .labFooter p { font-size: .8125rem; line-height: 1.5; color: #e0e3d8; max-width: 640px; }
@@ -249,8 +245,6 @@
   .lessonSectionCopy h2 { font-size: 3.25rem; }
   .lessonCompact .feedback :is(h2, h3) { font-size: 1.75rem; }
   .labSection { padding: 80px 0 56px; }
-  .labIntro { grid-template-columns: 550px minmax(0, 1fr); gap: 32px; }
-  .labIntro h2 { font-size: 4.75rem; letter-spacing: -.042em; }
   .labDemo { grid-template-columns: minmax(0, 1fr); gap: 48px; margin-top: 40px; }
   .progressSection { padding: 80px 0; }
   .progressSection h2 { font-size: 3.5rem; margin-block: 28px; }
@@ -288,8 +282,6 @@
   .threeSteps { gap: 24px; margin-top: 32px; }
   .lessonSectionLayout { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .lessonSectionCopy h2 { margin-block: 24px; }
-  .labIntro { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-  .labIntro h2 { font-size: 3.875rem; }
   .progressSection h2 { font-size: 3rem; }
   .progressLayout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .progressImage { height: 330px; }
@@ -354,9 +346,6 @@
   .lessonCompact .feedback :is(h2, h3) { font-size: 1.625rem; }
   .lessonCompact .feedback p { font-size: .875rem; }
   .labSection { padding: 72px 0 56px; }
-  .labIntro h2 { font-size: min(13.334vw, 3.25rem); line-height: 1.04; letter-spacing: -.042em; margin-top: 16px; }
-  .labExplanation > p { font-size: 1.0625rem; }
-  .labExplanation > small { margin-top: 16px; }
   .labDemo { margin-top: 32px; }
   .labFooter { flex-direction: column; align-items: stretch; gap: 24px; margin-top: 48px; }
   .labFooter .primaryButton { justify-content: center; }
@@ -377,7 +366,6 @@
 @media (max-width: 374px) {
   .hero h1 { font-size: 2.75rem; }
   .hero h1 span { margin-left: 16px; }
-  .labIntro h2 { font-size: 2.625rem; }
   .closing h2 { font-size: 2.375rem; }
   .courseRow { gap: 8px; flex-wrap: wrap; }
   .courseRow small { margin-left: 28px; }
@@ -491,9 +479,8 @@
 .labSection {
   position: relative;
   background:
-    radial-gradient(48% 42% at 12% 18%, color-mix(in srgb, var(--color-progress) 55%, transparent), transparent 72%),
-    radial-gradient(34% 30% at 96% 100%, color-mix(in srgb, var(--color-warning) 16%, transparent), transparent 72%),
-    radial-gradient(36% 30% at 62% 8%, color-mix(in srgb, var(--color-primary) 60%, transparent), transparent 70%),
+    radial-gradient(60% 420px at 50% 0%, color-mix(in srgb, var(--color-progress) 42%, transparent), transparent 75%),
+    radial-gradient(50% 480px at 50% 62%, color-mix(in srgb, var(--color-primary) 26%, transparent), transparent 72%),
     var(--ink);
 }
 .labFooter { border-top-color: rgb(255 255 255 / .16); }
@@ -563,3 +550,25 @@
   .courseRow { grid-template-columns: 28px minmax(0, 1fr); column-gap: 12px; }
   .courseSteps .courseRow small { grid-column: 2; justify-self: start; margin-top: 8px; }
 }
+
+/* Lab intro: one centred statement under the spotlight, then three short principles. */
+.labIntro { display: flex; flex-direction: column; align-items: center; max-width: 860px; margin-inline: auto; text-align: center; }
+.labBadge { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 999px; background: rgb(255 255 255 / .06); border: 1px solid rgb(255 255 255 / .14); box-shadow: inset 0 1px 0 rgb(255 255 255 / .12); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.labDot { width: 6px; height: 6px; border-radius: 50%; background: var(--cash); box-shadow: 0 0 0 4px color-mix(in srgb, var(--cash) 22%, transparent); }
+.labIntro h2 { margin-top: 28px; font-size: clamp(3rem, 6.4vw, 5.5rem); line-height: 1.02; letter-spacing: -.045em; }
+.labIntro h2 span { color: color-mix(in srgb, var(--paper) 58%, transparent); }
+.labLead { max-width: 600px; margin-top: 24px !important; font-size: 1.1875rem; line-height: 1.55; color: #e5e5dc; }
+.labPrinciples { list-style: none; margin: 32px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.labPrinciples li { display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px 10px 14px; border-radius: 999px; background: rgb(255 255 255 / .06); border: 1px solid rgb(255 255 255 / .12); box-shadow: inset 0 1px 0 rgb(255 255 255 / .1); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); font-size: .9375rem; line-height: 1.3; color: var(--paper); }
+.labPrinciples svg { flex-shrink: 0; color: var(--color-primary-tint); stroke-width: 1.75; }
+.labNote { display: block; margin-top: 20px; font-size: .8125rem; color: #d8dad0; }
+.labDemo { margin-top: 64px; }
+@media (max-width: 500px) {
+  .labIntro h2 { margin-top: 20px; font-size: min(12.5vw, 3rem); }
+  .labLead { font-size: 1.0625rem; }
+  .labPrinciples { flex-direction: column; align-items: stretch; }
+  .labPrinciples li { border-radius: 16px; }
+  .labDemo { margin-top: 40px; }
+}
+/* The Lab stage floats as one rounded sheet instead of a hard full-bleed cut from the paper. */
+.labSection { margin-inline: clamp(8px, 1.2vw, 20px); border-radius: clamp(28px, 3vw, 48px); }

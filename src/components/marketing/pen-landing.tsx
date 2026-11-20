@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, CalendarCheck, CircleDashed, CircleDot, Play, Scale, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarCheck, CircleDashed, CircleDot, Coins, Hourglass, Play, Scale, ShieldCheck, type LucideIcon } from "lucide-react";
 import { DemoButton } from "@/components/auth/demo-button";
 import { LessonPreview, MobileNavigation } from "./pen-interactions";
 import { CrisisDrill, PortfolioLabDemo } from "./portfolio-lab-demo";
@@ -121,7 +121,17 @@ export function PenLanding() {
       </section>
       <section className={styles.labSection} id="portfolio-lab" aria-labelledby="lab-title">
         <div className={styles.container}>
-          <div className={styles.labIntro}><div><p className={styles.eyebrow} data-reveal="fade">PORTFOLIO LAB A&nbsp;KRIZOVÝ NÁCVIK</p><SplitHeading id="lab-title" mode="lines">Proces,<br/>ne výnos.</SplitHeading></div><div className={styles.labExplanation} data-reveal data-reveal-delay="0.25"><p>Svůj plán si vyzkoušíš s&nbsp;cvičným kapitálem, který dostaneš za lekce. Lab ukáže náklady, rozložení a&nbsp;soulad s&nbsp;tvým investičním plánem. A&nbsp;někdy je správným výsledkem prostě vyčkat.</p><small>Hodnotí se postup, ne zisk. Nic se doopravdy nekupuje.</small></div></div>
+          <div className={styles.labIntro}>
+            <p className={`${styles.eyebrow} ${styles.labBadge}`} data-reveal="fade"><span className={styles.labDot} aria-hidden="true"/>PORTFOLIO LAB A&nbsp;KRIZOVÝ NÁCVIK</p>
+            <SplitHeading id="lab-title">Proces, <span>ne&nbsp;výnos.</span></SplitHeading>
+            <p className={styles.labLead} data-reveal data-reveal-delay="0.2">Svůj plán si vyzkoušíš s&nbsp;cvičným kapitálem, který dostaneš za lekce. Lab ukáže náklady, rozložení a&nbsp;soulad s&nbsp;tvým investičním plánem.</p>
+            <ul className={styles.labPrinciples} aria-label="Co si v Labu vyzkoušíš" data-reveal data-reveal-stagger data-reveal-delay="0.3">
+              <li><Coins size={18} aria-hidden="true"/>Cvičný kapitál za lekce</li>
+              <li><Scale size={18} aria-hidden="true"/>Náklady a&nbsp;rozložení vůči plánu</li>
+              <li><Hourglass size={18} aria-hidden="true"/>Někdy je správně vyčkat</li>
+            </ul>
+            <small className={styles.labNote}>Hodnotí se postup, ne zisk. Nic se doopravdy nekupuje.</small>
+          </div>
           <div className={styles.labDemo} data-lab-demo role="group" aria-label="Ukázka Portfolio Labu; nic nekupuje ani neukládá" data-reveal><PortfolioLabDemo/><CrisisDrill/></div>
           <div className={styles.labFooter}><p>Výukový model s&nbsp;fiktivními cenami a&nbsp;tarify. Nejde o&nbsp;investiční doporučení ani odhad budoucího výnosu.</p><Link href="/onboarding" prefetch={false} className={styles.primaryButton} data-lift data-press {...magneticProps}>Začít učením <ArrowRight aria-hidden="true" size={18}/></Link></div>
         </div>
