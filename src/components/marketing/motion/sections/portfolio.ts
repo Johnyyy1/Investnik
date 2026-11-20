@@ -6,14 +6,15 @@ import {
   type PortfolioStep, type PortfolioStepDetail, type PortfolioStepRequestDetail,
 } from "../events";
 import type { SectionInit } from "../types";
+import { NAV_CLEARANCE } from "./global";
 
 /**
  * Wide enough for the side-by-side layout and tall enough for the tallest step without clipping (measured:
- * ≈ 770 px at 1440, 795 px at 1280, 840 px at 1200, plus the 16 px top offset). In em so a larger default
- * font size needs a taller window.
+ * ≈ 770 px at 1440, 795 px at 1280, 840 px at 1200, plus the top offset below the sticky nav). In em so a
+ * larger default font size needs a taller window.
  */
-export const PORTFOLIO_PIN_QUERY = "(min-width: 87.5em) and (min-height: 49.5em), (min-width: 80em) and (min-height: 51em), (min-width: 75em) and (min-height: 54em)";
-const PIN_TOP = 16;
+export const PORTFOLIO_PIN_QUERY = "(min-width: 87.5em) and (min-height: 54em), (min-width: 80em) and (min-height: 55.5em), (min-width: 75em) and (min-height: 58.5em)";
+const PIN_TOP = NAV_CLEARANCE;
 /** Scroll distance per step while pinned. */
 const STEP_SCROLL = 720;
 const STEPS = 3;

@@ -10,6 +10,17 @@ Every status on the page must match the published inventory: lessons in `src/fea
 
 Sign-up/sign-in actions use the existing authentication routes. Protected Learn/Lab links retain authentication gates and disable speculative lab prefetch. Explore demo uses the existing anonymous identity and server seed; it does not share a login or overwrite an existing demo portfolio. Mobile navigation uses native `details` semantics.
 
+The landing page is the reference implementation of the Liquid Glass direction ([DESIGN.md › Liquid Glass](../DESIGN.md#liquid-glass)):
+
+- **Navigation:** a sticky glass pill that always stays visible. It turns to smoked glass over the dark Lab stage.
+- **Hero:** an ambient light field behind it only. `liquid-glass.tsx` renders it with the `#lg-lens` refraction filter, which runs in Chromium only.
+- **Path card:** an opaque timeline, with the IPS and crisis drill as tiles.
+- **Module outputs:** icon tiles, with the lesson demo in a glass frame.
+- **Lab:** a rounded dark stage with a centred „Proces, ne výnos“ statement, principle chips, an opaque demo panel, segmented step tabs and a smoked crisis card.
+- **Closing:** a frosted slab with its own light.
+
+Glass falls back to opaque surfaces under `prefers-reduced-transparency`. The motion layer pins the journey and the Lab below the nav (`NAV_CLEARANCE`), and the Lab pin needs a slightly taller window than before (`PORTFOLIO_PIN_QUERY`).
+
 Landing illustrations live in `public/marketing` as WebP, sized to about twice their largest rendered width (q≈75) and served through `next/image`. Re-export new artwork the same way rather than committing full-resolution PNGs; the brand design source is `investi-design.pen`, not a file in `public/`. Example outcomes retain their educational disclosure, and illustrations are never represented as live market data. Display fonts stay scoped to marketing; product typography uses the shared theme fonts. Bright brand fills require readable navy/deep-blue text rather than blindly applying white body text.
 
 Semantic sections, one H1, skip link, visible focus, responsive disclosure navigation, pending/error demo feedback, and reduced-motion styles are part of the current contract. Text must reflow when enlarged.

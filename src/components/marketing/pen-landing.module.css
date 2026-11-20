@@ -39,13 +39,12 @@
 .skip { position: absolute; z-index: 50; top: 8px; left: 16px; background: var(--surface); border-radius: 8px; padding: 12px; transform: translateY(-200%); }
 .skip:focus { transform: none; }
 .siteHeader { position: relative; z-index: 4; padding-block: 28px; }
-.navBg { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: color-mix(in srgb, var(--paper) 92%, transparent); box-shadow: 0 1px 0 var(--divider), 0 10px 28px #17171710; backdrop-filter: blur(10px); }
 .scrollProgress { position: fixed; z-index: 60; top: 0; left: 0; right: 0; height: 3px; background: var(--teal); transform: scaleX(0); transform-origin: 0 50%; pointer-events: none; }
 .siteHeader .container { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; min-height: 56px; }
 .wordmark { font-family: var(--font-display); font-size: 2.125rem; letter-spacing: -.05em; font-weight: 800; line-height: 1.35; }
 .topNav { display: flex; gap: 36px; align-items: center; font-size: .9375rem; }
 .topNav a { display: inline-flex; align-items: center; min-height: 48px; }
-.topNav a:last-child { border: 1px solid #c6c3ba; border-radius: 8px; padding-inline: 20px; font-weight: 500; transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease; }
+.topNav .navSignIn { border: 1px solid #c6c3ba; border-radius: 8px; padding-inline: 20px; font-weight: 500; transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease; }
 .mobileActions { display: none; }
 .mobileNav summary { list-style: none; cursor: pointer; display: grid; place-items: center; width: 44px; height: 48px; border-radius: 8px; transition: background-color var(--motion-micro) ease-out; }
 /* Both icons stay in the DOM and share one grid cell, so the swap can be interrupted mid-way. */
@@ -80,7 +79,7 @@
 .primaryButton svg { flex-shrink: 0; transition: transform 240ms cubic-bezier(.2, .7, .2, 1); }
 .textAction { display: inline-flex; align-items: center; min-height: 48px; font-size: 1rem; font-weight: 500; }
 /* Underline that draws in from the left on hover, instead of a text-decoration jump. */
-.topNav a:not(:last-child), .textAction, .footer nav a, .mobileActions > a {
+.topNav a:not(.navSignIn, .navStart), .textAction, .footer nav a, .mobileActions > a {
   background: linear-gradient(currentColor, currentColor) 0 calc(50% + .78em) / 0 1px no-repeat;
   transition: background-size 260ms cubic-bezier(.2, .7, .2, 1), color 180ms ease;
 }
@@ -171,10 +170,6 @@
 .lessonCompact .answer { font-size: 1rem !important; min-height: 60px; padding: 16px 18px; }
 .labSection { background: var(--ink); color: var(--paper); padding: 100px 0 64px; }
 .labSection .eyebrow { color: var(--cash); }
-.labIntro { display: grid; grid-template-columns: 790px minmax(0, 1fr); gap: 80px; align-items: end; }
-.labIntro h2 { font-size: 6.25rem; line-height: 1.02; letter-spacing: -.045em; margin-top: 20px; }
-.labExplanation > p { font-size: 1.125rem; line-height: 1.55; color: #e5e5dc; }
-.labExplanation > small { display: block; font-size: .8125rem; margin-top: 20px; color: #d8dad0; }
 .labDemo { margin-top: 56px; display: grid; grid-template-columns: minmax(0, 864fr) minmax(0, 392fr); gap: 56px; align-items: start; }
 .labFooter { margin-top: 56px; padding-top: 28px; border-top: 1px solid #f7f2e833; display: flex; justify-content: space-between; align-items: center; gap: 32px; }
 .labFooter p { font-size: .8125rem; line-height: 1.5; color: #e0e3d8; max-width: 640px; }
@@ -211,8 +206,8 @@
 @media (hover: hover) and (pointer: fine) {
   .mobileNav summary:hover { background: var(--soft); }
   .mobileNav nav a:hover { background: var(--soft); color: var(--teal); }
-  .topNav a:not(:last-child):hover, .textAction:hover, .footer nav a:hover, .mobileActions > a:hover { color: var(--teal); background-size: 100% 1px; }
-  .topNav a:last-child:hover { background: var(--teal); border-color: var(--teal); color: var(--color-primary-foreground); }
+  .topNav a:not(.navSignIn, .navStart):hover, .textAction:hover, .footer nav a:hover, .mobileActions > a:hover { color: var(--teal); background-size: 100% 1px; }
+  .topNav .navSignIn:hover { background: var(--teal); border-color: var(--teal); color: var(--color-primary-foreground); }
   .primaryButton:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
   .primaryButton:hover svg { transform: translateX(4px); }
   .landing .secondaryButton:hover:not(:disabled) { background: var(--color-primary-soft); border-color: var(--teal); }
@@ -220,8 +215,8 @@
 /* After the hover rules: on touch :active is the only state feedback, and it wins while a mouse holds the press. */
 .primaryButton:active { background: var(--color-primary-pressed); border-color: var(--color-primary-pressed); }
 .landing .secondaryButton:active:not(:disabled) { background: var(--color-primary-soft); border-color: var(--color-primary-pressed); }
-.topNav a:last-child:active { background: var(--color-primary-pressed); border-color: var(--color-primary-pressed); color: var(--color-primary-foreground); }
-.topNav a:not(:last-child):active, .textAction:active, .footer nav a:active, .mobileActions > a:active { color: var(--color-primary-pressed); }
+.topNav .navSignIn:active { background: var(--color-primary-pressed); border-color: var(--color-primary-pressed); color: var(--color-primary-foreground); }
+.topNav a:not(.navSignIn, .navStart):active, .textAction:active, .footer nav a:active, .mobileActions > a:active { color: var(--color-primary-pressed); }
 /* The individual `scale` property stays clear of the transform GSAP writes to hovered and magnetic buttons. */
 @media (prefers-reduced-motion: no-preference) { .landing .secondaryButton:active:not(:disabled) { scale: .96; } }
 @media (min-width: 1101px) { .heroLessonMain .lessonBottom { margin-top: 24px; } }
@@ -250,8 +245,6 @@
   .lessonSectionCopy h2 { font-size: 3.25rem; }
   .lessonCompact .feedback :is(h2, h3) { font-size: 1.75rem; }
   .labSection { padding: 80px 0 56px; }
-  .labIntro { grid-template-columns: 550px minmax(0, 1fr); gap: 32px; }
-  .labIntro h2 { font-size: 4.75rem; letter-spacing: -.042em; }
   .labDemo { grid-template-columns: minmax(0, 1fr); gap: 48px; margin-top: 40px; }
   .progressSection { padding: 80px 0; }
   .progressSection h2 { font-size: 3.5rem; margin-block: 28px; }
@@ -289,8 +282,6 @@
   .threeSteps { gap: 24px; margin-top: 32px; }
   .lessonSectionLayout { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .lessonSectionCopy h2 { margin-block: 24px; }
-  .labIntro { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-  .labIntro h2 { font-size: 3.875rem; }
   .progressSection h2 { font-size: 3rem; }
   .progressLayout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .progressImage { height: 330px; }
@@ -355,9 +346,6 @@
   .lessonCompact .feedback :is(h2, h3) { font-size: 1.625rem; }
   .lessonCompact .feedback p { font-size: .875rem; }
   .labSection { padding: 72px 0 56px; }
-  .labIntro h2 { font-size: min(13.334vw, 3.25rem); line-height: 1.04; letter-spacing: -.042em; margin-top: 16px; }
-  .labExplanation > p { font-size: 1.0625rem; }
-  .labExplanation > small { margin-top: 16px; }
   .labDemo { margin-top: 32px; }
   .labFooter { flex-direction: column; align-items: stretch; gap: 24px; margin-top: 48px; }
   .labFooter .primaryButton { justify-content: center; }
@@ -378,7 +366,6 @@
 @media (max-width: 374px) {
   .hero h1 { font-size: 2.75rem; }
   .hero h1 span { margin-left: 16px; }
-  .labIntro h2 { font-size: 2.625rem; }
   .closing h2 { font-size: 2.375rem; }
   .courseRow { gap: 8px; flex-wrap: wrap; }
   .courseRow small { margin-left: 28px; }
@@ -409,3 +396,210 @@
 .totalTick { display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; color: var(--teal); }
 .shimmerHost { position: relative; overflow: hidden; isolation: isolate; }
 .shimmer { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(105deg, transparent 32%, #ffffff10 41%, #ffffff33 50%, #ffffff10 59%, transparent 68%); transform: translateX(-100%); }
+
+/* ───────────────────────── Liquid glass prototype ─────────────────────────
+   One material (.glass), one clear lens variant for the floating nav, and an ambient colour field for the
+   glass to bend. Tints come from the palette tokens; the white alphas are the material's own highlights. */
+@property --mx { syntax: "<percentage>"; inherits: false; initial-value: 28%; }
+@property --my { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+
+.landing { position: relative; }
+.ambient { position: absolute; inset: 0 0 auto; height: 135vh; z-index: 0; overflow: hidden; pointer-events: none; -webkit-mask: linear-gradient(#000 55%, transparent); mask: linear-gradient(#000 55%, transparent); }
+.ambient span { position: absolute; width: 64vmax; aspect-ratio: 1; border-radius: 50%; animation: lgDrift 34s ease-in-out infinite alternate; }
+.ambient span:nth-child(1) { left: -22vmax; top: -24vmax; background: radial-gradient(closest-side, color-mix(in srgb, var(--color-progress) 42%, transparent), transparent); }
+.ambient span:nth-child(2) { right: -24vmax; top: 4vh; background: radial-gradient(closest-side, color-mix(in srgb, var(--color-warning) 48%, transparent), transparent); animation-duration: 41s; animation-delay: -12s; }
+.ambient span:nth-child(3) { left: 18vw; bottom: -40vmax; background: radial-gradient(closest-side, color-mix(in srgb, var(--color-primary-tint) 75%, transparent), transparent); animation-duration: 47s; animation-delay: -20s; }
+.ambient span:nth-child(4) { right: 14vw; top: -30vmax; width: 44vmax; background: radial-gradient(closest-side, color-mix(in srgb, var(--color-primary-soft) 90%, transparent), transparent); animation-duration: 29s; }
+@keyframes lgDrift { to { transform: translate3d(9vmax, 7vmax, 0) scale(1.12); } }
+.landing > main, .landing > footer { position: relative; z-index: 1; }
+
+.glass {
+  position: relative; isolation: isolate;
+  background: linear-gradient(155deg, rgb(255 255 255 / .62), color-mix(in srgb, var(--color-surface) 46%, transparent) 42%, color-mix(in srgb, var(--color-surface) 34%, transparent));
+  -webkit-backdrop-filter: blur(22px) saturate(175%);
+  backdrop-filter: blur(22px) saturate(175%);
+  border: 1px solid rgb(255 255 255 / .5) !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / .9),
+    inset 0 -1px 0 rgb(255 255 255 / .28),
+    inset 0 0 28px rgb(255 255 255 / .22),
+    0 1px 2px rgb(23 23 23 / .05),
+    0 28px 60px -28px rgb(23 23 23 / .3);
+}
+/* Specular rim: light catches the top-left and bottom-right edges. */
+.glass::before {
+  content: ""; position: absolute; inset: -1px; z-index: 2; padding: 1px; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(135deg, rgb(255 255 255 / 1), rgb(255 255 255 / 0) 32%, rgb(255 255 255 / 0) 66%, rgb(255 255 255 / .7));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+/* Soft highlight that follows the pointer (set by liquid-glass.tsx on fine pointers). */
+.glass::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(520px circle at var(--mx) var(--my), rgb(255 255 255 / .38), transparent 62%);
+  transition: --mx 600ms cubic-bezier(.2, .7, .2, 1), --my 600ms cubic-bezier(.2, .7, .2, 1);
+}
+
+/* Floating nav: a clear lens. Chromium bends what scrolls under it; elsewhere it stays lightly frosted. */
+.siteHeader { padding-block: 16px; }
+.siteHeader .container.navPill { width: min(1180px, calc(100% - 48px)); min-height: 64px; padding: 6px 8px 6px 24px; border-radius: 999px; flex-wrap: nowrap; }
+.navPill .wordmark { font-size: 1.75rem; }
+.lens { background: linear-gradient(180deg, rgb(255 255 255 / .42), rgb(255 255 255 / .16)); -webkit-backdrop-filter: blur(6px) saturate(180%); backdrop-filter: blur(6px) saturate(180%); }
+:global(html[data-refract]) .lens { backdrop-filter: url(#lg-lens) blur(1.5px) saturate(185%) brightness(1.05); }
+.navPill { transition: color 300ms ease, background 300ms ease, box-shadow 300ms ease; }
+.siteHeader[data-on-dark] .navPill { color: var(--paper); background: linear-gradient(180deg, rgb(255 255 255 / .14), rgb(255 255 255 / .05)); border-color: rgb(255 255 255 / .2) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), 0 20px 40px -20px rgb(0 0 0 / .6); }
+.siteHeader[data-on-dark] .navSignIn { background: rgb(255 255 255 / .1); border-color: rgb(255 255 255 / .25); }
+.siteHeader[data-on-dark] :focus-visible { outline-color: var(--paper); }
+.topNav { gap: 6px; }
+.topNav a { padding-inline: 16px; border-radius: 999px; }
+.topNav .navSignIn { border-radius: 999px; border-color: rgb(23 23 23 / .18); background: rgb(255 255 255 / .35); }
+.topNav .navStart { font-weight: 600; }
+
+/* Liquid teal: the one primary action, as a tinted pill with depth. */
+.landing .primaryButton, .topNav .navStart {
+  border-radius: 999px; color: var(--color-primary-foreground) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 90%, white), var(--color-primary) 52%, var(--color-primary-pressed));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 55%, white);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .4), inset 0 -3px 8px rgb(0 0 0 / .16), 0 12px 26px -12px var(--color-primary);
+  transition: filter 180ms ease, box-shadow 180ms ease, scale 150ms ease-out;
+}
+.landing .secondaryButton { border-radius: 999px; background: rgb(255 255 255 / .4); border-color: rgb(255 255 255 / .7); box-shadow: inset 0 1px 0 rgb(255 255 255 / .85), 0 8px 20px -14px rgb(23 23 23 / .4); -webkit-backdrop-filter: blur(12px) saturate(160%); backdrop-filter: blur(12px) saturate(160%); }
+@media (hover: hover) and (pointer: fine) {
+  .landing .primaryButton:hover, .topNav .navStart:hover { filter: brightness(1.08) saturate(1.05); box-shadow: inset 0 1px 0 rgb(255 255 255 / .5), inset 0 -3px 8px rgb(0 0 0 / .16), 0 16px 32px -12px var(--color-primary); }
+  .topNav .navSignIn:hover { background: rgb(255 255 255 / .7); border-color: rgb(255 255 255 / .9); color: var(--ink); }
+}
+.landing .primaryButton:active, .topNav .navStart:active { filter: brightness(.94); }
+
+/* Mobile menu sits inside the lens (a backdrop root), so it carries its own near-opaque frosted surface. */
+.mobileNav nav { background: color-mix(in srgb, var(--color-surface) 94%, transparent); border: 1px solid rgb(255 255 255 / .8); border-radius: 22px; box-shadow: inset 0 1px 0 #fff, 0 24px 48px -16px rgb(23 23 23 / .35); }
+.mobileNav nav a { border-radius: 14px; }
+.mobileNav summary { border-radius: 999px; }
+
+/* Lab: a dark stage lit by the palette, so the panels read as glass over light. */
+.labSection {
+  position: relative;
+  background:
+    radial-gradient(60% 420px at 50% 0%, color-mix(in srgb, var(--color-progress) 42%, transparent), transparent 75%),
+    radial-gradient(50% 480px at 50% 62%, color-mix(in srgb, var(--color-primary) 26%, transparent), transparent 72%),
+    var(--ink);
+}
+.labFooter { border-top-color: rgb(255 255 255 / .16); }
+
+/* Closing: the headline sits on one large slab; the illustration shows through its edge. */
+.closing { border-top: 0; background: radial-gradient(42% 60% at 22% 45%, color-mix(in srgb, var(--color-progress) 30%, transparent), transparent 70%), radial-gradient(36% 55% at 72% 40%, color-mix(in srgb, var(--color-warning) 38%, transparent), transparent 72%); }
+.closingSlab { position: relative; z-index: 1; max-width: 820px; padding: 56px; border-radius: 40px; }
+.closing .closingSlab h2 { max-width: none; }
+.closingArt { z-index: 0; right: -8px; top: 10px; width: 440px; height: 400px; }
+
+
+@media (max-width: 1100px) {
+  .closingSlab { max-width: 760px; padding: 44px; }
+  .closingArt { width: 320px; height: 320px; }
+}
+@media (max-width: 800px) {
+  .siteHeader .container.navPill { width: calc(100% - 32px); padding-left: 20px; }
+  .closing .container { gap: 0; }
+  .closingSlab { order: 1; padding: 32px; border-radius: 32px; }
+  .closing .closingSlab p { margin-top: 16px; }
+  .closing .closingSlab .closingActions { margin-top: 24px; }
+  .closingArt { position: static; width: 100%; height: 250px; margin-top: -36px; }
+}
+@media (max-width: 500px) {
+  .siteHeader { padding-block: 12px; }
+  .siteHeader .container.navPill { width: calc(100% - 20px); min-height: 56px; padding: 4px 6px 4px 16px; flex-wrap: wrap; border-radius: 28px; }
+  .navPill .wordmark { font-size: 1.5rem; }
+  .closingSlab { padding: 24px; border-radius: 28px; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .lens, .landing .secondaryButton { background: var(--surface) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .ambient { display: none; }
+}
+
+/* Course path card, compact: one header row, a timeline of the three levels, the two Lab tools as small tiles. */
+.courseCard { padding: 28px 32px 24px; border-radius: 22px; box-shadow: inset 0 1px 0 #fff, 0 24px 48px -32px rgb(23 23 23 / .35); }
+.courseHeader { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 0 0 18px; }
+.courseHeader .cardOverline { margin-bottom: 6px; }
+.courseHeader h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; line-height: 1.2; }
+.courseHeader > span { padding: 4px 12px; border-radius: 999px; background: var(--color-primary-soft); font-size: .8125rem; }
+.courseSteps { position: relative; list-style: none; margin: 0; padding: 0; }
+/* The timeline spine runs behind the step dots. */
+.courseSteps::before { content: ""; position: absolute; left: 13px; top: 22px; bottom: 22px; width: 2px; border-radius: 2px; background: linear-gradient(var(--teal2), var(--color-primary-tint)); }
+.courseRow { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; column-gap: 16px; align-items: start; min-height: 0; margin: 0; padding: 10px 0; border: 0; }
+.courseRow .rowIcon { position: relative; width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 2px solid var(--teal2); }
+.courseRow .rowIcon svg { stroke-width: 2; }
+.courseSteps .courseRow[data-course-row="next"] .rowIcon { background: var(--teal); border-color: var(--teal); color: var(--color-primary-foreground); }
+.courseRow .rowText { padding-top: 3px; }
+.rowText strong { display: block; font-weight: 600; font-size: 1rem; line-height: 1.3; }
+.courseRow .rowText > span { margin-top: 3px; max-width: 62ch; font-size: .875rem; line-height: 1.45; }
+.courseSteps .courseRow small { margin: 3px 0 0; padding: 3px 10px; border-radius: 999px; background: var(--color-primary-soft); color: var(--teal); font-size: .75rem; font-weight: 600; white-space: nowrap; }
+.courseSteps .courseRow[data-course-row="next"] small { background: var(--teal); color: var(--color-primary-foreground); }
+.courseLab { list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.courseLab li { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 16px; background: var(--color-surface-practice); border: 1px solid var(--color-border); }
+.courseLab li > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.courseLab strong { font-weight: 600; font-size: .9375rem; line-height: 1.3; }
+.courseLab small { color: var(--teal); font-size: .75rem; font-weight: 600; }
+.courseLab span { color: var(--muted); font-size: .8125rem; line-height: 1.4; }
+.courseCard > p { margin-top: 14px; font-size: .75rem; line-height: 1.4; }
+.journeyContent { min-height: 470px; }
+@media (max-width: 1100px) { .journeyContent { min-height: 500px; } }
+@media (max-width: 800px) { .courseLab { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 500px) {
+  .journeyContent { min-height: 0; }
+  .courseCard { padding: 20px; }
+  .courseHeader h3 { font-size: 1.25rem; }
+  .courseRow { grid-template-columns: 28px minmax(0, 1fr); column-gap: 12px; }
+  .courseSteps .courseRow small { grid-column: 2; justify-self: start; margin-top: 8px; }
+}
+
+/* Lab intro: one centred statement under the spotlight, then three short principles. */
+.labIntro { display: flex; flex-direction: column; align-items: center; max-width: 860px; margin-inline: auto; text-align: center; }
+.labBadge { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 999px; background: rgb(255 255 255 / .06); border: 1px solid rgb(255 255 255 / .14); box-shadow: inset 0 1px 0 rgb(255 255 255 / .12); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.labDot { width: 6px; height: 6px; border-radius: 50%; background: var(--cash); box-shadow: 0 0 0 4px color-mix(in srgb, var(--cash) 22%, transparent); }
+.labIntro h2 { margin-top: 28px; font-size: clamp(3rem, 6.4vw, 5.5rem); line-height: 1.02; letter-spacing: -.045em; }
+.labIntro h2 span { color: color-mix(in srgb, var(--paper) 58%, transparent); }
+.labLead { max-width: 600px; margin-top: 24px !important; font-size: 1.1875rem; line-height: 1.55; color: #e5e5dc; }
+.labPrinciples { list-style: none; margin: 32px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.labPrinciples li { display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px 10px 14px; border-radius: 999px; background: rgb(255 255 255 / .06); border: 1px solid rgb(255 255 255 / .12); box-shadow: inset 0 1px 0 rgb(255 255 255 / .1); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); font-size: .9375rem; line-height: 1.3; color: var(--paper); }
+.labPrinciples svg { flex-shrink: 0; color: var(--color-primary-tint); stroke-width: 1.75; }
+.labNote { display: block; margin-top: 20px; font-size: .8125rem; color: #d8dad0; }
+.labDemo { margin-top: 64px; }
+@media (max-width: 500px) {
+  .labIntro h2 { margin-top: 20px; font-size: min(12.5vw, 3rem); }
+  .labLead { font-size: 1.0625rem; }
+  .labPrinciples { flex-direction: column; align-items: stretch; }
+  .labPrinciples li { border-radius: 16px; }
+  .labDemo { margin-top: 40px; }
+}
+/* The Lab stage floats as one rounded sheet instead of a hard full-bleed cut from the paper. */
+.labSection { margin-inline: clamp(8px, 1.2vw, 20px); border-radius: clamp(28px, 3vw, 48px); }
+
+/* Lesson section: a softly lit band, outputs as small saved-artifact tiles, the demo inside a glass frame. */
+.lessonSection {
+  background:
+    radial-gradient(38% 60% at 82% 45%, color-mix(in srgb, var(--color-primary-tint) 45%, transparent), transparent 72%),
+    radial-gradient(30% 50% at 6% 100%, color-mix(in srgb, var(--color-warning) 22%, transparent), transparent 72%),
+    var(--soft);
+}
+.lessonSectionLayout { grid-template-columns: 520px minmax(0, 1fr); gap: 64px; }
+.outputList { margin-top: 32px; border-top: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; list-style: none; padding: 0; }
+.outputList li { display: grid; grid-template-columns: 18px minmax(0, 1fr); column-gap: 12px; row-gap: 2px; align-items: start; align-content: start; padding: 12px 14px; border: 1px solid var(--divider); border-radius: 14px; background: var(--surface); font-size: .9375rem; line-height: 1.3; box-shadow: 0 1px 2px rgb(23 23 23 / .04); }
+.outputList li > svg { grid-row: 1 / span 2; margin-top: 1px; color: var(--teal); stroke-width: 1.75; }
+.outputList li > span, .outputList li > small { grid-column: 2; }
+.outputList li:not([data-available]) { background: transparent; border-style: dashed; box-shadow: none; }
+.outputList li:not([data-available]) > svg { color: var(--muted); }
+.lessonSectionDemo { padding: 10px; border-radius: 32px; background: linear-gradient(160deg, rgb(255 255 255 / .62), rgb(255 255 255 / .22)); border: 1px solid rgb(255 255 255 / .75); box-shadow: inset 0 1px 0 #fff, 0 32px 64px -32px rgb(23 23 23 / .3); -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%); }
+.lessonCompact { background: var(--surface); border-radius: 22px; box-shadow: 0 1px 2px rgb(23 23 23 / .06); }
+.lessonCompact .answer { border-radius: 14px; }
+.lessonCompact .feedback :is(h2, h3) { font-size: 1.375rem; line-height: 1.25; }
+.lessonSectionDemo > .lessonPreview > .microDisclaimer { padding: 4px 14px 2px; }
+@media (max-width: 1100px) { .lessonSectionLayout { grid-template-columns: 420px minmax(0, 1fr); gap: 40px; } }
+@media (min-width: 801px) and (max-width: 1100px) { .lessonSectionCopy h2 { font-size: 2.75rem; } }
+@media (max-width: 800px) { .lessonSectionLayout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 500px) {
+  .lessonSectionDemo { padding: 6px; border-radius: 24px; }
+  .lessonCompact { border-radius: 19px; }
+  .outputList { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .outputList li { grid-template-columns: 18px minmax(0, 1fr) auto; align-items: center; padding: 10px 14px; }
+  .outputList li > svg { grid-row: auto; margin: 0; }
+  .outputList li > small { grid-column: 3; text-align: right; }
+}
