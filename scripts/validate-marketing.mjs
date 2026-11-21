@@ -20,7 +20,6 @@ const context = await browser.newContext({ viewport: { width: 1440, height: 900 
 const page = await context.newPage();
 page.on("pageerror", error => errors.push(error.message));
 const lesson = () => page.locator("main > section").first();
-const compactLesson = () => page.locator('section[aria-labelledby="lesson-title"]');
 const portfolio = () => page.locator("#portfolio-lab");
 const demo = () => portfolio().locator("[data-portfolio-demo]");
 const crisis = () => portfolio().locator("[data-crisis]");
@@ -69,7 +68,8 @@ async function layout(width, enlarged = false) {
   await page.evaluate(large => { document.documentElement.style.fontSize = large ? "200%" : ""; }, enlarged);
   await settle();
   const dimensions = await page.evaluate(() => {
-    const visible = element => element.checkVisibility();
+    // Screen-reader-only text (1px, clipped on purpose) is not visible copy.
+    const visible = element => element.checkVisibility() && element.getBoundingClientRect().width > 1;
     const copy = [...document.querySelectorAll("h1,h2,h3,p,button,a,label,output,small")].filter(visible);
     const midWordWraps = [];
     for (const element of copy) {
@@ -100,13 +100,13 @@ async function layout(width, enlarged = false) {
       overlaps: (() => {
         const rect = selector => document.querySelector(selector).getBoundingClientRect();
         const course = rect('[class*="courseCard"]');
-        const steps = rect('[class*="threeSteps"]');
+        const journey = rect('#jak-to-funguje');
         const closingTitle = rect('#closing-title');
         const closingArt = rect('[class*="closingArt"]');
         const image = rect('[class*="progressImage"] img');
         const imageBox = rect('[class*="progressImage"]');
         return {
-          courseOverSteps: course.bottom > steps.top + 1,
+          courseEscapesSection: course.bottom > journey.bottom + 1,
           closingArtOverTitle: closingArt.left < closingTitle.right - 1 && closingArt.right > closingTitle.left + 1
             && closingArt.top < closingTitle.bottom - 1 && closingArt.bottom > closingTitle.top + 1,
           progressImageEscapes: image.top < imageBox.top - 1 || image.bottom > imageBox.bottom + 1,
@@ -115,7 +115,7 @@ async function layout(width, enlarged = false) {
       sections: [...document.querySelectorAll("main > section")].map(element => ({ top: element.offsetTop, height: element.offsetHeight })),
     };
   });
-  assert.deepEqual(dimensions.overlaps, { courseOverSteps: false, closingArtOverTitle: false, progressImageEscapes: false }, `${width}px, text 200%=${enlarged}: content overlap`);
+  assert.deepEqual(dimensions.overlaps, { courseEscapesSection: false, closingArtOverTitle: false, progressImageEscapes: false }, `${width}px, text 200%=${enlarged}: content overlap`);
   assert.equal(dimensions.scroll, width, `${width}px, text 200%=${enlarged}: document overflow`);
   assert.deepEqual(dimensions.outside, [], `${width}px, text 200%=${enlarged}: content outside viewport`);
   assert.deepEqual(dimensions.clipped, [], `${width}px, text 200%=${enlarged}: clipped content`);
@@ -187,7 +187,7 @@ try {
   assert.equal(await page.locator("main > section").count(), 6);
   assert.deepEqual(await page.locator("main > section").evaluateAll(sections => sections.map(section => section.querySelector("h1,h2").textContent)), [
     "Nejdřív plán.Pak investice.", "Od rozpočtuk vlastnímu plánu.", "Každý modul končívýstupem.",
-    "Proces,ne výnos.", "Fakta se zdrojem. Žádné tipy.", "Začni tam,kde právě jsi.",
+    "Proces, ne výnos.", "Fakta se zdrojem. Žádné tipy.", "Začni tam,kde právě jsi.",
   ]);
   const expectedAssets = ["v14-curiosity-cropped.webp", "v14-discovery-edge.webp", "v14-discovery-top-grip.webp", "v14-discovery-side-grip.webp", "v14-steady-understanding.webp", "generated-19.webp"];
   await settle();
@@ -206,15 +206,15 @@ try {
   }
   checks.push("Six original assets and all six sections; responsive/text-200% reflow, no overflow/clipping/unintentional split words; natural Czech heading hyphenation; mobile menu keyboard, Escape, focus return and touch targets.");
   await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
-  // Landing below the lesson triggers (deep link, restored scroll) fires them on creation; the compact demo must still play.
+  // Landing below the triggers (deep link, restored scroll) fires them on creation; the hero preview must still settle answered.
   for (const width of [1440, 800, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("about:blank");
     await page.goto(`${baseURL}/#portfolio-lab`);
-    await compactLesson().locator('[data-answer="A"][data-selected]').waitFor();
+    await lesson().locator('[data-answer="B"][data-selected]').waitFor();
     assert.equal(await page.locator("main > section").count(), 6, `${width}px: deep link renders the landing`);
   }
-  checks.push("Deep link below the lesson demos renders the landing and plays the compact demo at desktop and mobile widths.");
+  checks.push("Deep link below the lesson preview renders the landing and leaves the preview answered at desktop and mobile widths.");
   // From load, reduced motion leaves both previews in their server-rendered state; with motion the landing resets
   // them and replays a scripted answer, so the deterministic checks below run without it.
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -229,7 +229,7 @@ try {
   const writes = [];
   page.on("request", request => { if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method())) writes.push(request.url()); });
   // The lesson previews are read-only illustrations: nothing inside them is focusable or clickable.
-  for (const scope of [lesson(), compactLesson()]) {
+  for (const scope of [lesson()]) {
     const demo = scope.locator("[data-lesson-demo]");
     assert.equal(await demo.locator("button, a[href], input, [tabindex]").count(), 0, "Lesson preview has no controls");
     await demo.getByRole("status").filter({ hasText: "Přesně." }).first().waitFor();
@@ -264,7 +264,7 @@ try {
   }
   assert.deepEqual(writes, [], "Marketing interactions perform no network mutation");
   assert.equal((await (await context.request.get(`${baseURL}/api/auth/get-session`)).json()), null, "Previews never create an anonymous identity");
-  checks.push("Both lesson previews are read-only (no controls) and show the answered state. Portfolio Lab demo: real tariff costs for both profiles, keyboard tabs, a non-blocking off-plan card, capital guard, explainable criteria without a score, crisis drill judged by the plan; no mutation request or session creation.");
+  checks.push("The lesson preview is read-only (no controls) and shows the answered state. Portfolio Lab demo: real tariff costs for both profiles, keyboard tabs, a non-blocking off-plan card, capital guard, explainable criteria without a score, crisis drill judged by the plan; no mutation request or session creation.");
   // Interaction states. 700 px tall keeps the journey and demo from pinning, so scrolling to a target cannot change the demo step.
   const buy = () => button(portfolio(), "Koupit nanečisto");
   await page.setViewportSize({ width: 1440, height: 700 });
@@ -282,14 +282,15 @@ try {
   await tariffChoice.hover();
   await settled(tariffChoice);
   assert.notEqual(await style(tariffChoice, "background-color"), restingBackground, "Hovering a tariff choice changes its background");
-  // The lifted CTA proves the GSAP hover layer is live, so the card's missing shadow below means something.
+  // The CTA's hover shadow proves hover states are live, so the card's unchanged shadow below means something.
   const liftedCta = page.getByRole("link", { name: "Začít vstupním testem", exact: true }).first();
+  const restingCtaShadow = await style(liftedCta, "box-shadow");
   await liftedCta.hover();
-  await page.waitForFunction(element => getComputedStyle(element).boxShadow !== "none", await liftedCta.elementHandle());
+  await page.waitForFunction(([element, resting]) => getComputedStyle(element).boxShadow !== resting, [await liftedCta.elementHandle(), restingCtaShadow]);
   await page.mouse.move(0, 0);
   const courseCard = page.locator("[data-course-card]");
   await courseCard.hover();
-  // Absence needs an observation window: longer than hoverLift's 350 ms tween, which CSS animation APIs cannot see.
+  // Absence needs an observation window: longer than any hover transition on the page.
   const cardHover = await courseCard.evaluate(async element => {
     const shadows = new Set();
     const end = performance.now() + 500;
@@ -299,7 +300,7 @@ try {
     }
     return { shadows: [...shadows], hovered: element.matches(":hover") };
   });
-  assert.deepEqual(cardHover, { shadows: ["none"], hovered: true }, "The course card gains no shadow on hover");
+  assert.deepEqual({ ...cardHover, shadows: cardHover.shadows.length }, { shadows: 1, hovered: true }, "The course card's shadow does not change on hover (it is not clickable)");
   assert.equal(await pressedScale(buy()), "0.96", "Press scale with motion");
   assert.equal(await style(buy(), "scale"), "none", "Press scale releases");
   await buy().click();
@@ -352,7 +353,23 @@ try {
   await menu.click();
   await settled(menu);
   assert.equal(await style(closeIcon, "opacity"), "0", "Close icon hidden after the menu closes");
-  checks.push("Interaction states: tariff hover background, no course card shadow, press scale 0.96 with motion and none when reduced, disclosure chevron and 44 px hit area, crisis note stays put at three widths, menu close icon only while open.");
+  checks.push("Interaction states: tariff hover background, unchanged course card shadow, press scale 0.96 with motion and none when reduced, disclosure chevron and 44 px hit area, crisis note stays put at three widths, menu close icon only while open.");
+  // Reduced transparency (DESIGN.md › Liquid Glass): over the dark Lab the nav must turn opaque ink with paper text, never paper on surface.
+  {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-transparency", value: "reduce" }, { name: "prefers-reduced-motion", value: "reduce" }] });
+    await page.goto(baseURL);
+    await page.evaluate(() => scrollTo(0, document.querySelector("#portfolio-lab").getBoundingClientRect().top + scrollY + 300));
+    await page.locator("[data-nav][data-on-dark]").waitFor();
+    const [background, text] = await page.locator("[data-nav]").evaluate(header => [getComputedStyle(header.firstElementChild).backgroundColor, getComputedStyle(header.querySelector("nav a")).color]);
+    const luminance = color => color.match(/[\d.]+/g).slice(0, 3).map(Number).map(c => c / 255).map(c => c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4).reduce((sum, c, i) => sum + c * [.2126, .7152, .0722][i], 0);
+    const [light, dark] = [luminance(background), luminance(text)].sort((a, b) => b - a);
+    assert.ok((light + .05) / (dark + .05) >= 4.5, `Reduced-transparency nav over the Lab: ${text} on ${background}`);
+    await cdp.send("Emulation.setEmulatedMedia", { features: [] });
+    await cdp.detach();
+  }
+  checks.push("Reduced transparency: the nav over the dark Lab is opaque with readable text.");
   await page.emulateMedia({ reducedMotion: "no-preference" });
   // Tall desktop with motion: the demo pins and the scroll walks 1 → 2 → 3, then the page scrolls on.
   await page.setViewportSize({ width: 1440, height: 900 });

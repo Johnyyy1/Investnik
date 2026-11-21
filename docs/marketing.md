@@ -12,14 +12,14 @@ Sign-up/sign-in actions use the existing authentication routes. Protected Learn/
 
 The landing page is the reference implementation of the Liquid Glass direction ([DESIGN.md › Liquid Glass](../DESIGN.md#liquid-glass)):
 
-- **Navigation:** a sticky glass pill that always stays visible. It turns to smoked glass over the dark Lab stage.
+- **Navigation:** a glass pill, sticky in CSS, that always stays visible and aligns its wordmark with the page grid. It turns dark over the Lab stage (also with reduced motion).
 - **Hero:** an ambient light field behind it only. `liquid-glass.tsx` renders it with the `#lg-lens` refraction filter, which runs in Chromium only.
-- **Path card:** an opaque timeline, with the IPS and crisis drill as tiles.
-- **Module outputs:** icon tiles, with the lesson demo in a glass frame.
-- **Lab:** a rounded dark stage with a centred „Proces, ne výnos“ statement, principle chips, an opaque demo panel, segmented step tabs and a smoked crisis card.
+- **Path card:** an opaque timeline from level 0 to the Lab (IPS and crisis drill).
+- **Module outputs:** one opaque ledger. The lesson preview appears only in the hero.
+- **Lab:** a rounded dark stage with a centred „Proces, ne výnos“ statement, an opaque demo panel, segmented step tabs and a smoked crisis card.
 - **Closing:** a frosted slab with its own light.
 
-Glass falls back to opaque surfaces under `prefers-reduced-transparency`. The motion layer pins the journey and the Lab below the nav (`NAV_CLEARANCE`), and the Lab pin needs a slightly taller window than before (`PORTFOLIO_PIN_QUERY`).
+Glass falls back to opaque surfaces under `prefers-reduced-transparency`. The motion layer pins the Lab below the nav (`NAV_CLEARANCE`), and the Lab pin needs a slightly taller window than before (`PORTFOLIO_PIN_QUERY`).
 
 Landing illustrations live in `public/marketing` as WebP, sized to about twice their largest rendered width (q≈75) and served through `next/image`. Re-export new artwork the same way rather than committing full-resolution PNGs; the brand design source is `investi-design.pen`, not a file in `public/`. Example outcomes retain their educational disclosure, and illustrations are never represented as live market data. Display fonts stay scoped to marketing; product typography uses the shared theme fonts. Bright brand fills require readable navy/deep-blue text rather than blindly applying white body text.
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { NAV_CLEARANCE } from "./motion/sections/global";
 import styles from "./pen-landing.module.css";
 
 /**
@@ -8,6 +9,26 @@ import styles from "./pen-landing.module.css";
  * filter, and a pointer-tracked specular highlight. Purely decorative; content never depends on it.
  */
 export function LiquidGlass() {
+  // Over the dark Lab stage the light lens would turn grey; switch the nav to its dark variant. Runs with or without
+  // the motion layer, because the nav is sticky in CSS and reaches the stage either way.
+  useEffect(() => {
+    const header = document.querySelector<HTMLElement>("[data-nav]");
+    const lab = document.getElementById("portfolio-lab");
+    if (!header || !lab) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = NAV_CLEARANCE / 2; // the pill's vertical centre
+      const { top, bottom } = lab.getBoundingClientRect();
+      header.toggleAttribute("data-on-dark", top <= line && bottom >= line);
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    update();
+    addEventListener("scroll", schedule, { passive: true });
+    addEventListener("resize", schedule);
+    return () => { removeEventListener("scroll", schedule); removeEventListener("resize", schedule); cancelAnimationFrame(frame); header.removeAttribute("data-on-dark"); };
+  }, []);
+
   useEffect(() => {
     const html = document.documentElement;
     // shortcut: SVG filters inside backdrop-filter only render in Chromium; userAgentData is Chromium-only. Upgrade to a real feature test if Safari/Firefox ship it.

@@ -109,6 +109,8 @@ export function PortfolioLabDemo() {
       data-inactive={inactive ? "" : undefined} inert={inactive} aria-hidden={inactive || undefined}
       id={`${baseId}-panel-${current}`} role={tabs ? "tabpanel" : undefined} aria-labelledby={tabs ? `${baseId}-tab-${current}` : `${baseId}-step-${current}`}
       data-demo-step={current}>
+      {/* The tab names the panel visually; this keeps the outline h2 → h3 → h4 for screen readers. */}
+      {tabs && <h3 className={styles.visuallyHidden}>{label}</h3>}
       {!tabs && <div className={styles.stepLabel}><span aria-hidden="true">{current}</span><h3 id={`${baseId}-step-${current}`}><small>Krok {current} ze 3</small>{label}</h3></div>}
       <div className={styles.panel}>
         <div className={styles.panelHeader}>
