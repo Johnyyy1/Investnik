@@ -77,51 +77,6 @@ export function useSplitHeadings(root: HTMLElement, { mobile }: { mobile: boolea
   });
 }
 
-/** Magnetic hover (fine pointers only). The element is pulled toward the cursor with quickTo. */
-export function magnetic(el: HTMLElement, { strength = 0.3, lift = 2 }: { strength?: number; lift?: number } = {}) {
-  const xTo = gsap.quickTo(el, "x", { duration: 0.5, ease: "power3.out" });
-  const yTo = gsap.quickTo(el, "y", { duration: 0.5, ease: "power3.out" });
-  const move = (event: PointerEvent) => {
-    const rect = el.getBoundingClientRect();
-    xTo((event.clientX - (rect.left + rect.width / 2)) * strength);
-    yTo((event.clientY - (rect.top + rect.height / 2)) * strength - lift);
-  };
-  const leave = () => { xTo(0); yTo(0); };
-  el.addEventListener("pointermove", move);
-  el.addEventListener("pointerleave", leave);
-  return () => { el.removeEventListener("pointermove", move); el.removeEventListener("pointerleave", leave); leave(); };
-}
-
-/** Lift + shadow hover for buttons (fine pointers only). Elements with data-magnetic lift via magnetic(). */
-export function hoverLift(el: HTMLElement) {
-  const isMagnetic = el.hasAttribute("data-magnetic");
-  const enter = () => {
-    if ((el as HTMLButtonElement).disabled) return;
-    gsap.to(el, { ...(isMagnetic ? {} : { y: -2 }), boxShadow: "0 8px 18px rgba(23,23,23,.14)", duration: 0.35, ease: EASE.enter, overwrite: "auto" });
-  };
-  const leave = () => gsap.to(el, { ...(isMagnetic ? {} : { y: 0 }), boxShadow: "0 0 0 rgba(23,23,23,0)", duration: 0.45, ease: EASE.enter, overwrite: "auto" });
-  el.addEventListener("pointerenter", enter);
-  el.addEventListener("pointerleave", leave);
-  return () => { el.removeEventListener("pointerenter", enter); el.removeEventListener("pointerleave", leave); };
-}
-
-/**
- * Soft light sweep across a button on hover (fine pointers only). `el` is the full-size [data-shimmer] layer inside
- * its overflow-hidden host. At rest the layer sits fully off the left edge, so an idle button never shows the band.
- */
-export function sheen(el: HTMLElement) {
-  const host = el.parentElement;
-  if (!host) return () => {};
-  // x: 0 overrides the CSS translateX(-100%) fallback, which GSAP would otherwise parse into px and add to xPercent.
-  const rest = { x: 0, xPercent: -100 };
-  gsap.set(el, rest);
-  const sweep = gsap.to(el, { xPercent: 100, duration: 0.95, ease: "power1.inOut", paused: true, onComplete: () => { gsap.set(el, rest); } });
-  // Never cut a running sweep short: a new hover only starts one once the band is back at rest.
-  const enter = () => { if (!sweep.isActive()) sweep.restart(); };
-  host.addEventListener("pointerenter", enter);
-  return () => { host.removeEventListener("pointerenter", enter); sweep.kill(); gsap.set(el, rest); };
-}
-
 /** Press micro-interaction: squash on press, small overshoot on release. */
 export function pressFeedback(el: HTMLElement) {
   const down = () => { if (!(el as HTMLButtonElement).disabled) gsap.to(el, { scale: 0.96, duration: 0.12, ease: "power2.out", overwrite: "auto" }); };

@@ -6,6 +6,3 @@ export function SplitHeading({ as: Tag = "h2", mode = "words", ...props }: {
 }) {
   return <Tag {...props} data-split={mode} />;
 }
-
-/** Spread onto a button or link to give it the magnetic hover (desktop, fine pointers). */
-export const magneticProps = { "data-magnetic": "" } as const;

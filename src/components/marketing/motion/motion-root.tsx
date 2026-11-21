@@ -4,27 +4,20 @@ import "lenis/dist/lenis.css";
 import { useRef, type ReactNode } from "react";
 import { gsap, ScrollTrigger, useGSAP, MQ, type MotionConditions } from "@/lib/gsap";
 import { fontsReady, useReveal, useSplitHeadings } from "./utils";
-import { initJourney } from "./sections/journey";
-import { initLessons } from "./sections/lessons";
 import { initPortfolio } from "./sections/portfolio";
-import { initProgress } from "./sections/progress";
 import { initClosing } from "./sections/closing";
 import { initHero } from "./sections/hero";
 import { initSmoothScroll } from "./smooth-scroll";
-import { initFooter, initInteractions, initNav, initScrollProgress } from "./sections/global";
+import { initFooter, initInteractions, initNav } from "./sections/global";
 import type { Cleanup, SectionContext, SectionInit } from "./types";
 
 /** Section initialisers run in this order. Each one owns its own hidden states, triggers and cleanup. */
 const SECTIONS: SectionInit[] = [
   initSmoothScroll,
-  initScrollProgress,
   initInteractions,
   initNav,
   initHero,
-  initJourney,
-  initLessons,
   initPortfolio,
-  initProgress,
   initClosing,
   ({ root, c, inContext }) => { useReveal(root, { mobile: c.mobile }); useSplitHeadings(root, { mobile: c.mobile }, inContext); },
   initFooter,
@@ -42,7 +35,7 @@ export function MotionRoot({ className, children }: { className?: string; childr
     if (!root) return;
     const mm = gsap.matchMedia(root);
     mm.add({ motion: MQ.motion, desktop: MQ.desktop, mobile: MQ.mobile, fine: MQ.fine }, context => {
-      const c = { tall: false, ...context.conditions } as MotionConditions;
+      const c = context.conditions as MotionConditions;
       if (!c.motion) return;
       let cancelled = false;
       const ctx: SectionContext = { root, c, isCancelled: () => cancelled, inContext: fn => context.add(fn) as ReturnType<typeof fn> };

@@ -14,8 +14,8 @@ The landing page (`src/components/marketing/pen-landing.tsx`) has a GSAP motion 
 | --- | --- |
 | `src/lib/gsap.ts` | Registers the plugins once (client only). Shared `EASE`, `DUR`, `REVEAL_Y` and media queries `MQ`. Always import gsap from here. |
 | `motion/motion-root.tsx` | `"use client"` wrapper around the page. One `useGSAP({ scope })` → `gsap.matchMedia()` runs every section initialiser in `SECTIONS` order and reverts everything on unmount or route change. Calls `ScrollTrigger.refresh()` after fonts and on `load`. |
-| `motion/reveal.tsx` | Markup-only helpers: `<SplitHeading>`, `magneticProps`. They render plain HTML with `data-*` hooks, so SSR and no-JS output is the final state. |
-| `motion/utils.ts` | `useReveal`, `splitHeading` / `useSplitHeadings`, `magnetic`, `hoverLift`, `pressFeedback`, `fontsReady`. |
+| `motion/reveal.tsx` | Markup-only helper: `<SplitHeading>`. It renders plain HTML with `data-*` hooks, so SSR and no-JS output is the final state. |
+| `motion/utils.ts` | `useReveal`, `splitHeading` / `useSplitHeadings`, `pressFeedback`, `fontsReady`. |
 | `motion/smooth-scroll.ts` | Lenis on the GSAP ticker. In-page `#anchors` go through `lenis.scrollTo` and then move focus to the target. `#main` (the skip link) stays native. Deep links re-land after pin refreshes. |
 | `motion/events.ts` | DOM events that let the motion layer drive the React previews (`LessonPreview`, the Portfolio Lab demo step). React still renders everything, and the demos never touch real state. |
 | `motion/sections/*.ts` | Choreography for each section (below). |
@@ -24,26 +24,25 @@ The landing page (`src/components/marketing/pen-landing.tsx`) has a GSAP motion 
 
 - **Reduced motion / no JS:** all hidden states are set from JS inside the `(prefers-reduced-motion: no-preference)` branch. Nothing is hidden by CSS. Under reduced motion there is no smooth scroll, pinning, parallax or demo, and the page renders in its final state.
 - **Keyboard:** anything containing links or buttons is hidden with `opacity` (not `autoAlpha`), so it stays in the tab order. Tabbing to it scrolls it into view, which triggers its reveal.
-- **Desktop ≥ 1024px vs mobile:** pinning, the magnetic effect and the 60 → 40 % demo are desktop only. Mobile gets shorter reveals (y 24px, 0.6s).
-- **Hover effects** (`data-lift`, `data-magnetic`) run only on `(hover: hover) and (pointer: fine)`.
+- **Desktop ≥ 1024px vs mobile:** the Lab pin and the hero lesson demo are desktop only. Mobile gets shorter reveals (y 24px, 0.6s).
+- **Hover** is CSS only, inside `(hover: hover) and (pointer: fine)`. GSAP adds press feedback (`data-press`) and never writes `box-shadow`, so the liquid buttons keep their layered highlights.
 - CSS owns hover, active and focus colours (`pen-landing.module.css`, `portfolio-lab-demo.module.css`). Press on non-GSAP controls uses the individual `scale` property (0.96), so it never fights a GSAP transform, and sits behind `prefers-reduced-motion: no-preference`. Icons that appear (answer check, crisis result, menu ↔ close) use opacity, scale 0.25 → 1 and blur 4px → 0.
-- Only `transform`, `opacity` and SVG stroke (`drawSVG`) are animated. Exceptions: the lesson feedback `height: auto` expand (inside a card, after layout), the box-shadow on hover lift.
+- Only `transform`, `opacity` and SVG stroke (`drawSVG`) are animated. Exception: the lesson feedback `height: auto` expand (inside a card, after layout).
 - SplitText uses `aria: "auto"`, and every split is reverted once its reveal finishes.
 
 ## Section choreography
 
 | # | Section | Trigger | What happens | Where to tweak |
 | --- | --- | --- | --- | --- |
-| – | Scroll progress | scrub over the whole document | 3px teal bar, `scaleX` 0 → 1 | `sections/global.ts › initScrollProgress` |
-| – | Hover / press | pointer | Lift and shadow on buttons (`data-lift`; informational cards do not lift, because they are not clickable), magnetic pull via `quickTo` (`data-magnetic`), squash and `back.out` release (`data-press`) | `utils.ts › hoverLift / magnetic / pressFeedback` |
-| 1 | Nav | load + scroll | Fades down on load and becomes a sticky glass pill that always stays in view; pinned sections start below it (`NAV_CLEARANCE`). Magnetic "Přihlásit se". | `initNav` |
-| 2 | Hero | load (after fonts, max 1.2s wait) | H1 masked line reveal; the second line lands 0.2s later with a slight skew. Then subtitle (0.75s), CTAs pop (0.95s), lesson card (1.05s), illustration (1.35s). The illustration only fades in and never moves (no float, no parallax). Then a scrubbed title scale/fade on scroll-out (desktop). The primary CTA plays a soft sheen on hover. | `sections/hero.ts` (timeline positions are the trailing numbers) |
-| 3 | Hero lesson card | card top hits 80% of viewport (desktop) | A ghost cursor picks B and clicks check. The feedback expands, the "Správně" badge pops (`back.out(1.4)`) with a 10-dot burst, and the progress fills. The lesson previews are read-only illustrations (no clickable answers or submit), so the demo always runs to its end state. | `sections/lesson-demo.ts › armHeroDemo`, `burst()` |
-| 4 | Jak to funguje | card top hits 78% | Path rows cascade (0.12s stagger), statuses fade in, and "Doporučený začátek" pulses gently. Steps 01 → 02 → 03: number flips in, copy reveals, the previous step dims, and a line draws. Pinned (+1700px scroll) on desktop at least 880px tall; unpinned scrub on shorter desktops; plain staggered reveals on mobile. | `sections/journey.ts` (`end: "+=1700"`, `MQ.tall` in `lib/gsap.ts`) |
-| 5 | Krátké lekce | heading words / card top hits 70% | Heading word reveal. The cursor picks the wrong answer A, which shakes; the explanation slides in and B glows. | `armCompactDemo` (shake keyframes, glow repeats) |
+| – | Press | pointer | Squash and `back.out` release (`data-press`). Hover states are CSS. | `utils.ts › pressFeedback` |
+| 1 | Nav | load + scroll | Slides down on load. It is sticky in CSS, so it stays in view without JS or motion; pinned sections start below it (`NAV_CLEARANCE`). Over the Lab it switches to the dark variant from a scroll listener in `liquid-glass.tsx`, also under reduced motion. | `initNav`, `liquid-glass.tsx` |
+| 2 | Hero | load (after fonts, max 1.2s wait) | H1 masked line reveal; the second line lands 0.2s later with a slight skew. Then subtitle (0.75s), CTAs pop (0.95s), lesson card (1.05s), illustration (1.35s). The illustration only fades in and never moves (no float, no parallax). Then a scrubbed title scale/fade on scroll-out (desktop). | `sections/hero.ts` (timeline positions are the trailing numbers) |
+| 3 | Hero lesson card | card top hits 80% of viewport (desktop) | A ghost cursor picks B and clicks check. The feedback expands, the "Správně" label pops (`back.out(1.4)`) and the progress fills. The lesson preview is a read-only illustration (no clickable answers or submit), so the demo always runs to its end state. | `sections/lesson-demo.ts › armHeroDemo` |
+| 4 | Jak to funguje | shared reveals | Heading word reveal; the path card rises in once and the illustration fades in place. No pin, no scrub, no pulse. | `data-reveal` in `pen-landing.tsx` |
+| 5 | Výstupy modulů | shared reveals | Heading word reveal; copy and the outputs list rise in. | `data-reveal` in `pen-landing.tsx` |
 | 6 | Portfolio Lab | demo top hits 65% (75% on mobile); pin at `top top+=NAV_CLEARANCE` | Heading line reveal. The step-1 cost rows settle in one by one and the total lands last; the crisis drill draws the model index (`model-crisis-v1`, months 0–12) and marks the −30 % month. On desktops tall enough for the tallest step (`PORTFOLIO_PIN_QUERY`, em tiers from 1200 px wide) the demo and crisis drill pin for 3 × 720 px: scroll walks purchase → off-plan card → process feedback (`PORTFOLIO_STEP_EVENT`), a thin butter bar under the tabs shows progress, then the page scrolls on. Tabs and step buttons scroll to their step (`PORTFOLIO_STEP_REQUEST_EVENT`). Until the visitor picks an instrument, step 2 acts out the off-plan choice. Reduced motion, mobile and short windows keep plain tabs / stacked steps. | `sections/portfolio.ts` (`STEP_SCROLL`) |
-| 7 | Trust | card top hits 78% | The illustration fades in and the items ease in slowly, one by one. | `sections/progress.ts` |
-| 8 | Final CTA | scroll | Heading char reveal (0.025s stagger; words on mobile), illustration fades in place (no movement), copy and actions reveal. The primary button sheens on hover only (never at rest), plus magnetic hover. | `sections/closing.ts`, `sheen()` in `utils.ts` |
+| 7 | Trust | shared reveals | The illustration fades in place and the three items rise in with a stagger. | `data-reveal`, `data-reveal-stagger` in `pen-landing.tsx` |
+| 8 | Final CTA | scroll | Heading char reveal (0.025s stagger; words on mobile), illustration fades in place (no movement), copy and actions reveal. | `sections/closing.ts` |
 | 9 | Footer | footer enters viewport | Single fade-up | `initFooter` |
 
 ## Retuning

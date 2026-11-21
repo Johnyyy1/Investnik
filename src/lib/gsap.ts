@@ -37,11 +37,9 @@ export const MQ = {
   motion: "(prefers-reduced-motion: no-preference)",
   desktop: "(min-width: 1024px)",
   mobile: "(max-width: 1023px)",
-  /** Tall enough to pin the "Jak to funguje" block without clipping it. */
-  tall: "(min-height: 880px)",
   fine: "(hover: hover) and (pointer: fine)",
 } as const;
 
-export type MotionConditions = { motion: boolean; desktop: boolean; mobile: boolean; tall: boolean; fine: boolean };
+export type MotionConditions = { motion: boolean; desktop: boolean; mobile: boolean; fine: boolean };
 
 export { gsap, ScrollTrigger, SplitText, DrawSVGPlugin, useGSAP };

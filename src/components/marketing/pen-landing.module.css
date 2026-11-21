@@ -12,6 +12,12 @@
   --muted: var(--color-muted);
   --soft: var(--color-surface-muted);
   --cash: var(--color-warning);
+  /* One grid for every section: the nav pill, hero, sections and footer share these edges. */
+  --gutter: 96px;
+  --pill-inset: min(24px, calc(var(--gutter) - 8px));
+  --section-y: 128px;
+  --h2: 3.5rem;
+  position: relative;
   color-scheme: light;
   color: var(--ink);
   background: var(--paper);
@@ -19,7 +25,7 @@
   font-size: 1rem;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  /* Scripted demo cursors and bursts are positioned in px measured at play time; after a resize mid-demo they may sit
+  /* Scripted demo cursors are positioned in px measured at play time; after a resize mid-demo they may sit
      past the viewport edge. Clip horizontally (no scroll container, so sticky/pinned motion is unaffected). */
   overflow-x: clip;
 }
@@ -31,22 +37,33 @@
 .landing button { touch-action: manipulation; }
 /* Balance narrows the lines, so Firefox would otherwise hyphenate short words such as "mo-dul". 7 keeps 320px at 200% text free of overflow. */
 .landing h1, .landing h2, .landing h3 { font-family: var(--font-display); font-weight: 600; margin: 0; hyphens: auto; hyphenate-limit-chars: 7 3 3; text-wrap: balance; }
-.landing p { margin: 0; }
-.landing p, .landing li, .landing small { text-wrap: pretty; }
+.landing p, .landing dl, .landing dd { margin: 0; }
+.landing p, .landing li, .landing small, .landing dd { text-wrap: pretty; }
 .landing h2 { letter-spacing: -.038em; }
-.container { width: min(1312px, calc(100% - 128px)); margin-inline: auto; }
+/* Section headlines share one size; the Lab statement and the closing are the two deliberate exceptions. */
+:is(.journey, .lessonSection, .progressSection) h2 { font-size: var(--h2); line-height: 1.08; }
+.container { width: min(1248px, calc(100% - 2 * var(--gutter))); margin-inline: auto; }
 .visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .skip { position: absolute; z-index: 50; top: 8px; left: 16px; background: var(--surface); border-radius: 8px; padding: 12px; transform: translateY(-200%); }
 .skip:focus { transform: none; }
-.siteHeader { position: relative; z-index: 4; padding-block: 28px; }
-.scrollProgress { position: fixed; z-index: 60; top: 0; left: 0; right: 0; height: 3px; background: var(--teal); transform: scaleX(0); transform-origin: 0 50%; pointer-events: none; }
-.siteHeader .container { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; min-height: 56px; }
-.wordmark { font-family: var(--font-display); font-size: 2.125rem; letter-spacing: -.05em; font-weight: 800; line-height: 1.35; }
-.topNav { display: flex; gap: 36px; align-items: center; font-size: .9375rem; }
-.topNav a { display: inline-flex; align-items: center; min-height: 48px; }
-.topNav .navSignIn { border: 1px solid #c6c3ba; border-radius: 8px; padding-inline: 20px; font-weight: 500; transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease; }
+
+/* ───────────────────────── Navigation ───────────────────────── */
+/* Sticky in CSS, so the bar stays visible without JS and with reduced motion (DESIGN.md › Navigation). */
+.siteHeader { position: sticky; top: 0; z-index: 30; padding-block: 16px; }
+/* The pill overhangs the grid by its own inset, so the wordmark lines up with every section's left edge. */
+.navPill {
+  display: flex; flex-wrap: nowrap; gap: 8px; align-items: center; justify-content: space-between;
+  width: min(calc(1248px + 2 * var(--pill-inset)), calc(100% - 2 * var(--gutter) + 2 * var(--pill-inset)));
+  min-height: 64px; margin-inline: auto; padding: 6px 8px 6px var(--pill-inset); border-radius: 999px;
+  transition: color 300ms ease, background 300ms ease, box-shadow 300ms ease;
+}
+.wordmark { font-family: var(--font-display); font-size: 1.75rem; letter-spacing: -.05em; font-weight: 800; line-height: 1.35; }
+.topNav { display: flex; gap: 6px; align-items: center; font-size: .9375rem; }
+.topNav a { display: inline-flex; align-items: center; min-height: 48px; padding-inline: 16px; border-radius: 999px; }
+.topNav .navSignIn { border: 1px solid rgb(23 23 23 / .18); background: rgb(255 255 255 / .35); padding-inline: 20px; font-weight: 500; transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease; }
+.topNav .navStart { font-weight: 600; }
 .mobileActions { display: none; }
-.mobileNav summary { list-style: none; cursor: pointer; display: grid; place-items: center; width: 44px; height: 48px; border-radius: 8px; transition: background-color var(--motion-micro) ease-out; }
+.mobileNav summary { list-style: none; cursor: pointer; display: grid; place-items: center; width: 44px; height: 48px; border-radius: 999px; transition: background-color var(--motion-micro) ease-out; }
 /* Both icons stay in the DOM and share one grid cell, so the swap can be interrupted mid-way. */
 .mobileNav summary svg { grid-area: 1 / 1; transition: opacity 300ms cubic-bezier(.2, 0, 0, 1), scale 300ms cubic-bezier(.2, 0, 0, 1), filter 300ms cubic-bezier(.2, 0, 0, 1); }
 .mobileNav:not([open]) .menuClose, .mobileNav[open] .menuOpen { opacity: 0; scale: .25; filter: blur(4px); }
@@ -55,48 +72,88 @@
 .mobileNav:not([open]) nav { display: none; }
 /* Without this, Chrome runs the @starting-style entrance only on the first open. */
 .mobileNav::details-content { content-visibility: visible; }
-.mobileNav nav { position: absolute; z-index: 20; right: 20px; top: 74px; display: grid; padding: 8px; width: min(300px, calc(100vw - 40px)); background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; box-shadow: 0 15px 30px #0002; transition: opacity var(--motion-micro) ease-out, translate var(--motion-micro) ease-out; }
-@starting-style { .mobileNav[open] nav { opacity: 0; translate: 0 -8px; } }
-.mobileNav nav a { display: flex; align-items: center; min-height: 48px; padding: 8px 12px; border-radius: 4px; transition: background-color var(--motion-micro) ease-out, color var(--motion-micro) ease-out; }
-.mobileNav nav a:active { background: var(--soft); }
-.eyebrow, .demoEyebrow { font-size: .75rem; font-weight: 600; letter-spacing: .083em; color: var(--teal); line-height: 1.25; }
-.cardOverline, .lessonDisclosure { display: block; font-size: .75rem; color: var(--muted); line-height: 1.4; }
-.hero { padding: 36px 0 64px; }
-.hero h1 { font-size: clamp(88px, 8.333vw, 120px); line-height: 1.04; letter-spacing: -.04667em; }
-.hero h1 span { display: block; margin-left: 186px; }
-.hero h1 br { display: none; }
-.heroIntro { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; margin: 40px 0 74px; padding-left: 190px; }
-.heroIntro > p { width: 590px; max-width: 100%; font-size: 1.1875rem; line-height: 1.5; color: var(--color-secondary); }
-.heroActions { display: flex; align-items: center; gap: 24px; }
-.heroNote { width: 590px; max-width: 100%; font-size: .875rem; line-height: 1.5; color: var(--muted); }
-.primaryButton, .lessonSubmit, .portfolioSave, .secondaryButton {
-  display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 54px;
-  background: var(--teal); color: var(--color-primary-foreground) !important; padding: 14px 22px; border: 1px solid var(--teal);
-  border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; line-height: 1.35;
-  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, scale 150ms ease-out;
+/* The menu sits inside the lens (a backdrop root), so it carries its own near-opaque surface instead of nested glass. */
+.mobileNav nav {
+  position: absolute; z-index: 20; right: 8px; top: calc(100% + 8px); display: grid; padding: 8px; width: min(300px, calc(100vw - 40px));
+  background: color-mix(in srgb, var(--color-surface) 96%, transparent); border: 1px solid rgb(255 255 255 / .8); border-radius: 22px;
+  box-shadow: inset 0 1px 0 #fff, 0 24px 48px -16px rgb(23 23 23 / .35);
+  transition: opacity var(--motion-micro) ease-out, translate var(--motion-micro) ease-out;
 }
-.primaryButton { padding-inline: 24px 22px; min-height: 56px; }
-.primaryButton svg { flex-shrink: 0; transition: transform 240ms cubic-bezier(.2, .7, .2, 1); }
-.textAction { display: inline-flex; align-items: center; min-height: 48px; font-size: 1rem; font-weight: 500; }
+@starting-style { .mobileNav[open] nav { opacity: 0; translate: 0 -8px; } }
+.mobileNav nav a { display: flex; align-items: center; min-height: 48px; padding: 8px 12px; border-radius: 14px; transition: background-color var(--motion-micro) ease-out, color var(--motion-micro) ease-out; }
+.mobileNav nav a:active { background: var(--soft); }
 /* Underline that draws in from the left on hover, instead of a text-decoration jump. */
 .topNav a:not(.navSignIn, .navStart), .textAction, .footer nav a, .mobileActions > a {
   background: linear-gradient(currentColor, currentColor) 0 calc(50% + .78em) / 0 1px no-repeat;
   transition: background-size 260ms cubic-bezier(.2, .7, .2, 1), color 180ms ease;
 }
-/* The wrap's 12px radius minus its 1px border gives the 11px inner corners below. */
-.heroLessonWrap { position: relative; border: 1px solid var(--color-border-card); background: var(--surface); border-radius: 12px; box-shadow: 0 12px 24px #1717170c; }
+
+/* ───────────────────────── Buttons ───────────────────────── */
+.primaryButton, .lessonSubmit, .secondaryButton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 54px;
+  background: var(--teal); color: var(--color-primary-foreground) !important; padding: 14px 22px; border: 1px solid var(--teal);
+  border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; line-height: 1.35;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, scale 150ms ease-out;
+}
+/* Liquid teal: the one primary action, as a tinted pill with depth. */
+.landing .primaryButton, .topNav .navStart {
+  border-radius: 999px; color: var(--color-primary-foreground) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 90%, white), var(--color-primary) 52%, var(--color-primary-pressed));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 55%, white);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .4), inset 0 -3px 8px rgb(0 0 0 / .16), 0 12px 26px -12px var(--color-primary);
+  transition: filter 180ms ease, box-shadow 180ms ease;
+}
+.primaryButton { min-height: 56px; padding-inline: 24px 22px; }
+.primaryButton svg { flex-shrink: 0; transition: transform 240ms cubic-bezier(.2, .7, .2, 1); }
+/* Only used inside the frosted closing slab: a plain light fill, because glass inside glass only blurs its parent. */
+.landing .secondaryButton {
+  min-height: 56px; padding-inline: 20px 22px; border-radius: 999px; font-family: var(--font-sans); font-size: .9375rem;
+  background: color-mix(in srgb, var(--color-surface) 72%, transparent); border-color: rgb(255 255 255 / .8); color: var(--teal) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .85), 0 8px 20px -14px rgb(23 23 23 / .4);
+  transition: background-color 180ms ease, border-color 180ms ease, scale 150ms ease-out;
+}
+.landing .secondaryButton svg { width: 18px; height: 18px; }
+.textAction { display: inline-flex; align-items: center; min-height: 48px; font-size: 1rem; font-weight: 500; }
+.demoButtonWrap { display: grid; align-content: start; }
+.demoButtonWrap > p { color: var(--color-danger); font-size: .875rem; max-width: 300px; }
+@media (hover: hover) and (pointer: fine) {
+  .mobileNav summary:hover { background: var(--soft); }
+  .mobileNav nav a:hover { background: var(--soft); color: var(--teal); }
+  .topNav a:not(.navSignIn, .navStart):hover, .textAction:hover, .footer nav a:hover, .mobileActions > a:hover { color: var(--teal); background-size: 100% 1px; }
+  .topNav .navSignIn:hover { background: rgb(255 255 255 / .75); border-color: rgb(23 23 23 / .3); }
+  .landing .primaryButton:hover, .topNav .navStart:hover { filter: brightness(1.08) saturate(1.05); box-shadow: inset 0 1px 0 rgb(255 255 255 / .5), inset 0 -3px 8px rgb(0 0 0 / .16), 0 16px 32px -12px var(--color-primary); }
+  .primaryButton:hover svg { transform: translateX(3px); }
+  .landing .secondaryButton:hover:not(:disabled) { background: var(--surface); border-color: var(--teal); }
+}
+/* After the hover rules: on touch :active is the only state feedback, and it wins while a mouse holds the press. */
+.landing .primaryButton:active, .topNav .navStart:active { filter: brightness(.94); }
+.landing .secondaryButton:active:not(:disabled) { background: var(--color-primary-soft); border-color: var(--color-primary-pressed); }
+.topNav .navSignIn:active { background: var(--surface); border-color: var(--color-primary-pressed); }
+.topNav a:not(.navSignIn, .navStart):active, .textAction:active, .footer nav a:active, .mobileActions > a:active { color: var(--color-primary-pressed); }
+/* The individual `scale` property stays clear of the transform GSAP writes to pressed buttons. */
+@media (prefers-reduced-motion: no-preference) { .landing .secondaryButton:active:not(:disabled) { scale: .96; } }
+
+/* ───────────────────────── Hero ───────────────────────── */
+.hero { padding: 56px 0 64px; }
+.hero h1 { font-size: clamp(88px, 8.333vw, 120px); line-height: 1.04; letter-spacing: -.04667em; }
+.hero h1 span { display: block; margin-left: 186px; }
+.hero h1 br { display: none; }
+.heroIntro { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; margin: 40px 0 72px; padding-left: 190px; }
+.heroActions { display: flex; align-items: center; gap: 24px; }
+.heroNote { width: 590px; max-width: 100%; font-size: .9375rem; line-height: 1.5; color: var(--muted); }
+/* The wrap's 20px radius minus its 1px border gives the 19px inner corners below. */
+.heroLessonWrap { position: relative; border: 1px solid var(--color-border-card); background: var(--surface); border-radius: 20px; box-shadow: inset 0 1px 0 #fff, 0 32px 64px -40px rgb(23 23 23 / .4); }
 .heroArt { position: absolute; right: 8px; top: -238px; width: 256px; height: 260px; object-fit: contain; pointer-events: none; }
-.lessonBrowserHeader { position: relative; background: var(--surface); border-radius: 11px 11px 0 0; min-height: 78px; display: flex; gap: 16px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding: 22px 32px; font-size: .9375rem; color: var(--muted); }
-.lessonBrowserHeader span:nth-child(3) { font-size: .875rem; }
-.lessonBrowserHeader span:last-child { font-size: .75rem; }
-.smallWordmark { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: var(--ink); letter-spacing: -.07em; }
-.heroLessonContent { display: grid; grid-template-columns: minmax(0, 1fr) 390px; }
+.lessonBrowserHeader { position: relative; display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: center; justify-content: space-between; min-height: 56px; padding: 14px 32px; border-bottom: 1px solid var(--color-border); border-radius: 19px 19px 0 0; font-size: .875rem; color: var(--muted); }
+.lessonBrowserHeader strong { font-weight: 500; color: var(--ink); }
+.lessonBrowserHeader > span:last-child { font-size: .8125rem; }
+.heroLessonContent { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 390px; }
 .lessonCard { background: var(--surface); color: var(--ink); }
-.heroLessonMain { padding: 40px; min-height: 438px; border-radius: 0 0 0 11px; }
-.heroLessonMain .lessonDisclosure, .heroLessonMain .lessonMeta, .heroLessonMain .lessonTrack { display: none; }
+.heroLessonMain { padding: 40px; min-height: 420px; border-radius: 0 0 0 19px; }
+.lessonTrack { display: none; color: var(--muted); font-size: .75rem; margin-bottom: 16px !important; }
 .lessonQuestion { font-size: 2.625rem; line-height: 1.15; letter-spacing: -.033em; margin-bottom: 24px !important; }
-.answers { display: grid; gap: 24px; list-style: none; margin: 0; padding: 0; }
-.answer { min-height: 72px; background: var(--surface); border: 1px solid #7b7b70; border-radius: 8px; text-align: left; display: flex; align-items: center; gap: 12px; padding: 20px 22px; font-size: 1.125rem !important; line-height: 1.55 !important; color: var(--ink); transition: background-color 160ms ease, border-color 160ms ease; }
+.answers { display: grid; gap: 16px; list-style: none; margin: 0; padding: 0; }
+.answer { position: relative; min-height: 72px; background: var(--surface); border: 1px solid #7b7b70; border-radius: 8px; text-align: left; display: flex; align-items: center; gap: 12px; padding: 20px 22px; font-size: 1.125rem !important; line-height: 1.55 !important; color: var(--ink); transition: background-color 160ms ease, border-color 160ms ease; }
 .answer > span:first-child { font-size: .8125rem; font-weight: 600; color: var(--muted); flex-shrink: 0; }
 .answer > span:nth-child(2) { flex: 1; }
 .answer svg { flex-shrink: 0; color: var(--teal); transition: opacity 300ms cubic-bezier(.2, 0, 0, 1), scale 300ms cubic-bezier(.2, 0, 0, 1), filter 300ms cubic-bezier(.2, 0, 0, 1); }
@@ -111,299 +168,117 @@
 .lessonSubmit { max-width: 100%; flex-wrap: wrap; padding-inline: 22px 20px; cursor: default; user-select: none; }
 .lessonSubmit[data-disabled] { background: var(--color-track); border-color: var(--color-track); color: #50554b !important; }
 .heroInlineFeedback { display: none; }
-.heroLessonAside { padding: 32px; min-height: 438px; background: var(--color-surface-practice); border-left: 1px solid var(--color-border); border-radius: 0 0 11px 0; }
-.heroLessonAside .demoEyebrow { font-size: .6875rem; }
-.asideFeedback { margin-top: 30px; }
+.heroLessonAside { padding: 32px; background: var(--color-surface-practice); border-left: 1px solid var(--color-border); border-radius: 0 0 19px 0; }
+.demoEyebrow { font-size: .6875rem; font-weight: 600; letter-spacing: .083em; color: var(--teal); line-height: 1.25; }
+.asideFeedback { margin-top: 28px; }
 .feedback :is(h2, h3), .asideFeedback :is(h2, h3) { font-size: 1.625rem; line-height: 1.2; letter-spacing: -.023em; color: var(--teal); }
 .feedback p, .asideFeedback p { font-size: .9375rem; line-height: 1.55; color: var(--muted); margin-top: 12px; }
-.lessonProgress { margin-top: 36px; height: 4px; background: var(--color-track); }
+.lessonProgress { margin-top: 32px; height: 4px; border-radius: 2px; background: var(--color-track); overflow: hidden; }
 .lessonProgress span { display: block; height: 100%; width: 66.67%; background: var(--teal2); }
-.asideContext { font-size: .8125rem; line-height: 1.7; color: var(--muted); margin-top: 30px !important; }
-.microDisclaimer { font-size: .75rem; color: var(--muted); margin-top: 12px !important; line-height: 1.4; }
-.hero > .container > .microDisclaimer { font-size: .8125rem; margin-top: 24px !important; }
-.journey, .lessonSection, .progressSection, .closing, .footer { --section-gutter: 96px; }
-.journey .container, .lessonSection .container, .progressSection .container, .closing .container, .footer .container { width: min(1248px, calc(100% - 2 * var(--section-gutter))); }
-.journey { padding: 88px 0; }
-.journey h2 { font-size: 3.25rem; line-height: 1.1; margin-top: 18px; }
-.journeyDescription { display: none; }
-/* The motion layer's pin writes the block's measured px width inline and re-measures only in ScrollTrigger's
-   debounced resize refresh; never let a width from a wider viewport overflow the fluid container meanwhile. */
-.journey :global(.pin-spacer), .journey [data-journey-pin] { max-width: 100% !important; }
-.journeyContent { position: relative; min-height: 575px; padding-top: 100px; margin-top: 40px; }
+.microDisclaimer { margin-top: 16px !important; font-size: .8125rem; color: var(--muted); line-height: 1.4; }
+.demoCursor { position: absolute; z-index: 5; top: 0; left: 0; width: 22px; height: 22px; opacity: 0; visibility: hidden; pointer-events: none; filter: drop-shadow(0 2px 3px #17171733); }
+.demoCursor svg { display: block; }
+
+/* ───────────────────────── Path (Jak to funguje) ───────────────────────── */
+.journey { padding-block: var(--section-y) calc(var(--section-y) - 16px); }
+/* The motion layer's reveal writes transforms only; the card stays in flow. */
+.journeyContent { position: relative; min-height: 470px; padding-top: 100px; margin-top: 40px; }
 .journeyIllustration { position: absolute; top: -112px; right: 55px; width: 397.3px; height: 617.7px; pointer-events: none; }
 .journeyIllustration img { width: 100%; height: 100%; object-fit: contain; }
-.courseCard { position: relative; width: min(1080px, 86.54%); padding: 36px; background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; }
+.courseCard { position: relative; width: min(1080px, 86.54%); padding: 32px 36px 28px; background: var(--surface); border: 1px solid var(--divider); border-radius: 20px; box-shadow: inset 0 1px 0 #fff, 0 24px 48px -32px rgb(23 23 23 / .35); }
 .discoveryGripTop { position: absolute; top: -23px; right: 129px; width: 78.88px; height: 49.88px; pointer-events: none; }
 .discoveryGripSide { position: absolute; top: 67px; right: -23px; width: 56.26px; height: 66.7px; pointer-events: none; }
-.courseHeader { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-block: 20px; }
-.courseHeader h3 { font-family: var(--font-sans); font-size: 1.375rem; font-weight: 600; line-height: 1.25; }
-.courseHeader > span { color: var(--teal); font-size: .875rem; font-weight: 600; white-space: nowrap; }
-.courseRow { display: flex; align-items: flex-start; gap: 16px; min-height: 44px; padding: 12px 0; border-bottom: 1px solid var(--color-divider); font-size: 1rem; line-height: 1.2; margin-bottom: 20px; }
-.courseRow small { margin-left: auto; margin-top: 2px; text-align: right; color: var(--muted); font-size: .8125rem; }
-.courseRow:not([data-planned]) small { color: var(--teal); }
-.courseRow[data-planned] .rowIcon { color: var(--muted); }
-.rowText { flex: 1 1 12rem; min-width: 0; }
-.rowText > span { display: block; margin-top: 6px; color: var(--muted); font-size: .875rem; line-height: 1.45; }
-.outputList { border-top: 1px solid var(--divider); margin-top: 24px; }
-.outputList li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding: 12px 0; border-bottom: 1px solid var(--divider); font-size: 1rem; line-height: 1.3; }
-.outputList small { color: var(--muted); font-size: .8125rem; }
-.outputList li[data-available] small { color: var(--teal); }
-.rowIcon { color: var(--teal); flex-shrink: 0; width: 20px; height: 1.2em; display: grid; place-items: center; }
-.rowIcon svg { stroke-width: 1.5; }
-.courseCard > p { font-size: .8125rem; color: var(--muted); line-height: 1.25; }
-.threeSteps { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 56px; border-top: 1px solid var(--divider); margin-top: 40px; padding-top: 22px; }
-.threeSteps > div > span { font-size: .75rem; color: var(--teal); display: block; line-height: 1.25; }
-.threeSteps h3 { font-family: var(--font-sans); font-size: 1rem; margin-block: 8px; line-height: 1.2; font-weight: 600; }
-.threeSteps p { font-size: .875rem; line-height: 1.5; color: var(--muted); }
-.lessonSection { background: var(--soft); padding: 76px 0; }
-.lessonSectionLayout { display: grid; grid-template-columns: 430px minmax(0, 1fr); gap: 72px; align-items: center; }
-.lessonSectionCopy h2 { font-size: 3.5rem; line-height: 1.1; margin: 24px 0; }
-.lessonSectionCopy > p:not(.eyebrow) { font-size: 1.125rem; line-height: 1.55; }
-.lessonCompact { border: 1px solid var(--divider); border-radius: 12px; padding: 28px; }
-.lessonMeta { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; font-size: .8125rem; margin-top: 18px; margin-bottom: 24px; }
-.lessonMeta span:first-child { font-size: 1.125rem; font-weight: 600; }
-.lessonTrack { color: var(--muted); font-size: .6875rem; letter-spacing: .045em; margin-bottom: 20px !important; }
-.lessonCompact .lessonTrack { display: none; }
-.lessonCompact .feedback :is(h2, h3) { font-size: 1.875rem; }
-.lessonCompact .lessonBottom { margin-top: 26px; }
-.lessonCompact .lessonQuestion { font-size: 2rem; }
-.lessonCompact .answer { font-size: 1rem !important; min-height: 60px; padding: 16px 18px; }
-.labSection { background: var(--ink); color: var(--paper); padding: 100px 0 64px; }
-.labSection .eyebrow { color: var(--cash); }
-.labDemo { margin-top: 56px; display: grid; grid-template-columns: minmax(0, 864fr) minmax(0, 392fr); gap: 56px; align-items: start; }
-.labFooter { margin-top: 56px; padding-top: 28px; border-top: 1px solid #f7f2e833; display: flex; justify-content: space-between; align-items: center; gap: 32px; }
-.labFooter p { font-size: .8125rem; line-height: 1.5; color: #e0e3d8; max-width: 640px; }
+.courseTitle { margin-bottom: 16px !important; font-size: 1.5rem; letter-spacing: -.02em; line-height: 1.2; }
+.courseSteps { list-style: none; margin: 0; padding: 0; }
+.courseRow { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; column-gap: 16px; align-items: start; padding: 12px 0; }
+/* Each row draws the spine from under its dot to the top of the next dot (12px row padding), so it ends exactly at the last one. */
+.courseRow:not(:last-child)::before { content: ""; position: absolute; left: 13px; top: 40px; bottom: -12px; width: 2px; background: color-mix(in srgb, var(--teal2) 55%, var(--color-primary-tint)); }
+.rowIcon { position: relative; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 2px solid var(--teal2); color: var(--teal); }
+.rowIcon svg { stroke-width: 2; }
+.courseRow[data-course-row="open"] .rowIcon::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--teal2); }
+.courseRow[data-course-row="next"] .rowIcon { background: var(--teal); border-color: var(--teal); color: var(--color-primary-foreground); }
+.courseRow[data-course-row="lab"] .rowIcon { background: var(--color-primary-soft); }
+.rowText { min-width: 0; padding-top: 3px; }
+.rowText strong { display: block; font-weight: 600; font-size: 1rem; line-height: 1.3; }
+.rowText > span { display: block; margin-top: 4px; max-width: 62ch; color: var(--muted); font-size: .875rem; line-height: 1.45; }
+/* Statuses are quiet text; only the recommended start is filled, so the eye lands there first. */
+.courseRow small { margin-top: 5px; color: var(--teal); font-size: .8125rem; font-weight: 600; white-space: nowrap; }
+.courseRow[data-course-row="next"] small { margin-top: 2px; padding: 3px 12px; border-radius: 999px; background: var(--teal); color: var(--color-primary-foreground); }
+.courseNote { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--color-divider); font-size: .8125rem; line-height: 1.45; color: var(--muted); }
+
+/* ───────────────────────── Module outputs ───────────────────────── */
+.lessonSection { padding-block: var(--section-y); background: var(--soft); }
+.lessonSectionLayout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 96px; align-items: center; }
+.lessonSectionCopy p { max-width: 34em; margin-top: 24px; font-size: 1.125rem; line-height: 1.6; color: var(--color-secondary); }
+/* One ledger, not six cards: the outputs read as the list you will have in your account. */
+.outputList { list-style: none; margin: 0; padding: 8px 0; background: var(--surface); border: 1px solid var(--divider); border-radius: 20px; box-shadow: inset 0 1px 0 #fff, 0 24px 48px -36px rgb(23 23 23 / .3); }
+.outputList li { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: 4px 16px; min-height: 60px; padding: 12px 24px; font-size: 1rem; line-height: 1.35; }
+/* Hairlines inset to the text, so they never touch the rounded edge. */
+.outputList li + li { background: linear-gradient(var(--color-divider), var(--color-divider)) 24px 0 / calc(100% - 48px) 1px no-repeat; }
+.outputList svg { color: var(--teal); stroke-width: 1.75; }
+.outputList small { color: var(--teal); font-size: .8125rem; font-weight: 600; white-space: nowrap; }
+.outputList li:not([data-available]) { color: var(--muted); }
+.outputList li:not([data-available]) :is(svg, small) { color: var(--muted); font-weight: 500; }
+
+/* ───────────────────────── Lab ───────────────────────── */
+/* A dark stage lit by the palette; it floats as one rounded sheet instead of a hard full-bleed cut from the paper. */
+.labSection {
+  position: relative; margin-inline: clamp(8px, 1.2vw, 20px); border-radius: clamp(28px, 3vw, 48px);
+  padding-block: var(--section-y) 64px; color: var(--paper);
+  background:
+    radial-gradient(60% 420px at 50% 0%, color-mix(in srgb, var(--color-progress) 42%, transparent), transparent 75%),
+    radial-gradient(50% 480px at 50% 62%, color-mix(in srgb, var(--color-primary) 26%, transparent), transparent 72%),
+    var(--ink);
+}
+.labSection .container { width: min(1248px, calc(100% - 2 * var(--gutter) + 2 * clamp(8px, 1.2vw, 20px))); }
+.labIntro { display: flex; flex-direction: column; align-items: center; max-width: 860px; margin-inline: auto; text-align: center; }
+.labBadge { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 999px; background: rgb(255 255 255 / .06); border: 1px solid rgb(255 255 255 / .14); box-shadow: inset 0 1px 0 rgb(255 255 255 / .12); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); font-size: .875rem; font-weight: 600; line-height: 1.25; color: var(--cash); }
+.labDot { width: 6px; height: 6px; border-radius: 50%; background: var(--cash); box-shadow: 0 0 0 4px color-mix(in srgb, var(--cash) 22%, transparent); }
+.labIntro h2 { margin-top: 28px; font-size: clamp(3rem, 6.4vw, 5.5rem); line-height: 1.02; letter-spacing: -.045em; }
+.labIntro h2 span { color: color-mix(in srgb, var(--paper) 58%, transparent); }
+.labLead { max-width: 620px; margin-top: 24px !important; font-size: 1.1875rem; line-height: 1.55; color: color-mix(in srgb, var(--paper) 88%, var(--ink)); }
+.labNote { display: block; margin-top: 20px; font-size: .875rem; color: color-mix(in srgb, var(--paper) 78%, var(--ink)); }
+.labDemo { margin-top: 64px; display: grid; grid-template-columns: minmax(0, 864fr) minmax(0, 392fr); gap: 56px; align-items: start; }
+.labFooter { margin-top: 56px; padding-top: 28px; border-top: 1px solid rgb(255 255 255 / .16); display: flex; justify-content: space-between; align-items: center; gap: 32px; }
+.labFooter p { max-width: 640px; font-size: .8125rem; line-height: 1.5; color: color-mix(in srgb, var(--paper) 84%, var(--ink)); }
 .labFooter .primaryButton { flex-shrink: 0; }
 .labFooter :focus-visible { outline-color: var(--paper); }
-.progressSection { padding: 100px 0; }
-.progressSection h2 { font-size: 4.125rem; line-height: 1.1; letter-spacing: -.035em; margin: 32px 0; }
-.progressLayout { display: grid; grid-template-columns: 570px minmax(0, 1fr); gap: 112px; align-items: center; }
+
+/* ───────────────────────── Trust ───────────────────────── */
+.progressSection { padding-block: var(--section-y); }
+.progressLayout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 96px; align-items: center; margin-top: 48px; }
 .progressImage { height: 380px; display: grid; grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); place-items: center; }
 .progressImage img { min-height: 0; max-height: 100%; width: 100%; height: 100%; object-fit: contain; }
-.progressCard { display: flex; flex-direction: column; gap: 24px; }
-.progressItem { display: flex; gap: 16px; align-items: flex-start; padding: 16px 0; border-bottom: 1px solid var(--divider); }
-.progressItem > svg { color: var(--teal); flex-shrink: 0; stroke-width: 1.5; }
-.progressItem:last-of-type > svg { color: var(--muted); }
-.progressItem span { display: block; font-size: 1rem; line-height: 1.2; }
-.progressItem small { display: block; font-size: .8125rem; color: var(--muted); margin-top: 6px; }
-.progressPromise { font-size: 1rem; color: var(--muted); line-height: 1.55; }
-.closing { border-top: 1px solid var(--divider); padding: 94px 0 110px; }
+.trustList > div { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); gap: 6px 32px; padding: 24px 0; border-top: 1px solid var(--divider); }
+.trustList > div:last-child { border-bottom: 1px solid var(--divider); }
+.trustList dt { font-weight: 600; line-height: 1.4; }
+.trustList dd { color: var(--muted); font-size: .9375rem; line-height: 1.55; }
+
+/* ───────────────────────── Closing ───────────────────────── */
+/* The headline sits on one frosted slab with its own light; the illustration shows through its edge. */
+.closing { padding-block: calc(var(--section-y) - 32px) var(--section-y); background: radial-gradient(42% 60% at 22% 45%, color-mix(in srgb, var(--color-progress) 30%, transparent), transparent 70%), radial-gradient(36% 55% at 72% 40%, color-mix(in srgb, var(--color-warning) 38%, transparent), transparent 72%); }
 .closing .container { position: relative; }
-.closing h2 { max-width: calc(100% - 424px); font-size: 5.375rem; line-height: 1.08; letter-spacing: -.044em; position: relative; }
-.closing p { font-size: 1.125rem; line-height: 1.5; color: var(--muted); margin-top: 24px; position: relative; }
-.closingArt { position: absolute; right: 24px; top: 46px; width: 360px; height: 330px; object-fit: contain; pointer-events: none; }
-.closingActions { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 24px; position: relative; }
-.landing .secondaryButton { min-height: 56px; padding-inline: 20px 22px; background: transparent; border-color: var(--divider); color: var(--teal) !important; box-shadow: none; font-family: var(--font-sans); font-size: .9375rem; transition: background-color 180ms ease, border-color 180ms ease, scale 150ms ease-out; }
-.landing .secondaryButton svg { width: 18px; height: 18px; }
-.demoButtonWrap { display: grid; align-content: start; }
-.demoButtonWrap > p { color: var(--color-danger); font-size: .875rem; max-width: 300px; }
+/* The slab overlaps the illustration only at its glass edge, never under the headline (even at 200% text). */
+.closingSlab { position: relative; z-index: 1; max-width: min(820px, calc(100% - 400px)); padding: 56px; border-radius: 40px; }
+/* fit-content keeps the headline box on its glyphs, so it never reaches under the illustration. */
+.closing h2 { width: fit-content; max-width: 100%; font-size: 5rem; line-height: 1.06; letter-spacing: -.044em; }
+.closing p { margin-top: 24px; font-size: 1.125rem; line-height: 1.5; color: var(--color-secondary); }
+.closingArt { position: absolute; z-index: 0; right: -8px; top: 10px; width: 440px; height: 400px; object-fit: contain; pointer-events: none; }
+.closingActions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+
+/* ───────────────────────── Footer ───────────────────────── */
 .footer { padding-bottom: 64px; }
-.footer .container { border-top: 1px solid var(--divider); padding-top: 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.footer .wordmark { font-size: 1.875rem; }
+.footer .container { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-top: 28px; border-top: 1px solid var(--divider); }
+.footer .wordmark { font-size: 1.5rem; }
 .footer p { font-size: .8125rem; color: var(--muted); }
 .footer nav { display: flex; flex-wrap: wrap; column-gap: 24px; font-size: .8125rem; }
 .footer nav a { display: flex; align-items: center; min-height: 44px; }
-@media (hover: hover) and (pointer: fine) {
-  .mobileNav summary:hover { background: var(--soft); }
-  .mobileNav nav a:hover { background: var(--soft); color: var(--teal); }
-  .topNav a:not(.navSignIn, .navStart):hover, .textAction:hover, .footer nav a:hover, .mobileActions > a:hover { color: var(--teal); background-size: 100% 1px; }
-  .topNav .navSignIn:hover { background: var(--teal); border-color: var(--teal); color: var(--color-primary-foreground); }
-  .primaryButton:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
-  .primaryButton:hover svg { transform: translateX(4px); }
-  .landing .secondaryButton:hover:not(:disabled) { background: var(--color-primary-soft); border-color: var(--teal); }
-}
-/* After the hover rules: on touch :active is the only state feedback, and it wins while a mouse holds the press. */
-.primaryButton:active { background: var(--color-primary-pressed); border-color: var(--color-primary-pressed); }
-.landing .secondaryButton:active:not(:disabled) { background: var(--color-primary-soft); border-color: var(--color-primary-pressed); }
-.topNav .navSignIn:active { background: var(--color-primary-pressed); border-color: var(--color-primary-pressed); color: var(--color-primary-foreground); }
-.topNav a:not(.navSignIn, .navStart):active, .textAction:active, .footer nav a:active, .mobileActions > a:active { color: var(--color-primary-pressed); }
-/* The individual `scale` property stays clear of the transform GSAP writes to hovered and magnetic buttons. */
-@media (prefers-reduced-motion: no-preference) { .landing .secondaryButton:active:not(:disabled) { scale: .96; } }
-@media (min-width: 1101px) { .heroLessonMain .lessonBottom { margin-top: 24px; } }
-@media (max-width: 1100px) {
-  .container { width: calc(100% - 96px); }
-  .journey, .lessonSection, .progressSection, .closing, .footer { --section-gutter: 48px; }
-  .siteHeader { padding-block: 24px; }
-  .hero { padding-top: 32px; padding-bottom: 60px; }
-  .hero h1 { font-size: 5.5rem; line-height: 1.08; letter-spacing: -.04545em; }
-  .hero h1 span { margin-left: 88px; }
-  .heroIntro { padding-left: 92px; margin-top: 44px; margin-bottom: 74px; }
-  .heroIntro > p { width: 510px; }
-  .heroArt { width: 194px; height: 198px; top: -181px; right: 14px; }
-  .heroLessonContent { grid-template-columns: minmax(0, 1fr) 310px; }
-  .heroLessonMain { padding: 32px; min-height: 438px; }
-  .heroLessonAside { padding: 28px; }
-  .lessonQuestion { font-size: 2.125rem; }
-  .journey { padding: 72px 0; }
-  .journeyContent { min-height: 595px; }
-  .courseCard { width: 87%; }
-  .journeyIllustration { width: 302px; height: 469px; top: -70px; right: 0; }
-  .discoveryGripTop { width: 60px; height: 38px; right: 80px; top: -18px; }
-  .discoveryGripSide { width: 43px; height: 51px; right: -18px; }
-  .lessonSection { padding: 64px 0; }
-  .lessonSectionLayout { grid-template-columns: 360px minmax(0, 1fr); gap: 48px; }
-  .lessonSectionCopy h2 { font-size: 3.25rem; }
-  .lessonCompact .feedback :is(h2, h3) { font-size: 1.75rem; }
-  .labSection { padding: 80px 0 56px; }
-  .labDemo { grid-template-columns: minmax(0, 1fr); gap: 48px; margin-top: 40px; }
-  .progressSection { padding: 80px 0; }
-  .progressSection h2 { font-size: 3.5rem; margin-block: 28px; }
-  .progressLayout { grid-template-columns: 400px minmax(0, 1fr); gap: 48px; }
-  .progressImage { height: 320px; }
-  .closing { padding-top: 94px; padding-bottom: 130px; }
-  .closing h2 { max-width: calc(100% - 328px); font-size: 4rem; }
-  .closingArt { width: 280px; height: 280px; right: 0; top: 35px; }
-}
-@media (max-width: 800px) {
-  .container { width: calc(100% - 80px); }
-  .journey, .lessonSection, .progressSection, .closing, .footer { --section-gutter: 40px; }
-  .siteHeader .container { min-height: 48px; }
-  .topNav { display: none; }
-  .mobileActions { display: flex; margin-left: auto; align-items: center; gap: 12px; font-size: .875rem; }
-  .mobileActions > a { display: flex; align-items: center; min-height: 48px; }
-  .hero { padding-top: 40px; }
-  .hero h1 { font-size: 4.5rem; line-height: 1.14; letter-spacing: -.043em; }
-  .hero h1 span { margin-left: 40px; }
-  .heroIntro { padding-left: 40px; margin-top: 24px; margin-bottom: 132px; }
-  .heroIntro > p { width: 520px; }
-  .heroLessonContent { grid-template-columns: minmax(0, 1fr); }
-  .heroLessonMain { min-height: 438px; border-radius: 0; }
-  .heroLessonAside { min-height: 210px; border-left: 0; border-top: 1px solid var(--divider); border-radius: 0 0 11px 11px; }
-  .asideFeedback { margin-top: 20px; }
-  .lessonProgress { margin-top: 24px; }
-  .asideContext { margin-top: 20px !important; }
-  .journey { padding: 64px 0; }
-  .journey h2, .lessonSectionCopy h2 { font-size: 2.75rem; }
-  .journeyContent { min-height: 570px; }
-  .journeyIllustration { width: 247px; height: 383px; top: -60px; }
-  .courseCard { width: 90%; padding: 28px; }
-  .discoveryGripTop { width: 49px; height: 31px; right: 60px; top: -15px; }
-  .discoveryGripSide { width: 35px; height: 42px; right: -15px; }
-  .threeSteps { gap: 24px; margin-top: 32px; }
-  .lessonSectionLayout { grid-template-columns: minmax(0, 1fr); gap: 40px; }
-  .lessonSectionCopy h2 { margin-block: 24px; }
-  .progressSection h2 { font-size: 3rem; }
-  .progressLayout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
-  .progressImage { height: 330px; }
-  .closing { padding: 64px 0 32px; }
-  .closing .container { display: flex; flex-direction: column; gap: 24px; }
-  .closing h2 { max-width: 100%; font-size: 3.5rem; order: 1; }
-  .closingArt { position: static; width: 100%; height: 250px; order: 2; }
-  .closing p { order: 3; margin-top: 0; }
-  .closingActions { order: 4; margin-top: 0; }
-  .footer { padding-bottom: 32px; }
-}
-@media (max-width: 500px) {
-  .container { width: calc(100% - 40px); }
-  .journey, .lessonSection, .progressSection, .closing, .footer { --section-gutter: 24px; }
-  .siteHeader { padding-block: 18px 0; }
-  /* The header wraps to two rows at 320px; a fixed offset would cover the menu button. */
-  .mobileNav nav { top: calc(100% + 8px); }
-  .wordmark { font-size: 1.75rem; }
-  .hero { padding: 44px 0 64px; }
-  .hero h1 { font-size: min(13.85vw, 3.375rem); line-height: 1.03; letter-spacing: -.0426em; }
-  .hero h1 span { margin-left: 24px; margin-top: 4px; }
-  .heroIntro { padding-inline: 4px; margin-top: 28px; margin-bottom: 112px; gap: 18px; }
-  .heroIntro > p { font-size: 1rem; line-height: 1.5; }
-  .heroActions { width: 100%; flex-direction: column; gap: 8px; }
-  .heroActions .primaryButton { width: 100%; min-height: 54px; }
-  .textAction { justify-content: center; min-height: 48px; }
-  .heroArt { width: 98px; height: 100px; top: -91px; right: 4px; }
-  .lessonBrowserHeader { display: none; }
-  .heroLessonMain { padding: 20px; min-height: 0; border-radius: 11px; }
-  .heroLessonMain .lessonDisclosure, .heroLessonMain .lessonMeta, .heroLessonMain .lessonTrack { display: flex; }
-  .lessonMeta { margin-block: 20px; }
-  .lessonMeta span:first-child { font-size: 1rem; }
-  .lessonTrack { font-size: .75rem; margin-bottom: 20px !important; }
-  .lessonQuestion { font-size: 1.75rem; line-height: 1.14; letter-spacing: -.025em; margin-bottom: 20px !important; }
-  .answers { gap: 20px; }
-  .answer { min-height: 78px; padding: 14px; font-size: 1rem !important; }
-  .heroLessonAside { display: none; }
-  .heroInlineFeedback { display: block; padding: 16px; background: var(--color-surface-practice); margin-top: 20px; border-radius: 6px; }
-  .heroInlineFeedback h3 { font: 400 1rem/1.55 var(--font-sans); letter-spacing: 0; }
-  .heroInlineFeedback p { font-size: .875rem; margin-top: 10px; }
-  .heroLessonMain .lessonBottom { margin-top: 20px; }
-  .lessonSubmit { padding-inline: 18px 16px; min-height: 52px; }
-  .hero > .container > .microDisclaimer { font-size: .75rem; margin-top: 12px !important; }
-  .journey h2, .lessonSectionCopy h2 { font-size: 2.25rem; line-height: 1.1; letter-spacing: -.036em; margin-top: 14px; }
-  .journeyDescription { display: block; font-size: 1.0625rem; color: var(--muted); line-height: 1.55; margin-top: 20px !important; }
-  .journeyContent { min-height: 0; padding: 0; margin-top: 28px; }
-  .journeyIllustration, .discoveryGripTop, .discoveryGripSide { display: none; }
-  .courseCard { width: 100%; padding: 20px; }
-  .courseHeader { margin-block: 16px; }
-  .courseHeader h3 { font-size: 1.0625rem; }
-  .courseRow { gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-  .courseRow > span:nth-child(2) { min-width: 0; }
-  .threeSteps { grid-template-columns: minmax(0, 1fr); gap: 20px; margin-top: 16px; }
-  .threeSteps > div { display: grid; grid-template-columns: minmax(17px, max-content) minmax(0, 1fr); gap: 6px 12px; }
-  .threeSteps > div > span { grid-row: 1 / span 2; }
-  .threeSteps h3 { margin: 0; }
-  .lessonSectionLayout { gap: 32px; }
-  .lessonSectionCopy h2 { margin-top: 20px; margin-bottom: 20px; }
-  .lessonSectionCopy > p:not(.eyebrow) { font-size: 1.0625rem; }
-  .lessonCompact { padding: 20px; }
-  .lessonCompact .lessonMeta { margin-block: 20px; }
-  .lessonCompact .feedback :is(h2, h3) { font-size: 1.625rem; }
-  .lessonCompact .feedback p { font-size: .875rem; }
-  .labSection { padding: 72px 0 56px; }
-  .labDemo { margin-top: 32px; }
-  .labFooter { flex-direction: column; align-items: stretch; gap: 24px; margin-top: 48px; }
-  .labFooter .primaryButton { justify-content: center; }
-  .progressSection { padding: 64px 0; }
-  .progressSection h2 { font-size: 2.5rem; line-height: 1.1; margin-block: 28px; }
-  .progressImage { height: 240px; }
-  .closing h2 { font-size: min(11.795vw, 2.875rem); line-height: 1.08; letter-spacing: -.039em; }
-  .closingArt { height: 230px; }
-  .closing p { font-size: 1.0625rem; }
-  .closing p br { display: none; }
-  .closingActions { flex-direction: column; width: 100%; }
-  .closingActions .primaryButton { width: 100%; min-height: 54px; }
-  .landing .secondaryButton { min-height: 44px; font-size: .875rem; }
-  .footer .container { flex-direction: column; align-items: flex-start; gap: 16px; }
-  .footer p { font-size: .75rem; }
-  .footer nav { column-gap: 24px; }
-}
-@media (max-width: 374px) {
-  .hero h1 { font-size: 2.75rem; }
-  .hero h1 span { margin-left: 16px; }
-  .closing h2 { font-size: 2.375rem; }
-  .courseRow { gap: 8px; flex-wrap: wrap; }
-  .courseRow small { margin-left: 28px; }
-  .lessonBottom { flex-wrap: wrap; }
-  .lessonBottom .lessonSubmit { margin-left: auto; }
-}
-/* Text zoom reflows the editorial columns rather than clipping copy. */
-@media (min-width: 501px) {
-  .hero h1 { font-size: min(8.594vw, 7.5rem); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .landing *, .landing *::before, .landing *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-  .landing a:hover, .landing button:hover { transform: none; }
-}
 
-
-@media (min-width: 501px) and (max-width: 800px) { .hero h1 { font-size: min(9.375vw, 4.5rem); } }
-
-/* Motion layer hooks: decorative only, never carry content. */
-.heroLessonContent, .lessonPreview { position: relative; }
-.answer { position: relative; }
-.answerGlow { position: absolute; inset: -4px; border-radius: 12px; border: 2px solid var(--teal2); box-shadow: 0 0 22px #2f8f8355; opacity: 0; pointer-events: none; }
-.demoCursor { position: absolute; z-index: 5; top: 0; left: 0; width: 22px; height: 22px; opacity: 0; visibility: hidden; pointer-events: none; filter: drop-shadow(0 2px 3px #17171733); }
-.demoCursor svg { display: block; }
-.stepsLine { position: absolute; top: -1px; left: 0; right: 0; height: 2px; background: var(--teal); transform: scaleX(0); transform-origin: 0 50%; pointer-events: none; }
-@media (max-width: 500px) { .stepsLine { display: none; } }
-.lessonCompact .answers + .feedback { margin-top: 24px; }
-.totalTick { display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; color: var(--teal); }
-.shimmerHost { position: relative; overflow: hidden; isolation: isolate; }
-.shimmer { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(105deg, transparent 32%, #ffffff10 41%, #ffffff33 50%, #ffffff10 59%, transparent 68%); transform: translateX(-100%); }
-
-/* ───────────────────────── Liquid glass prototype ─────────────────────────
+/* ───────────────────────── Liquid glass ─────────────────────────
    One material (.glass), one clear lens variant for the floating nav, and an ambient colour field for the
    glass to bend. Tints come from the palette tokens; the white alphas are the material's own highlights. */
 @property --mx { syntax: "<percentage>"; inherits: false; initial-value: 28%; }
 @property --my { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
-
-.landing { position: relative; }
 .ambient { position: absolute; inset: 0 0 auto; height: 135vh; z-index: 0; overflow: hidden; pointer-events: none; -webkit-mask: linear-gradient(#000 55%, transparent); mask: linear-gradient(#000 55%, transparent); }
 .ambient span { position: absolute; width: 64vmax; aspect-ratio: 1; border-radius: 50%; animation: lgDrift 34s ease-in-out infinite alternate; }
 .ambient span:nth-child(1) { left: -22vmax; top: -24vmax; background: radial-gradient(closest-side, color-mix(in srgb, var(--color-progress) 42%, transparent), transparent); }
@@ -418,7 +293,7 @@
   background: linear-gradient(155deg, rgb(255 255 255 / .62), color-mix(in srgb, var(--color-surface) 46%, transparent) 42%, color-mix(in srgb, var(--color-surface) 34%, transparent));
   -webkit-backdrop-filter: blur(22px) saturate(175%);
   backdrop-filter: blur(22px) saturate(175%);
-  border: 1px solid rgb(255 255 255 / .5) !important;
+  border: 1px solid rgb(255 255 255 / .5);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / .9),
     inset 0 -1px 0 rgb(255 255 255 / .28),
@@ -439,167 +314,146 @@
   background: radial-gradient(520px circle at var(--mx) var(--my), rgb(255 255 255 / .38), transparent 62%);
   transition: --mx 600ms cubic-bezier(.2, .7, .2, 1), --my 600ms cubic-bezier(.2, .7, .2, 1);
 }
-
-/* Floating nav: a clear lens. Chromium bends what scrolls under it; elsewhere it stays lightly frosted. */
-.siteHeader { padding-block: 16px; }
-.siteHeader .container.navPill { width: min(1180px, calc(100% - 48px)); min-height: 64px; padding: 6px 8px 6px 24px; border-radius: 999px; flex-wrap: nowrap; }
-.navPill .wordmark { font-size: 1.75rem; }
-.lens { background: linear-gradient(180deg, rgb(255 255 255 / .42), rgb(255 255 255 / .16)); -webkit-backdrop-filter: blur(6px) saturate(180%); backdrop-filter: blur(6px) saturate(180%); }
-:global(html[data-refract]) .lens { backdrop-filter: url(#lg-lens) blur(1.5px) saturate(185%) brightness(1.05); }
-.navPill { transition: color 300ms ease, background 300ms ease, box-shadow 300ms ease; }
-.siteHeader[data-on-dark] .navPill { color: var(--paper); background: linear-gradient(180deg, rgb(255 255 255 / .14), rgb(255 255 255 / .05)); border-color: rgb(255 255 255 / .2) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), 0 20px 40px -20px rgb(0 0 0 / .6); }
+/* Floating nav: a clear lens. The fill is dense enough that 60–90px headlines scrolling under it stay behind the
+   text (DESIGN.md: measure against the worst backdrop); Chromium still bends them at the rim. */
+.lens { background: linear-gradient(180deg, rgb(255 255 255 / .74), color-mix(in srgb, var(--color-surface) 60%, transparent)); -webkit-backdrop-filter: blur(12px) saturate(180%); backdrop-filter: blur(12px) saturate(180%); }
+:global(html[data-refract]) .lens { backdrop-filter: url(#lg-lens) blur(8px) saturate(185%) brightness(1.04); }
+.siteHeader[data-on-dark] .navPill { color: var(--paper); background: linear-gradient(180deg, rgb(23 23 23 / .62), rgb(23 23 23 / .48)); border-color: rgb(255 255 255 / .2); box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), 0 20px 40px -20px rgb(0 0 0 / .6); }
 .siteHeader[data-on-dark] .navSignIn { background: rgb(255 255 255 / .1); border-color: rgb(255 255 255 / .25); }
 .siteHeader[data-on-dark] :focus-visible { outline-color: var(--paper); }
-.topNav { gap: 6px; }
-.topNav a { padding-inline: 16px; border-radius: 999px; }
-.topNav .navSignIn { border-radius: 999px; border-color: rgb(23 23 23 / .18); background: rgb(255 255 255 / .35); }
-.topNav .navStart { font-weight: 600; }
 
-/* Liquid teal: the one primary action, as a tinted pill with depth. */
-.landing .primaryButton, .topNav .navStart {
-  border-radius: 999px; color: var(--color-primary-foreground) !important;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 90%, white), var(--color-primary) 52%, var(--color-primary-pressed));
-  border: 1px solid color-mix(in srgb, var(--color-primary) 55%, white);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .4), inset 0 -3px 8px rgb(0 0 0 / .16), 0 12px 26px -12px var(--color-primary);
-  transition: filter 180ms ease, box-shadow 180ms ease, scale 150ms ease-out;
-}
-.landing .secondaryButton { border-radius: 999px; background: rgb(255 255 255 / .4); border-color: rgb(255 255 255 / .7); box-shadow: inset 0 1px 0 rgb(255 255 255 / .85), 0 8px 20px -14px rgb(23 23 23 / .4); -webkit-backdrop-filter: blur(12px) saturate(160%); backdrop-filter: blur(12px) saturate(160%); }
-@media (hover: hover) and (pointer: fine) {
-  .landing .primaryButton:hover, .topNav .navStart:hover { filter: brightness(1.08) saturate(1.05); box-shadow: inset 0 1px 0 rgb(255 255 255 / .5), inset 0 -3px 8px rgb(0 0 0 / .16), 0 16px 32px -12px var(--color-primary); }
-  .topNav .navSignIn:hover { background: rgb(255 255 255 / .7); border-color: rgb(255 255 255 / .9); color: var(--ink); }
-}
-.landing .primaryButton:active, .topNav .navStart:active { filter: brightness(.94); }
-
-/* Mobile menu sits inside the lens (a backdrop root), so it carries its own near-opaque frosted surface. */
-.mobileNav nav { background: color-mix(in srgb, var(--color-surface) 94%, transparent); border: 1px solid rgb(255 255 255 / .8); border-radius: 22px; box-shadow: inset 0 1px 0 #fff, 0 24px 48px -16px rgb(23 23 23 / .35); }
-.mobileNav nav a { border-radius: 14px; }
-.mobileNav summary { border-radius: 999px; }
-
-/* Lab: a dark stage lit by the palette, so the panels read as glass over light. */
-.labSection {
-  position: relative;
-  background:
-    radial-gradient(60% 420px at 50% 0%, color-mix(in srgb, var(--color-progress) 42%, transparent), transparent 75%),
-    radial-gradient(50% 480px at 50% 62%, color-mix(in srgb, var(--color-primary) 26%, transparent), transparent 72%),
-    var(--ink);
-}
-.labFooter { border-top-color: rgb(255 255 255 / .16); }
-
-/* Closing: the headline sits on one large slab; the illustration shows through its edge. */
-.closing { border-top: 0; background: radial-gradient(42% 60% at 22% 45%, color-mix(in srgb, var(--color-progress) 30%, transparent), transparent 70%), radial-gradient(36% 55% at 72% 40%, color-mix(in srgb, var(--color-warning) 38%, transparent), transparent 72%); }
-.closingSlab { position: relative; z-index: 1; max-width: 820px; padding: 56px; border-radius: 40px; }
-.closing .closingSlab h2 { max-width: none; }
-.closingArt { z-index: 0; right: -8px; top: 10px; width: 440px; height: 400px; }
-
-
+/* ───────────────────────── Responsive ───────────────────────── */
+@media (min-width: 501px) { .hero h1 { font-size: min(8.594vw, 7.5rem); } }
 @media (max-width: 1100px) {
-  .closingSlab { max-width: 760px; padding: 44px; }
+  .landing { --gutter: 48px; --section-y: 96px; --h2: 3rem; }
+  .hero { padding-top: 48px; }
+  .hero h1 { font-size: 5.5rem; line-height: 1.08; letter-spacing: -.04545em; }
+  .hero h1 span { margin-left: 88px; }
+  .heroIntro { padding-left: 92px; margin-top: 40px; }
+  .heroArt { width: 194px; height: 198px; top: -181px; right: 14px; }
+  .heroLessonContent { grid-template-columns: minmax(0, 1fr) 310px; }
+  .heroLessonMain { padding: 32px; }
+  .heroLessonAside { padding: 28px; }
+  .lessonQuestion { font-size: 2.125rem; }
+  .journeyContent { min-height: 500px; }
+  .courseCard { width: 87%; }
+  .journeyIllustration { width: 302px; height: 469px; top: -70px; right: 0; }
+  .discoveryGripTop { width: 60px; height: 38px; right: 80px; top: -18px; }
+  .discoveryGripSide { width: 43px; height: 51px; right: -18px; }
+  .lessonSectionLayout { gap: 48px; }
+  .labDemo { grid-template-columns: minmax(0, 1fr); gap: 48px; margin-top: 48px; }
+  .progressLayout { grid-template-columns: 400px minmax(0, 1fr); gap: 48px; }
+  .progressImage { height: 320px; }
+  .trustList > div { grid-template-columns: minmax(0, 1fr); }
+  .closingSlab { max-width: min(760px, calc(100% - 280px)); padding: 44px; }
+  .closing h2 { font-size: 4rem; }
   .closingArt { width: 320px; height: 320px; }
 }
 @media (max-width: 800px) {
-  .siteHeader .container.navPill { width: calc(100% - 32px); padding-left: 20px; }
-  .closing .container { gap: 0; }
-  .closingSlab { order: 1; padding: 32px; border-radius: 32px; }
-  .closing .closingSlab p { margin-top: 16px; }
-  .closing .closingSlab .closingActions { margin-top: 24px; }
-  .closingArt { position: static; width: 100%; height: 250px; margin-top: -36px; }
+  .landing { --gutter: 40px; --section-y: 80px; --h2: 2.75rem; }
+  .topNav { display: none; }
+  .mobileActions { display: flex; margin-left: auto; align-items: center; gap: 12px; font-size: .875rem; }
+  .mobileActions > a { display: flex; align-items: center; min-height: 48px; }
+  .hero { padding-top: 40px; }
+  .hero h1 { font-size: min(9.375vw, 4.5rem); line-height: 1.14; letter-spacing: -.043em; }
+  .hero h1 span { margin-left: 40px; }
+  .heroIntro { padding-left: 40px; margin-top: 24px; margin-bottom: 132px; }
+  .heroLessonContent { grid-template-columns: minmax(0, 1fr); }
+  .heroLessonMain { border-radius: 0; }
+  .heroLessonAside { border-left: 0; border-top: 1px solid var(--divider); border-radius: 0 0 19px 19px; }
+  .asideFeedback { margin-top: 20px; }
+  .lessonProgress { margin-top: 24px; }
+  .journeyContent { min-height: 570px; }
+  .journeyIllustration { width: 247px; height: 383px; top: -60px; }
+  .courseCard { width: 90%; padding: 28px; }
+  .discoveryGripTop { width: 49px; height: 31px; right: 60px; top: -15px; }
+  .discoveryGripSide { width: 35px; height: 42px; right: -15px; }
+  .lessonSectionLayout { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .progressLayout { grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 32px; }
+  .progressImage { height: 300px; }
+  .closing { padding-top: 64px; }
+  .closing .container { display: flex; flex-direction: column; }
+  .closingSlab { order: 1; max-width: none; padding: 32px; border-radius: 32px; }
+  .closing h2 { font-size: 3.5rem; }
+  .closing p { margin-top: 16px; }
+  .closingActions { margin-top: 24px; }
+  .closingArt { order: 2; position: static; width: 100%; height: 250px; margin-top: -36px; }
+  .footer { padding-bottom: 32px; }
 }
 @media (max-width: 500px) {
+  .landing { --gutter: 20px; --section-y: 64px; --h2: 2.25rem; }
   .siteHeader { padding-block: 12px; }
-  .siteHeader .container.navPill { width: calc(100% - 20px); min-height: 56px; padding: 4px 6px 4px 16px; flex-wrap: wrap; border-radius: 28px; }
+  .navPill { min-height: 56px; padding: 4px 6px 4px var(--pill-inset); flex-wrap: wrap; border-radius: 28px; }
   .navPill .wordmark { font-size: 1.5rem; }
-  .closingSlab { padding: 24px; border-radius: 28px; }
-}
-@media (prefers-reduced-transparency: reduce) {
-  .glass, .lens, .landing .secondaryButton { background: var(--surface) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-  .ambient { display: none; }
-}
-
-/* Course path card, compact: one header row, a timeline of the three levels, the two Lab tools as small tiles. */
-.courseCard { padding: 28px 32px 24px; border-radius: 22px; box-shadow: inset 0 1px 0 #fff, 0 24px 48px -32px rgb(23 23 23 / .35); }
-.courseHeader { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 0 0 18px; }
-.courseHeader .cardOverline { margin-bottom: 6px; }
-.courseHeader h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; line-height: 1.2; }
-.courseHeader > span { padding: 4px 12px; border-radius: 999px; background: var(--color-primary-soft); font-size: .8125rem; }
-.courseSteps { position: relative; list-style: none; margin: 0; padding: 0; }
-/* The timeline spine runs behind the step dots. */
-.courseSteps::before { content: ""; position: absolute; left: 13px; top: 22px; bottom: 22px; width: 2px; border-radius: 2px; background: linear-gradient(var(--teal2), var(--color-primary-tint)); }
-.courseRow { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; column-gap: 16px; align-items: start; min-height: 0; margin: 0; padding: 10px 0; border: 0; }
-.courseRow .rowIcon { position: relative; width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 2px solid var(--teal2); }
-.courseRow .rowIcon svg { stroke-width: 2; }
-.courseSteps .courseRow[data-course-row="next"] .rowIcon { background: var(--teal); border-color: var(--teal); color: var(--color-primary-foreground); }
-.courseRow .rowText { padding-top: 3px; }
-.rowText strong { display: block; font-weight: 600; font-size: 1rem; line-height: 1.3; }
-.courseRow .rowText > span { margin-top: 3px; max-width: 62ch; font-size: .875rem; line-height: 1.45; }
-.courseSteps .courseRow small { margin: 3px 0 0; padding: 3px 10px; border-radius: 999px; background: var(--color-primary-soft); color: var(--teal); font-size: .75rem; font-weight: 600; white-space: nowrap; }
-.courseSteps .courseRow[data-course-row="next"] small { background: var(--teal); color: var(--color-primary-foreground); }
-.courseLab { list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.courseLab li { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 16px; background: var(--color-surface-practice); border: 1px solid var(--color-border); }
-.courseLab li > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
-.courseLab strong { font-weight: 600; font-size: .9375rem; line-height: 1.3; }
-.courseLab small { color: var(--teal); font-size: .75rem; font-weight: 600; }
-.courseLab span { color: var(--muted); font-size: .8125rem; line-height: 1.4; }
-.courseCard > p { margin-top: 14px; font-size: .75rem; line-height: 1.4; }
-.journeyContent { min-height: 470px; }
-@media (max-width: 1100px) { .journeyContent { min-height: 500px; } }
-@media (max-width: 800px) { .courseLab { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 500px) {
-  .journeyContent { min-height: 0; }
-  .courseCard { padding: 20px; }
-  .courseHeader h3 { font-size: 1.25rem; }
+  .hero { padding: 36px 0 56px; }
+  .hero h1 { font-size: min(13.85vw, 3.375rem); line-height: 1.03; letter-spacing: -.0426em; }
+  .hero h1 span { margin-left: 24px; margin-top: 4px; }
+  .heroIntro { padding-inline: 4px; margin-top: 28px; margin-bottom: 112px; gap: 12px; }
+  .heroActions { width: 100%; flex-direction: column; gap: 8px; }
+  .heroActions .primaryButton { width: 100%; min-height: 54px; }
+  .textAction { justify-content: center; }
+  .heroNote { font-size: .875rem; text-align: center; }
+  .heroArt { width: 98px; height: 100px; top: -91px; right: 4px; }
+  .heroLessonWrap { border-radius: 18px; }
+  .lessonBrowserHeader { display: none; }
+  .heroLessonMain { padding: 20px; min-height: 0; border-radius: 17px; }
+  .heroLessonMain .lessonTrack { display: block; }
+  .lessonQuestion { font-size: 1.75rem; line-height: 1.14; letter-spacing: -.025em; margin-bottom: 20px !important; }
+  .answers { gap: 12px; }
+  .answer { min-height: 72px; padding: 14px; font-size: 1rem !important; }
+  .heroLessonAside { display: none; }
+  .heroInlineFeedback { display: block; padding: 16px; background: var(--color-surface-practice); margin-top: 20px; border-radius: 10px; }
+  .heroInlineFeedback h2 { font: 400 1rem/1.55 var(--font-sans); letter-spacing: 0; }
+  .heroInlineFeedback p { font-size: .875rem; margin-top: 10px; }
+  .heroLessonMain .lessonBottom { margin-top: 20px; }
+  .lessonSubmit { padding-inline: 18px 16px; min-height: 52px; }
+  .microDisclaimer { font-size: .75rem; margin-top: 12px !important; }
+  :is(.journey, .lessonSection, .progressSection) h2 { line-height: 1.1; letter-spacing: -.036em; }
+  .journeyContent { min-height: 0; padding: 0; margin-top: 28px; }
+  .journeyIllustration, .discoveryGripTop, .discoveryGripSide { display: none; }
+  .courseCard { width: 100%; padding: 20px; }
+  .courseTitle { font-size: 1.25rem; }
   .courseRow { grid-template-columns: 28px minmax(0, 1fr); column-gap: 12px; }
-  .courseSteps .courseRow small { grid-column: 2; justify-self: start; margin-top: 8px; }
-}
-
-/* Lab intro: one centred statement under the spotlight, then three short principles. */
-.labIntro { display: flex; flex-direction: column; align-items: center; max-width: 860px; margin-inline: auto; text-align: center; }
-.labBadge { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 999px; background: rgb(255 255 255 / .06); border: 1px solid rgb(255 255 255 / .14); box-shadow: inset 0 1px 0 rgb(255 255 255 / .12); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
-.labDot { width: 6px; height: 6px; border-radius: 50%; background: var(--cash); box-shadow: 0 0 0 4px color-mix(in srgb, var(--cash) 22%, transparent); }
-.labIntro h2 { margin-top: 28px; font-size: clamp(3rem, 6.4vw, 5.5rem); line-height: 1.02; letter-spacing: -.045em; }
-.labIntro h2 span { color: color-mix(in srgb, var(--paper) 58%, transparent); }
-.labLead { max-width: 600px; margin-top: 24px !important; font-size: 1.1875rem; line-height: 1.55; color: #e5e5dc; }
-.labPrinciples { list-style: none; margin: 32px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-.labPrinciples li { display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px 10px 14px; border-radius: 999px; background: rgb(255 255 255 / .06); border: 1px solid rgb(255 255 255 / .12); box-shadow: inset 0 1px 0 rgb(255 255 255 / .1); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); font-size: .9375rem; line-height: 1.3; color: var(--paper); }
-.labPrinciples svg { flex-shrink: 0; color: var(--color-primary-tint); stroke-width: 1.75; }
-.labNote { display: block; margin-top: 20px; font-size: .8125rem; color: #d8dad0; }
-.labDemo { margin-top: 64px; }
-@media (max-width: 500px) {
+  .courseRow small { grid-column: 2; justify-self: start; margin-top: 8px; }
+  .lessonSectionCopy p { font-size: 1.0625rem; }
+  .outputList li { grid-template-columns: 20px minmax(0, 1fr); padding-inline: 18px; }
+  .outputList li + li { background-position: 18px 0; background-size: calc(100% - 36px) 1px; }
+  .outputList small { grid-column: 2; }
+  /* The sheet is only 8px from the viewport here; keep 20px of dark stage around the content. */
+  .labSection .container { width: calc(100% - 40px); }
   .labIntro h2 { margin-top: 20px; font-size: min(12.5vw, 3rem); }
   .labLead { font-size: 1.0625rem; }
-  .labPrinciples { flex-direction: column; align-items: stretch; }
-  .labPrinciples li { border-radius: 16px; }
   .labDemo { margin-top: 40px; }
+  .labFooter { flex-direction: column; align-items: stretch; gap: 24px; margin-top: 48px; }
+  .labFooter .primaryButton { justify-content: center; }
+  .progressImage { height: 240px; }
+  .closingSlab { padding: 24px; border-radius: 28px; }
+  .closing h2 { font-size: min(11.795vw, 2.875rem); line-height: 1.08; letter-spacing: -.039em; }
+  .closingArt { height: 230px; }
+  .closing p { font-size: 1.0625rem; }
+  .closing p br { display: none; }
+  .closingActions { flex-direction: column; width: 100%; }
+  .closingActions .primaryButton { width: 100%; min-height: 54px; }
+  .landing .secondaryButton { min-height: 48px; font-size: .875rem; }
+  .footer .container { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .footer p { font-size: .75rem; }
 }
-/* The Lab stage floats as one rounded sheet instead of a hard full-bleed cut from the paper. */
-.labSection { margin-inline: clamp(8px, 1.2vw, 20px); border-radius: clamp(28px, 3vw, 48px); }
+@media (max-width: 374px) {
+  .hero h1 { font-size: 2.75rem; }
+  .hero h1 span { margin-left: 16px; }
+  .closing h2 { font-size: 2.375rem; }
+  .lessonBottom .lessonSubmit { margin-left: auto; }
+}
 
-/* Lesson section: a softly lit band, outputs as small saved-artifact tiles, the demo inside a glass frame. */
-.lessonSection {
-  background:
-    radial-gradient(38% 60% at 82% 45%, color-mix(in srgb, var(--color-primary-tint) 45%, transparent), transparent 72%),
-    radial-gradient(30% 50% at 6% 100%, color-mix(in srgb, var(--color-warning) 22%, transparent), transparent 72%),
-    var(--soft);
+/* ───────────────────────── Preferences ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .landing *, .landing *::before, .landing *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
-.lessonSectionLayout { grid-template-columns: 520px minmax(0, 1fr); gap: 64px; }
-.outputList { margin-top: 32px; border-top: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; list-style: none; padding: 0; }
-.outputList li { display: grid; grid-template-columns: 18px minmax(0, 1fr); column-gap: 12px; row-gap: 2px; align-items: start; align-content: start; padding: 12px 14px; border: 1px solid var(--divider); border-radius: 14px; background: var(--surface); font-size: .9375rem; line-height: 1.3; box-shadow: 0 1px 2px rgb(23 23 23 / .04); }
-.outputList li > svg { grid-row: 1 / span 2; margin-top: 1px; color: var(--teal); stroke-width: 1.75; }
-.outputList li > span, .outputList li > small { grid-column: 2; }
-.outputList li:not([data-available]) { background: transparent; border-style: dashed; box-shadow: none; }
-.outputList li:not([data-available]) > svg { color: var(--muted); }
-.lessonSectionDemo { padding: 10px; border-radius: 32px; background: linear-gradient(160deg, rgb(255 255 255 / .62), rgb(255 255 255 / .22)); border: 1px solid rgb(255 255 255 / .75); box-shadow: inset 0 1px 0 #fff, 0 32px 64px -32px rgb(23 23 23 / .3); -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%); }
-.lessonCompact { background: var(--surface); border-radius: 22px; box-shadow: 0 1px 2px rgb(23 23 23 / .06); }
-.lessonCompact .answer { border-radius: 14px; }
-.lessonCompact .feedback :is(h2, h3) { font-size: 1.375rem; line-height: 1.25; }
-.lessonSectionDemo > .lessonPreview > .microDisclaimer { padding: 4px 14px 2px; }
-@media (max-width: 1100px) { .lessonSectionLayout { grid-template-columns: 420px minmax(0, 1fr); gap: 40px; } }
-@media (min-width: 801px) and (max-width: 1100px) { .lessonSectionCopy h2 { font-size: 2.75rem; } }
-@media (max-width: 800px) { .lessonSectionLayout { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 500px) {
-  .lessonSectionDemo { padding: 6px; border-radius: 24px; }
-  .lessonCompact { border-radius: 19px; }
-  .outputList { grid-template-columns: minmax(0, 1fr); gap: 6px; }
-  .outputList li { grid-template-columns: 18px minmax(0, 1fr) auto; align-items: center; padding: 10px 14px; }
-  .outputList li > svg { grid-row: auto; margin: 0; }
-  .outputList li > small { grid-column: 3; text-align: right; }
+/* Every glass material falls back to an opaque surface; the dark nav and the stage chip fall back to ink, so text keeps its contrast. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .lens, .landing .secondaryButton { background: var(--surface) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .glass::after { display: none; }
+  .siteHeader[data-on-dark] .navPill { background: var(--ink) !important; }
+  .labBadge { background: color-mix(in srgb, var(--paper) 10%, var(--ink)); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .ambient { display: none; }
 }

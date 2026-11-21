@@ -263,3 +263,7 @@
   .tablist { border-radius: 22px; }
   .tab { border-radius: 16px; }
 }
+/* Reduced transparency: the stage controls become opaque ink-tinted surfaces with the same text colours. */
+@media (prefers-reduced-transparency: reduce) {
+  .tablist, .crisis { background: color-mix(in srgb, var(--color-background) 8%, var(--color-foreground)); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}

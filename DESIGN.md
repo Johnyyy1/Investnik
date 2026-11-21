@@ -274,7 +274,7 @@ Light is what glass bends, so each section gets at most two light sources, all b
 
 - **Ambient field (hero).** Four radial colour fields (progress, warning, primary-tint, primary-soft) drift slowly (`transform` only, 29–47s, alternate). They are absolutely positioned behind the hero only (135vh) and masked to fade out before the next section.
 - **Dark stage (Lab).** `ink` with one spotlight from above (`progress` 42%) and a low `primary` 26% glow. It is a rounded sheet (`border-radius: clamp(28px, 3vw, 48px)`) inset `clamp(8px, 1.2vw, 20px)` from the viewport edges, never a hard full-bleed cut.
-- **Section tint.** The light band (lesson section) gets a `primary-tint` 45% glow behind its demo and a faint `warning` 22% glow in a corner.
+- **Section tint.** A flat `surface-muted` band (the outputs section). Add a glow to a band only when glass sits on it.
 - **Slab light.** The closing slab sits on a `progress` and `warning` glow of its own.
 
 Avoid warm (`warning`) light directly behind smoked glass, because it reads as brown.
@@ -297,10 +297,10 @@ The marketing nav is a sticky floating pill (`min(1180px, 100% - 48px)`, 64px ta
 
 ### Composition patterns from the landing
 
-- **Centred statement.** On a dark stage: badge (dot plus eyebrow), Manrope headline whose second clause is muted (`paper` at 58%, no gradient text), a lead of at most 600px, three principle chips and a fine-print note.
-- **Timeline list.** Steps of a path: 28px status dots on a 2px `progress` → `primary-tint` spine, a title and a one-line detail, and a status pill (`primary-soft`, or filled teal for the recommended next step). Secondary destinations become small tiles under it.
-- **Artifact tiles.** Saved outputs as a two-column grid of icon tiles. Unavailable items get a dashed border and a muted icon, plus the „Připravujeme“ text.
-- **Framed demo.** A live preview inside a glass frame, with its disclosure line inside the frame.
+- **Centred statement.** On a dark stage: badge (dot plus eyebrow), Manrope headline whose second clause is muted (`paper` at 58%, no gradient text), a lead of at most 620px and a fine-print note. No chip row restating the lead.
+- **Timeline list.** Steps of a path: 28px status dots joined by a 2px spine that ends at the last dot, a title and a one-line detail. Statuses are quiet teal text; only the recommended next step gets a filled teal pill, so the eye lands there first. A destination outside the levels (the Lab) is one more row with its own icon, not a nested tile.
+- **Artifact ledger.** Saved outputs as one opaque list (`--radius-card`) with inset hairlines: icon, name, status. Unavailable items are muted and say „Připravujeme“. One surface instead of a grid of bordered tiles.
+- **One demo per page.** The landing shows the lesson preview once, in the hero. A second copy of the same question read as filler.
 
 ### Accessibility
 
@@ -319,10 +319,10 @@ The marketing nav is a sticky floating pill (`min(1180px, 100% - 48px)`, 64px ta
 
 ### Implementation map
 
-- [liquid-glass.tsx](src/components/marketing/liquid-glass.tsx): ambient field, the `#lg-lens` filter, the Chromium `data-refract` flag and the pointer highlight.
+- [liquid-glass.tsx](src/components/marketing/liquid-glass.tsx): ambient field, the `#lg-lens` filter, the Chromium `data-refract` flag, the pointer highlight and the nav's dark-variant switch over the Lab.
 - [pen-landing.module.css](src/components/marketing/pen-landing.module.css): materials, nav, light and section patterns in the blocks after "Liquid glass prototype".
 - [portfolio-lab-demo.module.css](src/components/marketing/portfolio-lab-demo.module.css): Lab panel, segmented tabs and smoked crisis card.
-- [motion/sections/global.ts](src/components/marketing/motion/sections/global.ts): sticky nav, dark-variant trigger and `NAV_CLEARANCE`.
+- [motion/sections/global.ts](src/components/marketing/motion/sections/global.ts): the nav's load intro and `NAV_CLEARANCE`. The nav itself is `position: sticky` in CSS.
 
 ### Rolling out to the product
 
